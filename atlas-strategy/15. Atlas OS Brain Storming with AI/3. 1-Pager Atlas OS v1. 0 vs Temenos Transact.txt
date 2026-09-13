@@ -1,0 +1,72 @@
+Done. Here’s the *1-Pager: Atlas OS v1.0 vs Temenos Transact*
+
+Use this in the demo. Be honest about gaps. That’s what builds trust.
+
+---
+
+### *ATLAS OS v1.0 vs TEMENOS TRANSACT*  
+*"Demo Bank in a Box vs 40 Years of Core Banking"*  
+*Updated: 2026-09-10*
+
+#### *1. THE 60-SECOND PITCH*
+	**Temenos Transact**	**Atlas OS v1.0**
+**What it is**	1000 modules. 1 monolith.	1 OS Kernel. Compose your own bank
+**Time to Value**	18-24 Months	5 Minutes to install. 2 Weeks to 1st product
+**Who Configures**	Temenos Consultants @ $400/hr	Business PM in Workflow Studio
+**Core Philosophy**	Depth: "We have a module for that"	Speed: "You can build any module"
+#### *2. HEAD-TO-HEAD: THE 7 THINGS BANKS ACTUALLY CARE ABOUT*
+Capability	**Temenos**	**Atlas OS v1.0**	**Winner & Why**
+**1. Install & Demo**	6 months POC. Needs SI partner	`docker compose up`. Runs on laptop	**Atlas**. Banks take it home today
+**2. Launch New Product**	3 months. Code in TAFJ/IRIS	5 min. Drag-drop `workflow.yaml`	**Atlas**. BATCH-07C. Business self-serve
+**3. ISO20022 Payments**	$2M module. 6 month project	Kernel Driver. Visual mapper. <30s	**Atlas**. BATCH-08B. Built-in, not bolt-on
+**4. Product Flexibility**	AA Engine. Very mature	AA Engine v1. YAML based	**Tie**. Same pattern. We’re 80% there
+**5. Accounting & GL**	Multi-entity. 40 years mature	Multi-entity. Event sourced	**Temenos**. We’re v1. But good enough
+**6. Audit & Compliance**	DB logs. Report based	Every event hashed to chain	**Atlas**. BATCH-01. Donors/IMF ready
+**7. Customization & Upgrade**	Breaks on upgrade. Vendor lock	`tenant.yaml` only. `git pull` to upgrade	**Atlas**. OS Rules enforce this
+*Score: Atlas 4 - Temenos 1 - Tie 2*
+
+#### *3. WHERE TEMENOS STILL WINS - WE’RE HONEST*
+
+We don’t pretend. Here’s what v1.0 does NOT have:
+Gap	Temenos Has	Atlas Plan
+**Maturity**	3000 banks. 40 years edge cases	Wave 3-4: We learn from 25 tenants
+**Module Breadth**	Cards, Treasury, Collections, 1000 reports	BATCH-47 to BATCH-56 in Wave 4
+**Ecosystem**	800 partners, 2000 consultants	BATCH-30 Marketplace starts Wave 3
+**Regulatory Packs**	POPIA, DORA, GDPR pre-certified	BATCH-50 in Wave 4
+*Our answer*: "You don’t need all 1000 modules to launch. You need 11 to start making money. We’ll ship the rest with you."
+
+#### *4. WHERE ATLAS OS WINS - UNFAIR ADVANTAGES*
+
+These don’t exist in Temenos:
+
+1.  *G2P + Bank in 1 OS*: Launch a Government grant scheme from the same OS as your core. Temenos can’t.
+2.  *AI Factory*: "Create drought relief product" → OS writes code + tests + deploys. BATCH-40
+3.  *GapLocked Trade*: IoT + Blockchain + Payment auto-settlement. BATCH-23 to 27
+4.  *Network Effect*: Bank #2 gets all molecules Bank #1 built. Temenos banks are siloed.
+
+#### *5. TOTAL COST & RISK*
+	**Temenos 3-Year TCO**	**Atlas OS 3-Year TCO**
+**License**	$5M - $20M	$500k/yr Platform Fee
+**Implementation**	$10M - $50M SI	$0. Self-serve
+**Product Changes**	$400k/yr to consultants	$0. Business does it
+**Upgrade Risk**	High. 12 month project	Low. `git pull`
+**Time to 1st Revenue**	18 Months	8 Weeks
+#### *6. THE DECISION MATRIX*
+
+*Choose Temenos if:* You are a $50B bank and need 100% of modules on day 1. Risk-averse.
+
+*Choose Atlas OS if:* You want to launch 10 products this year, own your roadmap, and beat fintechs to market.
+
+---
+
+### *CLOSING LINE FOR THE DEMO*
+"Temenos is a battleship. Atlas OS is a shipyard.  
+Do you want to buy 1 ship in 2 years, or own the yard that builds 10 ships this year?"
+
+---
+
+Want me to turn this into:  
+1.  *Designed 1-Pager PDF* with logo + OS diagram  
+2.  *Slide version* for the demo deck  
+
+Which format do you want me to export this as?

@@ -1,0 +1,288 @@
+"""
+ATLAS R01 BATCH 25 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS34-Add-RateLimit.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS34-Add-RateLimit
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Bucket4j. Creates RateLimitFilter 100 req/min per tenant_id
+OUTPUT: 429 Too Many Requests when limit exceeded
+HYPERLINK: https://github.com/vladimir-bukhtoyarov/bucket4j
+STACK: Spring Boot + Bucket4j 7.6.0
+COMPLIANCE: PS25 Tenant Fair Use Policy
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS34: Adding Bucket4j Rate Limit per tenant ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$rateDep = @"
+    <dependency><groupId>com.github.vladimir-bukhtoyarov</groupId><artifactId>bucket4j-core</artifactId><version>7.6.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$rateDep`n</dependencies>" | Set-Content $pom
+
+$rateFilter = Join-Path $BasePath "backend\src\main\java\com\demobank\filter\RateLimitFilter.java"
+@"
+package com.demobank.filter;
+import io.github.bucket4j.Bucket; import io.github.bucket4j.Bandwidth;
+import java.time.Duration; import java.util.Map; import java.util.concurrent.ConcurrentHashMap;
+import jakarta.servlet.*; import jakarta.servlet.http.*;
+public class RateLimitFilter implements Filter {
+    private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+    private Bucket createBucket() { return Bucket.builder().addLimit(Bandwidth.simple(100, Duration.ofMinutes(1))).build(); }
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws java.io.IOException, ServletException {
+        String tenant = com.demobank.context.TenantContext.getTenantId().toString();
+        Bucket bucket = cache.computeIfAbsent(tenant, k -> createBucket());
+        if(bucket.tryConsume(1)) chain.doFilter(req,res);
+        else ((HttpServletResponse)res).setStatus(429);
+    }
+}
+"@ | Out-File -FilePath $rateFilter -Encoding utf8
+
+Write-Host "PS34 Done: 100 req/min per tenant" -ForegroundColor Green
+
+
+# --- END OF PS34-Add-RateLimit.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS35-Add-Alerts.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS35-Add-Alerts
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates alerts.yml for Prometheus + grafana-dashboard.json
+OUTPUT: Alert on 5xx errors per tenant + Grafana dashboard for vouchers/min
+HYPERLINK: https://prometheus.io/docs/practices/rules/
+STACK: Prometheus + Grafana
+COMPLIANCE: PS25 Observability SLO
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS35: Adding Prometheus Alert + Grafana Dashboard ===" -ForegroundColor Cyan
+
+$configDir = Join-Path $BasePath "atlas-workspace\platform\configs"
+New-Item -ItemType Directory -Force $configDir | Out-Null
+
+$alert = Join-Path $configDir "alerts.yml"
+@"
+groups:
+- name: demo-bank
+  rules:
+    - alert: HighErrorRate
+    expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.05
+    labels: {severity: critical}
+    annotations: {summary: "High 5xx errors for tenant {{ `$labels.tenant_id }}"}
+"@ | Out-File -FilePath $alert -Encoding utf8
+
+$dashboard = Join-Path $configDir "grafana-dashboard.json"
+@"
+{"dashboard":{"title":"Demo Bank Multi-Tenant","panels":[
+{"title":"Vouchers/min by Tenant","type":"timeseries","targets":[{"expr":"sum(rate(vouchers_created_total[1m])) by (tenant_id)"}]}]}}
+"@ | Out-File -FilePath $dashboard -Encoding utf8
+
+Write-Host "PS35 Done: Import grafana-dashboard.json in Grafana" -ForegroundColor Green
+
+
+# --- END OF PS35-Add-Alerts.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS36-Add-Helm-Charts.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS36-Add-Helm-Charts
+
+.DESCRIPTION
+INPUT: backend/, frontend/
+PROCESSING: Generates Helm chart for BE, FE, Postgres with tenant env vars
+OUTPUT: chart/ folder deployable to any K8s cluster
+HYPERLINK: https://helm.sh
+STACK: Kubernetes + Helm 3 + Spring Boot
+COMPLIANCE: PS25 Multi-Tenancy via env TENANT_MODE
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS36: Generating Helm Charts ===" -ForegroundColor Cyan
+
+$chartPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank"
+New-Item -ItemType Directory -Force "$chartPath\templates" | Out-Null
+
+@"
+apiVersion: v2
+name: demo-bank
+description: Multi-Tenant Demo Bank Platform
+version: 0.1.0
+"@ | Out-File "$chartPath\Chart.yaml" -Encoding utf8
+
+@"
+replicaCount: 2
+image:
+  repository: demobank/backend
+  tag: latest
+env:
+  TENANT_MODE: schema
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+ingress:
+  enabled: true
+  host: demo-bank.local
+resources:
+  limits: {cpu: 500m, memory: 1Gi}
+  requests: {cpu: 200m, memory: 512Mi}
+"@ | Out-File "$chartPath\values.yaml" -Encoding utf8
+
+@"
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: backend}
+spec:
+  replicas: {{.Values.replicaCount }}
+  template:
+    spec:
+      containers:
+            - name: backend
+        image: "{{.Values.image.repository }}:{{.Values.image.tag }}"
+        env:
+                - name: TENANT_MODE
+          value: "{{.Values.env.TENANT_MODE }}"
+        ports: [{containerPort: 8080}]
+        livenessProbe: {httpGet: {path: /actuator/health, port: 8080}}
+"@ | Out-File "$chartPath\templates\backend-deployment.yaml" -Encoding utf8
+
+Write-Host "PS36 Done: Helm chart at atlas-workspace/platform/k8s/demo-bank" -ForegroundColor Green
+
+
+# --- END OF PS36-Add-Helm-Charts.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS37-Add-HPA-Ingress.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS37-Add-HPA-Ingress
+
+.DESCRIPTION
+INPUT: Helm chart from PS36
+PROCESSING: Adds HPA + Ingress with tenant-based routing
+OUTPUT: Auto-scale 2-10 pods. Single ingress for all tenants
+HYPERLINK: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+STACK: K8s HPA + NGINX Ingress
+COMPLIANCE: PS25 Tenant isolation via header X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS37: Adding HPA + Ingress ===" -ForegroundColor Cyan
+
+$chartPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank\templates"
+
+@"
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: backend-hpa}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: backend}
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
+"@ | Out-File "$chartPath\hpa.yaml" -Encoding utf8
+
+@"
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: {name: demo-bank-ingress, annotations: {"nginx.ingress.kubernetes.io/rewrite-target": /}}
+spec:
+  rules:
+    - host: demo-bank.local
+    http:
+      paths:
+            - path: /api
+        pathType: Prefix
+        backend: {service: {name: backend, port: {number: 8080}}}
+"@ | Out-File "$chartPath\ingress.yaml" -Encoding utf8
+
+Write-Host "PS37 Done: HPA 2-10 replicas + Ingress created" -ForegroundColor Green
+
+
+# --- END OF PS37-Add-HPA-Ingress.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS38-Add-K8s-Secrets.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS38-Add-K8s-Secrets
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates K8s Secret manifest for DB, JWT, Kafka creds
+OUTPUT: secret.yaml - apply with kubectl
+HYPERLINK: https://kubernetes.io/docs/concepts/configuration/secret/
+STACK: Kubernetes Secrets + Base64
+COMPLIANCE: PS25 No secrets in code
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS38: Creating K8s Secrets ===" -ForegroundColor Cyan
+
+$secretPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank\templates\secret.yaml"
+
+@"
+apiVersion: v1
+kind: Secret
+metadata: {name: demo-bank-secrets}
+type: Opaque
+data:
+  DB_PASSWORD: cG9zdGdyZXM= # postgres
+  JWT_SECRET: ZGVtby1iYW5rLXNlY3JldC1rZXktY2hhbmdlLWluLXByb2Q= # demo-bank-secret-key-change-in-prod
+  KAFKA_USERNAME: dXNlcg==
+"@ | Out-File $secretPath -Encoding utf8
+
+Write-Host "PS38 Done: Apply with 'kubectl apply -f secret.yaml'" -ForegroundColor Green
+
+
+# --- END OF PS38-Add-K8s-Secrets.ps1 ---
+

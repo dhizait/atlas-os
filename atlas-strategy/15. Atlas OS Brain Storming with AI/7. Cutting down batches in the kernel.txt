@@ -1,0 +1,66 @@
+Are we cutting down the number of batches in the kernel after our Linux discussion
+
+*Yes. We cut it.*
+
+After the Unix/Linux discussion, the rule is: *"Kernel must be boring"*
+
+Linux kernel 1991: ∼10,000 lines. Did 5 things: process, memory, file, device, network.  
+We were trying to do 11. That’s Windows, not Unix.
+
+### *1. NEW KERNEL SCOPE: 6 BATCHES ONLY*
+
+This is what ships in the 1-week sprint:
+Batch	Name	Why It’s Kernel	Unix Analogy
+**BATCH-01**	**Event Mesh**	System calls. Everything talks here	`syscall`
+**BATCH-03**	**Registry**	/etc/passwd. Source of truth for entities	VFS + inodes
+**BATCH-04**	**Accounts Core**	Memory + ledger. Double entry	RAM + Disk
+**BATCH-05**	**Bootloader**	init. Gets OS up	`/sbin/init`
+**BATCH-06**	**Toggle Engine**	Kernel modules on/off	`modprobe`
+**BATCH-19**	**AA Engine v0.5**	Process scheduler. Defines "what is a product"	`fork + exec`
+*Cut from Kernel → Moved to Modules:*
+1.  *BATCH-07 Product Studio* → Module. Business layer
+2.  *BATCH-07C Workflow Studio* → Module. Business layer  
+3.  *BATCH-08B ISO20022* → Module. Like a "network driver"
+4.  *BATCH-09 UI Kit* → Module. Like "X Windows"
+5.  *BATCH-61 Demo Tenant* → Seed data. Like "distro"
+
+### *2. WHY WE CUT*
+Old Thinking	Unix Thinking	Result
+"Kernel needs Studio"	"Studio is a user program"	BA can break Studio, can’t break kernel
+"Kernel needs ISO"	"ISO is a device driver"	Can upgrade ISO without rebooting kernel
+"Kernel needs UI"	"UI is optional"	Kernel runs headless on server
+*Rule now*: If a bank can break it and still have accounts + GL safe, it’s NOT kernel.
+
+### *3. WHAT THIS MEANS FOR 1-WEEK SPRINT*
+
+Even easier. 6 batches only.
+Day	Batches	Demo Friday
+**Mon**	01 + 03	Create Customer. See event
+**Tue**	04	Create Account. Debit/Credit
+**Wed**	19 v0.5	Upload `product.yaml` → Account Type appears
+**Thu**	06 + 05	Toggle AA off/on. `docker compose up`
+**Fri**	Harden + Tests	Show "bank on laptop"
+Risk dropped 50%. We can actually finish in 5 days.
+
+### *4. THE NEW DEFINITION: "WHAT IS ATLAS KERNEL"*
+
+> "Atlas Kernel = The 6 things you need to keep money safe and auditable.  
+> Everything else is a plugin."
+
+That’s exactly how Linux won. 
+
+Temenos put everything in kernel. That’s why upgrades take 18 months.  
+We won’t make that mistake.
+
+---
+
+### *UPDATED 1-WEEK PLAN FOR TOMORROW*
+
+Slide title: *"6 Batches. 1 Week. Unix for Banking"*
+
+We’re not cutting capability. We’re cutting coupling.  
+All 11 batches still ship by Dec. But only 6 are "kernel".
+
+*You good with this?* 
+
+If yes I’ll lock the Jira board to just these 6 and send the team the new repo structure tonight.

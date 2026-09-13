@@ -1,0 +1,125 @@
+Done. *ATLAS v5.0 EXECUTION PACK - ALL 4 DRILL DOWNS*  
+Copy these 4 files into `atlas.local/docs/`
+
+---
+
+### *A. PRODUCT: `PHASE_MANIFEST_ATLAS.json`*
+
+Maps the 6 DNA strands to 50 batches. Self-serve only.
+{
+  "version": "R17AMR_v5.0",
+  "theme": "6 DNA STRANDS",
+  "pricing_model": "usage_based",
+  "phases": [
+    {
+      "phase": "0",
+      "name": "Fintech Speed Kit - Crassula DNA",
+      "goal": "Launch in 8 weeks",
+      "batches": [
+        {"id": "BATCH-07", "name": "Product-as-Code", "desc": "Define Loan/Wallet/BNPL in product.yaml. Git + CI/CD"},
+        {"id": "BATCH-08", "name": "Multi-Asset GL", "desc": "asset_type: FIAT, CRYPTO, TOKEN, CBDC. Real-time reval"},
+        {"id": "BATCH-09", "name": "Atlas UI Kit", "desc": "React components: KYC, Wallet, Card, Crypto Buy/Sell"}
+      ]
+    },
+    {
+      "phase": "1", 
+      "name": "Depth Parity - T24 DNA",
+      "goal": "Match legacy on day 1",
+      "batches": [
+        {"id": "BATCH-01", "name": "Core Accounts", "desc": "Multi-currency, Multi-entity, Event emission"},
+        {"id": "BATCH-02", "name": "Payments Rail", "desc": "RTGS, ACH, Cards, Mobile Money adapters"},
+        {"id": "BATCH-03", "name": "CIB + Trade", "desc": "LC, BG, Sidecar to T24"}
+      ]
+    },
+    {
+      "phase": "2",
+      "name": "AI OS - Intellect DNA", 
+      "goal": "AI in every layer",
+      "batches": [
+        {"id": "BATCH-10", "name": "Risk Brain", "desc": "AI Credit scoring, Fraud, NPL prediction"},
+        {"id": "BATCH-11", "name": "Ops Brain", "desc": "Self-healing, Anomaly detection, Auto-remediation"},
+        {"id": "BATCH-12", "name": "CX Brain", "desc": "Next-best-action, Churn prediction, Explainable AI"}
+      ]
+    },
+    {
+      "phase": "3",
+      "name": "Composable + BaaS - Mambu + Crassula DNA",
+      "goal": "8 week go-lives",
+      "batches": [
+        {"id": "BATCH-20", "name": "Module Marketplace", "desc": "Toggle 20 modules in 1 day"},
+        {"id": "BATCH-21", "name": "Accounts-as-a-Service", "desc": "API for Telcos, Retail to embed"},
+        {"id": "BATCH-22", "name": "Crypto Core", "desc": "Custody, On/Off ramp, Wallet-as-a-Service"}
+      ]
+    }
+  ]
+}
+#### *B. TECH: `ARCHITECTURE.md`*
+
+*ATLAS TECH STACK v1.0*
+
+1.  *V1: Modular Monolith* - Crassula Style  
+    `1 Spring Boot App` + `Spring Modules`. Why: 1 deploy, easy debug, fast to ship. Split to microservices in V3.
+2.  *Core Layers*
+    [Atlas UI Kit - React] 
+        ↓ REST/gRPC
+    [API Gateway + BFF] 
+        ↓ Events
+    [Atlas Core - Spring Boot] → [AI Agent Mesh]
+        ↓
+    [Multi-Asset Ledger] → [Event Bus - Kafka] → [Compliance Engine]
+        ↓
+    [Postgres + TimescaleDB] + [S3 for Docs]
+3.  *Key Principles*
+    - *Every API = Event + ai_metadata*: `POST /account` emits `AccountCreated.v1` with risk_score
+    - *Compliance in Code*: KYC state machine blocks API if not VERIFIED
+    - *Starter Kit*: `docker-compose up` → Core + DB + UI Kit + Postman in 10 min
+
+#### *C. GTM: `KE_NG_GCC_PITCHDECK_SUMMARY.md`*
+
+*TARGET: Mid-tier Banks $500M-$10B + Top Fintechs*
+
+*1. PRICING: Pay-as-you-grow. Kills T24*
+Setup: $50,000
+Platform: $0.03 per API call
+Transactions: 0.1% of txn value
+AI Agents: $5,000/month per agent
+No $2M license. No $10M PS.
+Example: 1M customers, 10M txns/mo = ~$120k/mo
+*2. 3 LIGHTHOUSE PLAYS*
+1.  *KE - Equity Bank*: "Launch AI Digital Loan in 30 days to beat Tala. Sidecar to T24"
+2.  *NG - Moniepoint*: "Launch Wallets-as-a-Service + USDT in 8 weeks. Replace 5 vendors"
+3.  *GCC - Al Rajhi Digital*: "Launch Islamic BNPL + Murabaha in 12 weeks. Shariah + AI built-in"
+
+*3. KILL SHEET*
+Competitor	Atlas Wins Because
+**T24**	18mo vs 12 weeks. $20M vs $120k/mo
+**Mambu**	No Crypto, No CIB, No AI. We have all 3
+**Crassula**	No T24 depth, No Compliance. We have both
+#### *D. COMPLIANCE: `COMPLIANCE_CORE.md`*
+
+*"Compliance is not a module. It's in every API"*
+
+1.  *KYC State Machine*  
+    Every `POST /account`, `POST /loan` checks `kyc_status`. States: `DRAFT, PENDING, VERIFIED, REJECTED, BLOCKED`. API fails if != VERIFIED.
+2.  *AML + Sanctions*  
+    Every transaction emits event → `AML Brain` screens real-time → `BLOCK` or `FLAG` before posting to GL
+3.  *Islamic + CBDC Ready*  
+    `product.yaml` has `shariah_compliant: true` flag. Separate profit calculation engine.  
+    `asset_type: CBDC` supported in GL from day 1.
+4.  *Audit*  
+    Every event is immutable. Full lineage for regulator. "Explainable AI" built-in.
+
+---
+
+### *WHAT HAPPENS NOW*
+
+You have the full strategy + execution plan. 
+
+*Next 2 actions:*
+1.  *I create the 4 files* in `atlas.local` so your team can start
+2.  *We pick 1 Lighthouse* and write the 30-day project plan for them
+
+Which Lighthouse do we target first?  
+`A. Equity KE` `B. Moniepoint NG` `C. Al Rajhi Digital KSA`
+
+Tell me and I’ll draft the 30-day `RUN-ALL-BATCHES.py` for them.

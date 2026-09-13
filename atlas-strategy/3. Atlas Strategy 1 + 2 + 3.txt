@@ -1,0 +1,83 @@
+Locked. *ATLAS STRATEGY v4.0 - FINAL*  
+This is the single source of truth. No more versions. From here we drill down.
+
+---
+
+### *ATLAS R17AMR*  
+*"The AI-Native Composable Banking Platform for Banks + Fintechs + Islamic"*  
+*T24 Depth + Vault Speed + Intellect AI + Mambu Scale + Crassula Crypto*
+
+#### *1. THE CORE INSIGHT*
+The market split into 3 and failed:
+1.  *Legacy*: T24, FLEXCUBE, FIS → Deep, Slow, Expensive 
+2.  *Cloud Cores*: Mambu, Thought Machine → Fast, Shallow, No AI
+3.  *Fintech Infra*: Crassula, Unit → Fast, Crypto, No Compliance Depth
+
+*Banks in KE, NG, ZA, GCC, ZW need all 5.*  
+Atlas builds all 5 in 1 platform.
+
+#### *2. THE 6 DNA STRANDS = ATLAS DIFFERENTIATION*
+#	DNA	Source	Atlas Implementation
+**1**	**DEPTH**	T24 + FLEXCUBE	**Inherit 40 Years**. Sidecar + Strangle. CIB, Trade, Multi-entity, Multi-currency GL
+**2**	**SPEED**	Mambu + Unit	**8-12 Week Go-Lives**. Zero PS. 1-command `RUN-ALL-BATCHES.py`
+**3**	**EVENT-DRIVEN**	Thought Machine Vault	**Everything is an Event**. Core for AI, Audit, Composability
+**4**	**AI-NATIVE**	Intellect + nCino	**AI is the OS**. Risk Brain, Ops Brain, CX Brain. Self-healing
+**5**	**ENGAGEMENT**	Backbase + Plaid	**Best UX + Open Banking**. 5000+ connectors. Journey builder
+**6**	**FINTECH SPEED**	Crassula	**Crypto + Embedded + Product-as-Code**. Multi-asset GL. Usage pricing
+#### *3. THE 3 STRATEGIC BETS - NON-NEGOTIABLE*
+
+1.  *BET 1: KEEP DEPTH, SELL SPEED*  
+    Don’t rip T24. Sidecar Atlas. Launch AI Loan in 30 days. Strangle capability by capability.
+2.  *BET 2: KILL PROFESSIONAL SERVICES*  
+    Productize consultants into code. Banks self-serve with `Atlas Starter Kit` + `product.yaml`.
+3.  *BET 3: AI + CRYPTO ARE NOT FEATURES*  
+    They are the OS. From `BATCH-01` every API has `event + ai_metadata`. From `BATCH-08` every GL entry supports `FIAT + CRYPTO + TOKEN`.
+
+#### *4. ATLAS ARCHITECTURE: "MODULAR MONOLITH → EVENT MESH"*
+*V1 2026*: 1 Spring Boot Core + Toggle Modules. Fast to ship, easy to debug. Crassula style.  
+*V2 2027*: Event Mesh. Every module emits events. AI agents listen. Vault style.  
+*V3 2028*: Full Microservices + Marketplace. Intellect style.
+
+#### *5. GO-TO-MARKET: WHERE WE WIN FIRST*
+Segment	Why Atlas Wins	Launch Product
+**Mid-tier Banks $500M-$10B**	T24 too expensive. Mambu too shallow	**Core + Lending + AI Risk**
+**Credit Unions**	Need Zero PS + Compliance in box	**Accounts + Cards + KYC**
+**Fintechs / Telcos**	Need Crypto + Embedded + Speed	**Wallets-as-a-Service + Cards**
+**Islamic Banks**	No one does Shariah + AI + Crypto	**Murabaha + AI + Stablecoins**
+**Geos**	KE, NG, ZA, GCC, ZW, SEA	**Pay-as-you-grow pricing**
+#### *6. 18-MONTH ROADMAP: R17AMR*
+Q	Theme	Ship
+**Q4 2026**	**Depth Parity**	T24 Core Parity. Multi-asset GL. `BATCH-01 to 05`
+**Q1 2027**	**Composable Launch**	20 Modules. `product.yaml`. Atlas Starter Kit
+**Q2 2027**	**AI OS Launch**	3 AI Agents GA. Risk, Ops, CX. Self-healing
+**Q3 2027**	**Fintech Launch**	Crypto Core. Embedded BaaS. Usage pricing
+**Q4 2027**	**Marketplace Launch**	10 Fintech Partners. 1-click KYC, Fraud, BNPL
+#### *7. SUCCESS METRICS 2028*
+1.  *100 Banks Live*
+2.  *80% Self-Serve* - No vendor PS after go-live
+3.  *< 12 weeks* - Time to first product
+4.  *#1 AI Core in EM* - 10M AI decisions/day
+
+*Positioning*:  
+*"Atlas: Bank at the speed of software, with the depth of 40 years, and the speed of a fintech."*
+
+---
+
+### *NEXT: DRILL DOWNS*
+Strategy is done. Now we execute. Pick 3 to start:
+
+*A. PRODUCT DRILL-DOWN*  
+`PHASE_MANIFEST_ATLAS.json` → Map 6 DNA strands to 50 batches. `BATCH-07 Product-as-Code`, `BATCH-08 Multi-Asset GL`
+
+*B. TECH DRILL-DOWN*  
+`ARCHITECTURE.md` → Modular Monolith v1. Event Schema. AI Agent contracts. Starter Kit repo structure
+
+*C. GTM DRILL-DOWN*  
+`PRICING.md` + `SALES_ONEPAGER.pdf` → Usage pricing model. Lighthouse bank pitch. Competitive kill sheets vs T24/Mambu/Crassula
+
+*D. COMPLIANCE DRILL-DOWN*  
+`COMPLIANCE_CORE.md` → KYC state machine in every API. AML, Shariah, CBDC rules
+
+Which 3 do you want me to draft first? 
+
+My vote: *A, B, C*. That gets us to a sellable V1 in 90 days.

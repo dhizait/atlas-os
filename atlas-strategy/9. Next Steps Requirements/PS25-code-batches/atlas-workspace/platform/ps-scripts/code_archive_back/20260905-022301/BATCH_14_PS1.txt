@@ -1,0 +1,136 @@
+"""
+ATLAS R01 BATCH 14 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS227-ATLAS-Mobile-Money.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS227 - ATLAS Payments & Channels
+BATCH: 05 - batch-05-payments-channels
+STATUS: STUB
+PURPOSE: Mobile Money integrations: EcoCash, OneMoney, etc
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS227-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS227] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS227 for Tenant $TenantId"
+Write-Log "[STUB] TODO: REST adapter for MNO APIs"
+Write-Log "[STUB] TODO: Handle callbacks and reconcile"
+Write-Log "[STUB] TODO: Publish to atlas.$TenantId.events: MM_CALLBACK"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS227. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS227"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS227-ATLAS-Mobile-Money.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS229-ATLAS-Switch-Adapter.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS229 - ATLAS Payments & Channels
+BATCH: 05 - batch-05-payments-channels
+STATUS: STUB
+PURPOSE: National Switch + Regional Switch adapters
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS229-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS229] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS229 for Tenant $TenantId"
+Write-Log "[STUB] TODO: ZIPS/ZimSwitch adapter"
+Write-Log "[STUB] TODO: SADC-RTGS adapter"
+Write-Log "[STUB] TODO: Message transformation ISO8583 <-> JSON"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS229. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS229"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS229-ATLAS-Switch-Adapter.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS231-ATLAS-ESB-Bridge.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS231 - ATLAS Integration & Migration
+BATCH: 06 - batch-06-integration-migration
+STATUS: STUB
+PURPOSE: Legacy ESB to Kafka bridge for events
+DEPENDS: PS208 Kafka
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS231-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS231] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS231 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Consume from Legacy ESB MQ"
+Write-Log "[STUB] TODO: Transform to CloudEvent with X-Tenant-ID: $TenantId"
+Write-Log "[STUB] TODO: Publish to atlas.$TenantId.events"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS231. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS231"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS231-ATLAS-ESB-Bridge.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS233-ATLAS-Bulk-Migrate.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS233 - ATLAS Integration & Migration
+BATCH: 06 - batch-06-integration-migration
+STATUS: STUB
+PURPOSE: Bulk data migration from Legacy Core to ATLAS
+MAPS TO: Old PS27.4
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS233-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS233] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS233 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Extract customers, accounts from Legacy DB"
+Write-Log "[STUB] TODO: Transform: Add tenant_id=$TenantId to all rows"
+Write-Log "[STUB] TODO: Load to Postgres with RLS enabled PS209"
+Write-Log "[STUB] TODO: Publish migration metrics to Kafka"
+if ($WhatIf) { Write-Log "WHATIF: Would migrate ~500k records for $TenantId" }
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS233. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS233"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS233-ATLAS-Bulk-Migrate.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS235-ATLAS-Data-Sync.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS235 - ATLAS Integration & Migration
+BATCH: 06 - batch-06-integration-migration
+STATUS: STUB
+PURPOSE: Continuous sync between Legacy and ATLAS during parallel run
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS235-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS235] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS235 for Tenant $TenantId"
+Write-Log "[STUB] TODO: CDC from Legacy DB"
+Write-Log "[STUB] TODO: Apply changes to ATLAS DB with tenant_id=$TenantId"
+Write-Log "[STUB] TODO: Conflict resolution rules"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS235. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS235"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS235-ATLAS-Data-Sync.ps1 ---
+

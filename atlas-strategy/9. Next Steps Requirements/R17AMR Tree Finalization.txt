@@ -1,0 +1,1712 @@
+
+R17AMR Tree Navigation shelves
+
+Let us revise docx_driver.py to add a folder structure similar to navigation structure as it
+traverses MS Word navigation. Focument slices should also be placed within the appropriate sub-folders
+within this new structure.
+
+The folder structore shall be placed in docs_extracts together with the current docx extracts
+We shall have two sub-folders within doc_extracts to separate the flat dump from the sructured one.
+We should do the same separation in doc_extracts_backup.
+
+Please see R17AMR Tree below and also the most current docx-lib scripts below.
+Let us use exactly these scripts below.
+
+I have also included README.md for recall.
+
+Next I will run bulk_run.bat to scan the whole R17AMR tree for which I have all docxs with navigation 
+for each tree node. From the slice documents in txt, fidelity docx and light docx formats we shall 
+obtain summaries from AI viz Meta for plain text, Copilot and ChatGPT for high fidelity.
+
+============================
+
+R17AMR_CODE_BATCH_docx-lib.txt
+
+
+R17AMR CODE BATCH: docx-lib - Core Engine
+Generated: 09/04/2026 23:17:37
+Root: C:\R17AMR
+
+
+FILE: \docx-lib\bulk_run.bat
+SIZE: 1233 bytes
+LAST MODIFIED: 08/29/2026 19:19:40
+
+@echo off
+setlocal EnableDelayedExpansion
+
+REM SYNOPSIS: Bulk run docx_driver NAV across multiple topics
+REM USAGE: bulk_run.bat [FILTER]
+REM NOW ONLY REQUIRES .docx. NO _tree.txt NEEDED
+
+set FILTER=%1
+set ROOT=%~dp0..\topics
+set RUN_COUNT=0
+set SKIP_COUNT=0
+
+echo ========================================
+echo R17AMR BULK RUNNER v1.6.0 NAV
+echo Root: %ROOT%
+if "%FILTER%"=="" (
+    echo Filter: ALL TOPICS
+) else (
+    echo Filter: *%FILTER%*
+)
+echo ========================================
+echo.
+
+for /d /r "%ROOT%" %%D in (*) do (
+    pushd "%%D" >nul 2>&1
+    set "HAS_DOCX=0"
+    if exist "*.docx" set HAS_DOCX=1
+    
+    set "MATCH=1"
+    if not "%FILTER%"=="" (
+        echo %%D | find /i "%FILTER%" >nul
+        if errorlevel 1 set MATCH=0
+    )
+
+    if !MATCH!==1 if !HAS_DOCX!==1 (
+        set /a RUN_COUNT+=1
+        echo [RUN %RUN_COUNT%] %%~nxD
+        call "%~dp0run.bat"
+        echo.
+    ) else if !MATCH!==1 (
+        set /a SKIP_COUNT+=1
+        echo [SKIP %SKIP_COUNT%] %%~nxD - Missing docx
+    )
+    popd >nul 2>&1
+)
+
+echo ========================================
+echo BULK RUN COMPLETE
+echo Processed: %RUN_COUNT% topics
+echo Skipped:   %SKIP_COUNT% topics
+echo ========================================
+endlocal
+
+FILE: \docx-lib\docx_driver.py
+SIZE: 7694 bytes
+LAST MODIFIED: 08/29/2026 22:53:46
+
+"""
+SYNOPSIS: R17AMR DOCX EXTRACTOR v1.6.2 NAV CENTRAL - BLOCK COUNTING
+Purpose: Central driver. NAV ONLY. Uses Word Outline + BLOCK indexes. Writes to ./doc_extracts/
+Fix: Reads start_block/end_block from NAV v1.4.0. Passes to slicer v1.6.4
+"""
+import os
+import sys
+import json
+import shutil
+import re
+import zipfile
+from datetime import datetime
+
+LIB_PATH = os.path.dirname(__file__)
+sys.path.insert(0, LIB_PATH)
+
+from docx_nav_extractor import extract_nav_pane
+from docx_slice_writer import save_slice_to_docx
+from docx import Document
+
+def sanitize_filename(name):
+    return "".join(c for c in name if c.isalnum() or c in (' ', '.', '_', '-')).rstrip()
+
+def docx_to_text(docx_path):
+    try:
+        doc = Document(docx_path)
+        lines = []
+        for p in doc.paragraphs:
+            t = p.text.strip()
+            if t:
+                lines.append(t)
+        for tbl in doc.tables:
+            lines.append(f"[TABLE {len(tbl.rows)}x{len(tbl.columns)}]")
+        return "\n\n".join(lines)
+    except Exception as e:
+        return f"[ERROR READING DOCX: {e}]"
+
+def create_light_docx(source_path, target_path):
+    shutil.copy(source_path, target_path)
+    tmp_path = target_path + ".tmp"
+    with zipfile.ZipFile(target_path, 'r') as zin:
+        with zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.namelist():
+                if not item.startswith('word/media/'):
+                    zout.writestr(item, zin.read(item))
+    os.replace(tmp_path, target_path)
+
+def load_granularity(cwd):
+    local_path = os.path.join(cwd, "granularity.json")
+    central_path = os.path.join(LIB_PATH, "granularity.json")
+    if os.path.exists(local_path):
+        config_path = local_path; source = "LOCAL"
+    elif os.path.exists(central_path):
+        config_path = central_path; source = "CENTRAL"
+    else:
+        return {"default": {"keep_last_n_backups": 3, "export_light_docx": False, "export_text": False}}, "DEFAULT"
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    print(f"Loaded granularity.json from {source}: {config_path}")
+    return config, source
+
+def backup_and_clear_extracts(cwd, log):
+    extract_dir = os.path.join(cwd, "doc_extracts")
+    backup_root = os.path.join(cwd, "doc_extracts_backup")
+    if not os.path.exists(extract_dir):
+        log.append("No existing doc_extracts found. Skipping backup.")
+        os.makedirs(extract_dir, exist_ok=True)
+        return
+    if not os.listdir(extract_dir):
+        log.append("Existing doc_extracts is empty. Skipping backup.")
+        return
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = os.path.join(backup_root, timestamp)
+    os.makedirs(backup_root, exist_ok=True)
+    try:
+        shutil.move(extract_dir, backup_dir)
+        log.append(f"BACKUP CREATED: Moved existing doc_extracts to doc_extracts_backup\\{timestamp}")
+    except PermissionError:
+        log.append("WARN: Could not backup - files in use. DELETING doc_extracts instead")
+        shutil.rmtree(extract_dir, ignore_errors=True)
+    os.makedirs(extract_dir, exist_ok=True)
+    log.append("Created fresh doc_extracts folder")
+
+def prune_old_backups(cwd, log, keep_n):
+    if keep_n <= 0:
+        log.append("Backup pruning disabled: keep_last_n_backups=0")
+        return
+    backup_root = os.path.join(cwd, "doc_extracts_backup")
+    if not os.path.exists(backup_root): return
+    backups = [d for d in os.listdir(backup_root) if os.path.isdir(os.path.join(backup_root, d))]
+    backups.sort()
+    to_delete = backups[:-keep_n] if len(backups) > keep_n else []
+    for old in to_delete:
+        shutil.rmtree(os.path.join(backup_root, old))
+        log.append(f"PRUNED OLD BACKUP: {old}")
+    if to_delete:
+        log.append(f"Kept last {keep_n} backups. Pruned {len(to_delete)}")
+    else:
+        log.append(f"Backup count {len(backups)}. Within keep limit of {keep_n}")
+
+def main():
+    start_time = datetime.now()
+    cwd = os.getcwd()
+    print(f"R17AMR Extractor v1.6.2-Nav starting in: {cwd}")
+
+    base_name = os.path.basename(cwd)
+    safe_base = re.sub(r'^[0-9\. ]+', '', base_name).strip().replace(' ', '_')
+
+    MASTER_DOCX = os.path.join(cwd, f"{safe_base}.docx")
+    DOC_NAME = safe_base
+
+    if not os.path.exists(MASTER_DOCX):
+        raise FileNotFoundError(f"Need: {safe_base}.docx in this folder.")
+
+    EXTRACT_DIR = os.path.join(cwd, "doc_extracts")
+    LOG_DIR = os.path.join(cwd, "logs")
+    os.makedirs(LOG_DIR, exist_ok=True)
+    log_path = os.path.join(LOG_DIR, f"run_{start_time.strftime('%Y%m%d_%H%M%S')}.log")
+    log = [f"BUILD START: {start_time}"]
+    log.append(f"MODE: NAV BLOCKS. Using Word Outline Levels.")
+
+    granularity, source = load_granularity(cwd)
+    doc_config = granularity.get(DOC_NAME, granularity.get("default", {}))
+    keep_n = doc_config.get("keep_last_n_backups", 3)
+    export_light = doc_config.get("export_light_docx", False)
+    export_text = doc_config.get("export_text", False)
+    log.append(f"Config Source: {source}. keep_last_n_backups={keep_n}, export_light_docx={export_light}, export_text={export_text}")
+
+    backup_and_clear_extracts(cwd, log)
+    prune_old_backups(cwd, log, keep_n)
+
+    nav_data, total_blocks = extract_nav_pane(MASTER_DOCX) # returns blocks now
+    
+    # FIX: Use BLOCK keys from NAV v1.4.0
+    join_plan = {i: {"id": n['number'], "node_name": n['title'], "level": n['level'], "parent_id": n['parent_number']} for i,n in enumerate(nav_data)}
+    toc_map = {i: {"start_block": n['start_block'], "end_block": n['end_block'], "title": n['title'], "number": n['number'], "path": n['path']} for i,n in enumerate(nav_data)}
+    log.append(f"Parsed {len(nav_data)} Outline headings. Total blocks: {total_blocks}")
+
+    all_index_data = []
+    for nav_idx, direct_node in join_plan.items():
+        nav_data_node = toc_map[nav_idx]
+        safe_name = sanitize_filename(f"{direct_node['id']} {direct_node['node_name']}")
+        full_filename = f"{safe_name}.docx"
+        full_path = save_slice_to_docx(MASTER_DOCX, nav_data_node, EXTRACT_DIR, filename=full_filename)
+        if full_path:
+            log.append(f"Extracted: {full_filename}")
+            text_file = None; light_file = None
+            if export_light:
+                light_filename = f"{safe_name}_light.docx"
+                light_path = os.path.join(EXTRACT_DIR, light_filename)
+                create_light_docx(full_path, light_path)
+                light_file = light_filename
+            if export_text:
+                text_content = docx_to_text(full_path)
+                txt_filename = f"{safe_name}.txt"
+                txt_path = os.path.join(EXTRACT_DIR, txt_filename)
+                with open(txt_path, 'w', encoding='utf-8') as f: f.write(text_content)
+                text_file = txt_filename
+            # FIX: Log blocks not paras
+            all_index_data.append({"id": direct_node['id'], "level": direct_node['level'], "parent_id": direct_node['parent_id'],
+                                   "title": direct_node['node_name'], "file_full": full_filename, "file_light": light_file, "file_text": text_file,
+                                   "start_block": nav_data_node['start_block'], "end_block": nav_data_node['end_block']})
+
+    with open(os.path.join(EXTRACT_DIR, "_index.json"), 'w', encoding='utf-8') as f:
+        json.dump({"doc_name": DOC_NAME, "mode": "NAV_BLOCKS", "sections": all_index_data}, f, indent=2, ensure_ascii=False)
+
+    log.append(f"BUILD COMPLETE. Extracted {len(all_index_data)} files to doc_extracts")
+    with open(log_path, 'w', encoding='utf-8') as f: f.write("\n".join(log))
+    print("\n".join(log))
+
+if __name__ == "__main__": main()
+
+FILE: \docx-lib\docx_nav_extractor.py
+SIZE: 3717 bytes
+LAST MODIFIED: 08/29/2026 22:43:21
+
+"""
+SYNOPSIS: NAVIGATION PANE EXTRACTOR v1.4.0 - BLOCK COUNTING SOURCE OF TRUTH
+Purpose: Count ALL blocks p+tbl+sectPr. CSV columns: START_BLOCK/END_BLOCK
+Fixes: PATH hierarchy, DEDUPE, EMPTY PARENTS, TABLE counting
+"""
+import zipfile
+import xml.etree.ElementTree as ET
+import sys, re, csv, json
+
+NS = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+QN = lambda tag: f"{{{NS['w']}}}{tag}"
+
+def get_text_from_para(p):
+    texts = p.findall('.//w:t', NS)
+    return ''.join([t.text for t in texts if t.text]).strip()
+
+def get_outline_level(p):
+    pPr = p.find('w:pPr', NS)
+    if pPr is None: return None
+    outline = pPr.find('w:outlineLvl', NS)
+    if outline is not None:
+        val = int(outline.get(QN('val')))
+        return val + 1
+    return None
+
+def extract_nav_pane(docx_path):
+    nav_raw = []
+    counters = [0] * 10
+    block_index = 0
+    path_stack = ["ROOT"]
+
+    with zipfile.ZipFile(docx_path) as z:
+        xml_content = z.read('word/document.xml')
+
+    root = ET.fromstring(xml_content)
+    body = root.find('w:body', NS)
+    all_blocks = list(body)
+    total_blocks = len(all_blocks)
+
+    for block in all_blocks:
+        level = None
+        text = ""
+
+        if block.tag == QN('p'):
+            level = get_outline_level(block)
+            text = get_text_from_para(block)
+
+        if level is None or not text:
+            block_index += 1
+            continue
+
+        text = re.sub(r'\s+\d+$', '', text)
+        counters[level] += 1
+        for j in range(level + 1, 10): counters[j] = 0
+        number_parts = [str(counters[k]) for k in range(1, level + 1) if counters[k] > 0]
+        unique_number = ".".join(number_parts)
+        parent_number = ".".join(number_parts[:-1]) if len(number_parts) > 1 else ""
+
+        # FIX: PATH HIERARCHY
+        path_stack = path_stack[:level-1]
+        path_stack.append(text)
+        full_path = " > ".join(path_stack[1:])
+
+        nav_raw.append({
+            "heading_block": block_index,
+            "level": level,
+            "number": unique_number,
+            "parent_number": parent_number,
+            "title": text,
+            "path": full_path
+        })
+        block_index += 1
+
+    # FIX: DEDUPE. Keep first occurrence of each number
+    nav = []
+    seen_numbers = set()
+    for item in nav_raw:
+        if item['number'] not in seen_numbers:
+            nav.append(item)
+            seen_numbers.add(item['number'])
+
+    # FIX: Use BLOCKS for start/end. Empty parents now get 1 block
+    for i, item in enumerate(nav):
+        item['index'] = i + 1
+        item['start_block'] = item['heading_block']
+        if i + 1 < len(nav):
+            item['end_block'] = nav[i+1]['heading_block']
+        else:
+            item['end_block'] = total_blocks
+
+    out_csv = docx_path.replace(".docx", "_NAV_PANE.csv")
+    with open(out_csv, "w", encoding="utf-8", newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["INDEX", "NUMBER", "PARENT_NUMBER", "LEVEL", "HEADING_BLOCK", "START_BLOCK", "END_BLOCK", "TITLE", "PATH"])
+        for item in nav:
+            writer.writerow([item['index'], item['number'], item['parent_number'], item['level'], item['heading_block'], item['start_block'], item['end_block'], item['title'], item['path']])
+
+    out_json = docx_path.replace(".docx", "_NAV_INDEX.json")
+    with open(out_json, "w", encoding="utf-8") as f:
+        json.dump(nav, f, indent=2, ensure_ascii=False)
+
+    print(f"[NAV-MODE] CSV: {out_csv}")
+    print(f"[NAV-MODE] JSON: {out_json}")
+    print(f"[NAV-MODE] Found {len(nav)} headings. Total blocks in doc: {total_blocks}")
+    return nav, total_blocks
+
+if __name__ == "__main__":
+    docx_path = sys.argv[1]
+    extract_nav_pane(docx_path)
+
+FILE: \docx-lib\docx_slice_writer.py
+SIZE: 2216 bytes
+LAST MODIFIED: 08/29/2026 22:43:22
+
+"""
+SYNOPSIS: DOCX SLICE WRITER v1.6.4
+Purpose: Extract by cloning body XML using BLOCK indexes from NAV
+Fixes: CT_Body bug + 1-block sections + BLOCK counting to match NAV
+"""
+import os, zipfile, shutil, tempfile
+from docx import Document
+from docx.oxml.ns import qn
+from copy import deepcopy
+
+QN = qn # alias
+
+def save_slice_to_docx(master_docx_path, toc_node, output_dir, filename=None):
+    # READ FROM NAV: use blocks now
+    start_b = toc_node['start_block']
+    end_b = toc_node['end_block']
+
+    if end_b < start_b:
+        print(f"WARN: Skipping '{toc_node['title']}' - invalid range {start_b} to {end_b}")
+        return None
+    if end_b == start_b:
+        end_b = start_b + 1
+
+    safe_title = toc_node['title'].replace("/","-").replace(":","-").replace("\\","-")[:40]
+    filename = f"{toc_node['number']}_{safe_title}.docx"
+    filename = filename.replace("/", "-").replace(":", "-").replace("\\", "-")
+    out_path = os.path.join(output_dir, filename)
+
+    tmp_dir = tempfile.mkdtemp()
+    tmp_docx = os.path.join(tmp_dir, "temp.docx")
+    shutil.copy(master_docx_path, tmp_docx)
+
+    with zipfile.ZipFile(tmp_docx, 'r') as zin:
+        with zipfile.ZipFile(out_path, 'w') as zout:
+            for item in zin.namelist():
+                if item!= 'word/document.xml':
+                    zout.writestr(item, zin.read(item))
+                else:
+                    doc = Document(tmp_docx)
+                    new_doc = Document()
+                    new_body = new_doc.element.body
+                    new_body.clear()
+
+                    # Add PATH header
+                    p = new_doc.add_paragraph()
+                    p.add_run(f"PATH: {toc_node['path']}").bold = True
+
+                    block_idx = 0
+                    for element in doc.element.body:
+                        # Count ALL blocks: p, tbl, sectPr
+                        if element.tag in [QN('w:p'), QN('w:tbl'), QN('w:sectPr')]:
+                            if start_b <= block_idx < end_b:
+                                new_body.append(deepcopy(element))
+                            block_idx += 1
+
+                    zout.writestr(item, new_doc.element.xml.encode())
+
+    shutil.rmtree(tmp_dir)
+    return out_path
+
+FILE: \docx-lib\docx_toc_extractor.py
+SIZE: 3142 bytes
+LAST MODIFIED: 08/28/2026 03:23:05
+
+"""
+SYNOPSIS: DOCX TOC SLICER v1.5.18
+Purpose: Parses DOCX and maps each TOC entry to paragraph start/end ranges using bookmarks
+         v1.5.18 FIX: Handles duplicate TOC titles/bookmarks by tracking occurrence count
+"""
+import re
+from docx import Document
+from docx.oxml.ns import qn
+from collections import defaultdict
+
+def get_toc_slices(docx_path):
+    doc = Document(docx_path)
+    toc_entries = []
+    bookmark_counts = defaultdict(int) # v1.5.18 FIX: track duplicates
+
+    # Pass 1: Get TOC entries and assign them a unique occurrence ID
+    for i, p in enumerate(doc.paragraphs):
+        for run in p._p.iter():
+            if run.tag == qn('w:hyperlink'):
+                anchor = run.get(qn('w:anchor'))
+                if anchor and anchor.startswith('_Toc'):
+                    bookmark_counts[anchor] += 1
+                    unique_anchor = f"{anchor}__{bookmark_counts[anchor]}" # e.g _Toc123__1, _Toc123__2
+
+                    # Clean title: remove page numbers and tabs
+                    title = re.sub(r'\s+\d+$', '', p.text).strip()
+                    title = re.sub(r'\t+', ' ', title).strip()
+                    if title:
+                        toc_entries.append({
+                            "toc_para_index": i,
+                            "title": title,
+                            "bookmark": anchor,
+                            "unique_bookmark": unique_anchor,
+                            "occurrence": bookmark_counts[anchor]
+                        })
+                    break
+
+    # Pass 2: Build map of ALL bookmarkStart occurrences in the document
+    bookmark_to_paras = defaultdict(list)
+    for j, p in enumerate(doc.paragraphs):
+        for b in p._p.iter():
+            if b.tag == qn('w:bookmarkStart'):
+                bname = b.get(qn('w:name'))
+                if bname and bname.startswith('_Toc'):
+                    bookmark_to_paras[bname].append(j)
+
+    print(f"DEBUG TOC: Found {len(toc_entries)} TOC entries")
+    dom = []
+    for i, entry in enumerate(toc_entries):
+        anchor = entry['bookmark']
+        occ = entry['occurrence'] - 1 # 0-based index
+
+        # Get the correct occurrence of the start bookmark
+        para_list = bookmark_to_paras.get(anchor, [entry['toc_para_index']])
+        start_para = para_list[occ] if occ < len(para_list) else para_list[-1]
+
+        # Get the correct occurrence of the END bookmark = next TOC entry
+        if i + 1 < len(toc_entries):
+            next_anchor = toc_entries[i+1]['bookmark']
+            next_occ = toc_entries[i+1]['occurrence'] - 1
+            next_para_list = bookmark_to_paras.get(next_anchor, [len(doc.paragraphs)])
+            end_para = next_para_list[next_occ] if next_occ < len(next_para_list) else next_para_list[-1]
+        else:
+            end_para = len(doc.paragraphs)
+
+        print(f"DEBUG: [{i}] '{entry['title'][:40]}' start={start_para} end={end_para} len={end_para-start_para} bm={anchor}#{entry['occurrence']}")
+        dom.append({
+            "toc_idx": i,
+            "node_name": entry['title'],
+            "start_para": start_para,
+            "end_para": end_para
+        })
+    return dom
+
+FILE: \docx-lib\granularity.json
+SIZE: 130 bytes
+LAST MODIFIED: 08/27/2026 19:25:01
+
+{
+  "default": {
+    "max_level": 99,
+    "keep_last_n_backups": 3,
+    "export_light_docx": false,
+    "export_text": false
+  }
+}
+
+FILE: \docx-lib\make_fixtures.py
+SIZE: 4634 bytes
+LAST MODIFIED: 08/26/2026 18:41:04
+
+"""
+SYNOPSIS: FIXTURE GENERATOR FOR R17AMR TEST SUITE [AUTO TOC]
+Purpose: Auto-generates TestDoc.docx with a live TOC and TestDoc_tree.txt in test_fixtures/
+Method: Uses python-docx to build doc, then win32com to open Word and update TOC fields.
+Run: python make_fixtures.py from inside C:\R17AMR\docx-lib\
+Deps: pip install python-docx pillow pywin32
+Output: test_fixtures/TestDoc.docx and test_fixtures/TestDoc_tree.txt - Ready for pytest
+"""
+import os
+import time
+from docx import Document
+from docx.shared import Inches
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
+
+LIB_DIR = os.path.dirname(os.path.abspath(__file__))
+FIXTURES = os.path.join(LIB_DIR, "test_fixtures")
+os.makedirs(FIXTURES, exist_ok=True)
+
+DOCX_PATH = os.path.join(FIXTURES, "TestDoc.docx")
+TREE_PATH = os.path.join(FIXTURES, "TestDoc_tree.txt")
+
+def add_toc_placeholder(doc):
+    """Adds a real TOC field code. win32com will update it"""
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run()
+    fldChar = parse_xml(r'<w:fldChar {} w:fldCharType="begin"/>'.format(nsdecls('w')))
+    instrText = parse_xml(r'<w:instrText {}>TOC \o "1-3" \h \z \u</w:instrText>'.format(nsdecls('w')))
+    fldChar2 = parse_xml(r'<w:fldChar {} w:fldCharType="separate"/>'.format(nsdecls('w')))
+    fldChar3 = parse_xml(r'<w:fldChar {} w:fldCharType="end"/>'.format(nsdecls('w')))
+    run._r.append(fldChar)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+    run._r.append(fldChar3)
+    doc.add_page_break()
+
+def update_toc_with_word(docx_path):
+    """Opens docx in Word and updates all fields. Requires MS Word installed"""
+    try:
+        import win32com.client
+    except ImportError:
+        print("ERROR: pywin32 not installed. Run: pip install pywin32")
+        return False
+    
+    print("Opening Word to update TOC...")
+    word = win32com.client.Dispatch("Word.Application")
+    word.Visible = False # Set True to watch it
+    doc = word.Documents.Open(os.path.abspath(docx_path))
+    
+    # Update all fields in the document. This updates the TOC
+    doc.Fields.Update()
+    time.sleep(1) # Give Word a second
+    
+    doc.Save()
+    doc.Close()
+    word.Quit()
+    print("TOC Updated Successfully")
+    return True
+
+def main():
+    doc = Document()
+    
+    # PAGE 1
+    doc.add_heading('Introduction', level=1)
+    doc.add_paragraph('This is the intro paragraph. This section introduces the R17AMR Wiki.')
+    
+    doc.add_heading('1.1 Scope', level=2)
+    doc.add_paragraph('This covers the scope of the document.')
+    
+    doc.add_heading('1.1.5 In Scope Items', level=3)
+    doc.add_paragraph('Item A\nItem B\nItem C')
+    
+    doc.add_heading('1.2 Out of Scope', level=2)
+    doc.add_paragraph('This is explicitly out of scope.')
+    
+    doc.add_page_break()
+    
+    # PAGE 2 - MEDIA TEST
+    doc.add_heading('2 Architecture', level=1)
+    doc.add_paragraph('Architecture overview. This section contains a table and image.')
+    
+    table = doc.add_table(rows=2, cols=2)
+    table.style = 'Table Grid'
+    table.cell(0,0).text = 'Component'; table.cell(0,1).text = 'Type'
+    table.cell(1,0).text = 'Router'; table.cell(1,1).text = 'Core'
+    
+    # Add image for media test
+    img_path = os.path.join(FIXTURES, "dummy.png")
+    from PIL import Image, ImageDraw
+    img = Image.new('RGB', (100, 50), color = 'blue')
+    d = ImageDraw.Draw(img)
+    d.text((10,10), "DIAGRAM", fill=(255,255,0))
+    img.save(img_path)
+    doc.add_picture(img_path, width=Inches(2.0))
+    
+    doc.add_heading('2.1 Diagrams', level=2)
+    doc.add_paragraph('See diagram above.')
+    
+    doc.add_page_break()
+    
+    # PAGE 3
+    doc.add_heading('3 Security', level=1)
+    doc.add_paragraph('Security text for this section.')
+    
+    doc.add_heading('3.1 Policy', level=2)
+    doc.add_paragraph('Policy text for this section.')
+    
+    # Insert TOC at the very top
+    doc._body._element.insert(0, doc.add_paragraph()._p)
+    add_toc_placeholder(doc)
+    
+    doc.save(DOCX_PATH)
+    print(f"CREATED: {DOCX_PATH}")
+
+    # Auto-update TOC
+    if not update_toc_with_word(DOCX_PATH):
+        print("WARNING: Could not auto-update TOC. Please open in Word and update manually.")
+
+    # Write matching tree.txt
+    tree_content = """R17AMR_Wiki
++--- 1 Introduction
+|    +--- 1.1 Scope
+|    |    +--- 1.1.5 In Scope Items
+|    +--- 1.2 Out of Scope
++--- 2 Architecture
+|    +--- 2.1 Diagrams
++--- 3 Security
+     +--- 3.1 Policy
+"""
+    with open(TREE_PATH, 'w', encoding='utf-8') as f:
+        f.write(tree_content)
+    print(f"CREATED: {TREE_PATH}")
+    print("\nDONE. Run: pytest test_suite.py -v")
+
+if __name__ == "__main__":
+    main()
+
+FILE: \docx-lib\parse_tree_txt.py
+SIZE: 1022 bytes
+LAST MODIFIED: 08/26/2026 18:09:02
+
+"""
+SYNOPSIS: TREE.TXT PARSER
+Purpose: Converts R17AMR_Wiki_tree.txt into a structured JSON tree.
+Method: Parses indented "+--- 1.1.5 Name" lines to extract id, name, level, and parent_id.
+Output: List of node dicts for the driver to build folder hierarchy.
+"""
+import re
+
+def parse_tree_file(tree_path):
+    nodes = []
+    stack = []
+    with open(tree_path, 'r', encoding='utf-8', errors='ignore') as f:
+        for line in f:
+            line = line.rstrip()
+            if '---' not in line or '.bat' in line: continue
+
+            level = (len(line) - len(line.lstrip())) // 4 + 1
+            match = re.search(r'---\s*([\d\.]+)\s*(.*)', line)
+            if not match: continue
+            node_id = match.group(1).strip()
+            name = match.group(2).strip()
+
+            while len(stack) >= level: stack.pop()
+            parent_id = stack[-1] if stack else None
+            stack.append(node_id)
+            nodes.append({"id": node_id, "name": name, "level": level, "parent_id": parent_id})
+    return nodes
+
+FILE: \docx-lib\run.bat
+SIZE: 521 bytes
+LAST MODIFIED: 08/27/2026 09:54:07
+
+@echo off
+setlocal
+set LIB_DIR=%~dp0
+
+if "%1"=="--test" goto TEST
+if "%1"=="-t" goto TEST
+if "%1"=="--regen-fixtures" goto REGEN
+if "%1"=="-r" goto REGEN
+
+:BUILD
+echo [BUILD] Running docx_driver.py in current folder
+cd /d "%CD%"
+python "%LIB_DIR%docx_driver.py"
+goto END
+
+:TEST
+echo [TEST] Running Unit + Integration Tests
+cd /d "%LIB_DIR%.."
+pytest tests\test_unit.py -v
+pytest tests\test_integration.py -v
+goto END
+
+:REGEN
+echo [REGEN] Rebuilding test fixtures
+python "%LIB_DIR%make_fixtures.py"
+goto END
+
+:END
+endlocal
+
+FILE: \docx-lib\tree_joiner.py
+SIZE: 3530 bytes
+LAST MODIFIED: 08/27/2026 22:47:20
+
+"""
+SYNOPSIS: TREE JOINER v1.5.12
+Purpose: Join tree.txt nodes to TOC entries with 3 state marking: EXTRACTED, COVERED, ORPHAN
+         Handles UTF-16 and UTF-8 input
+Deps: re
+"""
+import re
+
+def parse_tree_file(tree_path, encoding='utf-8'):
+    """Parse tree.txt to list of nodes with id, name, level, parent_id, original_line"""
+    nodes = []
+    stack = [] # stack of node_ids by level
+    with open(tree_path, 'r', encoding=encoding, errors='ignore') as f:
+        for line in f:
+            raw_line = line.rstrip('\n')
+            if '---' not in raw_line or '.bat' in raw_line:
+                continue
+
+            # Level from indentation. 4 spaces = 1 level
+            level = (len(raw_line) - len(raw_line.lstrip())) // 4 + 1
+
+            match = re.search(r'---\s*([\d\.]+)\s*(.*)', raw_line)
+            if not match:
+                continue
+            node_id = match.group(1).strip()
+            name = match.group(2).strip()
+
+            # Maintain parent stack
+            while len(stack) >= level:
+                stack.pop()
+            parent_id = stack[-1] if stack else None
+            stack.append(node_id)
+
+            nodes.append({
+                "id": node_id,
+                "node_name": name,
+                "level": level,
+                "parent_id": parent_id,
+                "toc_idx": len(nodes), # TOC order assumed to match tree order
+                "original_line": raw_line
+            })
+    return nodes
+
+def find_parent_with_toc(node, toc_map, node_map):
+    """Walk up parent_id until we find a node that has a TOC entry"""
+    current = node
+    while current:
+        if current['toc_idx'] in toc_map:
+            return current
+        if not current['parent_id']:
+            return None
+        current = node_map.get(current['parent_id'])
+    return None
+
+def join_tree_to_toc(tree_nodes, toc_map):
+    """
+    Core logic for 3-state marking
+    """
+    node_map = {n['id']: n for n in tree_nodes}
+    join_plan = {} # toc_idx -> node
+    extracted_ids = []
+    covered_ids = []
+    orphan_ids = []
+
+    # Pass 1: Identify all EXTRACTED nodes. These have direct TOC match
+    for node in tree_nodes:
+        if node['toc_idx'] in toc_map:
+            join_plan[node['toc_idx']] = node
+            extracted_ids.append(node['id'])
+
+    extracted_toc_idxs = set(join_plan.keys())
+
+    # Pass 2: For nodes without direct TOC, check if parent was extracted
+    for node in tree_nodes:
+        if node['id'] in extracted_ids:
+            continue # already handled
+
+        parent = find_parent_with_toc(node, toc_map, node_map)
+        if parent and parent['toc_idx'] in extracted_toc_idxs:
+            # Scenario 1: Covered by parent
+            covered_ids.append(node['id'])
+        else:
+            # Scenario 2: True orphan
+            orphan_ids.append(node['id'])
+
+    # Pass 3: Build marked tree for topic_tree.log
+    marked_tree_lines = []
+    for node in tree_nodes:
+        line = node['original_line']
+        if node['id'] in extracted_ids:
+            line = re.sub(r'---\s*' + re.escape(node['id']), f'--- [EXTRACTED] {node["id"]}', line, count=1)
+        elif node['id'] in covered_ids:
+            line = re.sub(r'---\s*' + re.escape(node['id']), f'--- [COVERED] {node["id"]}', line, count=1)
+        elif node['id'] in orphan_ids:
+            line = re.sub(r'---\s*' + re.escape(node['id']), f'--- [ORPHAN] {node["id"]}', line, count=1)
+        marked_tree_lines.append(line)
+
+    return join_plan, extracted_ids, covered_ids, orphan_ids, marked_tree_lines
+
+============================
+
+README.md
+
+###  R17AMR Wiki DOCX TOC Extractor - v1.5.6
+
+This toolkit extracts sections from any structured R17AMR Wiki DOCX based on its TOC and Tree.txt.
+
+Each TOC section becomes a standalone `.docx` named `id Title.docx` and is dumped flat into `./doc_extracts/` for direct 1-to-1 mapping to your Wiki tree. 
+Before each run, the previous `doc_extracts` is time-stamped and backed up to `./doc_extracts_backup/`. Includes 1 master `_index.json` for AI/RAG ingestion.
+
+#### Core Principle: Code Central, Config Local, Safe Runs
+1.  **Code Central**: All Python libraries, `docx_driver.py`, `run.bat`, `bulk_run.bat` live once in `C:\R17AMR\docx-lib\`
+2.  **Config Fallback**: `granularity.json` is optional per topic. Falls back to central `docx-lib\granularity.json`
+3.  **Data Local**: `.docx`, `.tree.txt` live per topic folder
+4.  **Output**: All extracts go to `./doc_extracts/`. Old extracts are auto-backed up.
+5.  **Safety**: Auto-prune keeps only the last N backups to prevent disk bloat.
+
+Location: `C:\R17AMR\`
+
+Run from any topic directory. Requires: `python-docx`, `docxcompose`, `pytest`, `pywin32`
+
+---
+
+## Folder Structure
+C:\R17AMR\
++---docx-lib\                          <-- CODE CENTRAL. DO NOT COPY
+docx_driver.py               <-- MAIN ENTRY POINT
+run.bat                      <-- CENTRAL LAUNCHER: Single Topic
+bulk_run.bat                 <-- BULK LAUNCHER: Multiple Topics
+granularity.json             <-- CENTRAL DEFAULT CONFIG
+docx_toc_extractor.py
+docx_slice_writer.py
+parse_tree_txt.py
+make_fixtures.py
++---ps-scripts\                        <-- DEVELOPER TOOLS. POWERSHELL
+R17AMR-Collect-Code-Batches.ps1    <-- CODE INSPECTION / AI INGESTION
++---code-batches\              <-- Fresh output. Wiped each run
++---code-batches-backup\       <-- Timestamped backups
++---tests\                             <-- ALL TESTS
++---deprecated\              <-- Old unit tests
+test_unit.py
+test_integration.py
++---test_fixtures\
++---topics\
+    +---2. User Guides\
+        +---2.12 Enterprise Framework\
+            +---2.12.1 Connectivity Framework\  <-- TOPIC: DATA ONLY
+Connectivity_Framework.docx
+Connectivity_Framework_tree.txt
+granularity.json       <-- OPTIONAL OVERRIDE
++---doc_extracts\          <-- Generated. Fresh every run
++---doc_extracts_backup\   <-- Generated. Time-stamped backups
++---logs\
+
+---
+
+## SETUP: Add to PATH [RECOMMENDED]
+To run `run.bat` and `bulk_run.bat` from any folder without typing `..\..\..\docx-lib\`
+
+**Step 1**: Press `Win + R` -> `sysdm.cpl` -> `Advanced` -> `Environment Variables`  
+**Step 2**: Under `System variables`, select `Path` -> `Edit` -> `New`  
+**Step 3**: Add: `C:\R17AMR\docx-lib`  
+**Step 4**: Restart PowerShell/CMD
+
+---
+
+## HOW TO RUN
+
+### 1. SINGLE TOPIC RUN
+```powershell
+cd "C:\R17AMR\topics\2. User Guides\2.12 Enterprise Framework\2.12.1 Connectivity Framework"
+run.bat
+Other: `run.bat --test` | `run.bat --regen-fixtures`
+
+### 2. BULK TOPIC RUN
+cd C:\R17AMR
+bulk_run.bat              # ALL topics
+bulk_run.bat 2.12         # Filter by "2.12"
+bulk_run.bat "Enterprise" # Filter by name
+### 3. TESTING
+cd C:\R17AMR
+pytest tests\test_unit.py -v
+pytest tests\test_integration.py -v
+---
+
+## DEVELOPER TOOLS: `ps-scripts\`
+
+### R17AMR-Collect-Code-Batches.ps1 [v1.5.6]
+Collects all code into single `.txt` batch files for code review, AI ingestion, or backup. Auto-backups old batches before cleanup.
+
+*Location*: `C:\R17AMR\ps-scripts\`
+
+#### Usage
+Command	Output
+`.\R17AMR-Collect-Code-Batches.ps1`	`docx-lib` + `tests` only
+`.\R17AMR-Collect-Code-Batches.ps1 -TopicPath "2.12.1 Connectivity Framework"`	Core + Tests + 1 Topic
+`.\R17AMR-Collect-Code-Batches.ps1 -TopicPath "ALL"`	Core + Tests + ALL Topics
+#### Parameters
+Parameter	Description
+`-TopicPath "path"`	Relative to `C:\R17AMR\topics\`. Use "ALL" to scan all topics with `.docx + _tree.txt`
+`-KeepLastN 5`	Number of backups to keep in `code-batches-backup\`. Default 5
+#### Output
+ps-scripts\
++---code-batches\
+|   R17AMR_CODE_BATCH_docx-lib.txt
+|   R17AMR_CODE_BATCH_tests.txt
+|   R17AMR_CODE_BATCH_Topic_1_2.12.1 Connectivity Framework.txt
+|   R17AMR_CODE_BATCH_ALL.txt  <-- Combined
++---code-batches-backup\
+    +---20250827_091500\ <-- Auto backup of previous run
+Note: `.docx` files are listed but not dumped as text to keep files readable.
+
+---
+
+## CODE LIBRARY: `docx-lib\`
+### 1. docx_toc_extractor.py | 2. docx_slice_writer.py [v1.5] | 3. parse_tree_txt.py 
+### 4. docx_driver.py [v1.5.4 MAIN ENTRY POINT] | 5. run.bat | 6. bulk_run.bat 
+### 7. make_fixtures.py [DEVELOPER TOOL]
+
+---
+
+## CONFIG: `granularity.json` [v1.5.4 FALLBACK]
+Priority: `Topic\granularity.json` > `docx-lib\granularity.json` > Defaults
+{
+  "default": { "max_level": 99, "keep_last_n_backups": 3 }
+}
+Setting	Description
+`max_level`	Max tree depth to extract. 1=Top level only. 99=all
+`keep_last_n_backups`	Number of backups to keep. Set `0` to disable
+---
+
+## USER QUICK START: Extracting Sections
+1.  Ensure `C:\R17AMR\docx-lib\` exists and is in PATH
+2.  Put `Topic.docx` + `Topic_tree.txt` in your topic folder
+3.  `cd` into topic folder
+4.  `run.bat`
+5.  Result: `doc_extracts\1. Introduction.docx` ready to upload to Wiki
+
+### Key Notes [v1.5.6]
+1.  *TOC-Driven*: Extraction is based on Word TOC hyperlinks. Tree.txt provides the ID + Hierarchy.
+2.  *Code Central*: Only maintain 1 `run.bat` and 1 `docx_driver.py`
+3.  *Code Inspection*: Use `ps-scripts\R17AMR-Collect-Code-Batches.ps1` for AI/RAG or code audits
+4.  *Safe Runs*: Every run creates a timestamped backup before overwriting.
+5.  *AI Ready*: Single `doc_extracts\_index.json` with metadata for all sections.
+
+### *C:\R17AMR\requirements.txt [v1.5.6]*
+python-docx>=1.1.2
+docxcompose>=1.4.0
+pytest>=7.4.0
+pillow>=10.0.0
+pywin32>=306
+
+=====
+
+============================
+
+R17AMR Tree
+
+Folder PATH listing
+Volume serial number is 46D0-B8BD
+C:.
+|   ps-scripts.7z
+|   R17AMR_tree.txt
+|   README.md
+|   
++---docx-lib
+|   |   bulk_run.bat
+|   |   docx_driver.py
+|   |   docx_nav_extractor.py
+|   |   docx_slice_writer.py
+|   |   docx_toc_extractor.py
+|   |   granularity.json
+|   |   make_fixtures.py
+|   |   parse_tree_txt.py
+|   |   run.bat
+|   |   tree_joiner.py
+|   |   
+|   \---__pycache__
+|           docx_nav_extractor.cpython-313.pyc
+|           docx_slice_writer.cpython-313.pyc
+|           docx_toc_extractor.cpython-313.pyc
+|           tree_joiner.cpython-313.pyc
+|           
++---ps-scripts
+|   |   R17AMR-Collect-Code-Batches.ps1
+|   |   
+|   +---code-batches
+|   |       R17AMR_CODE_BATCH_ALL.txt
+|   |       R17AMR_CODE_BATCH_docx-lib.txt
+|   |       R17AMR_CODE_BATCH_tests.txt
+|   |       
+|   \---code-batches-backup
+|       +---20260827_124209
+|       |       R17AMR_CODE_BATCH_ALL.txt
+|       |       R17AMR_CODE_BATCH_docx-lib.txt
+|       |       R17AMR_CODE_BATCH_tests.txt
+|       |       R17AMR_CODE_BATCH_Topic_1_2.12.1 Connectivity Framework.txt
+|       |       
+|       +---20260827_152153
+|       |       R17AMR_CODE_BATCH_ALL.txt
+|       |       R17AMR_CODE_BATCH_docx-lib.txt
+|       |       R17AMR_CODE_BATCH_tests.txt
+|       |       R17AMR_CODE_BATCH_Topic_1_2.12.1 Connectivity Framework.txt
+|       |       
+|       \---20260829_170800
+|               R17AMR_CODE_BATCH_ALL.txt
+|               R17AMR_CODE_BATCH_docx-lib.txt
+|               R17AMR_CODE_BATCH_tests.txt
+|               R17AMR_CODE_BATCH_Topic_1_2.12.1 Connectivity Framework.txt
+|               
++---tests
+|   |   test_integration.py
+|   |   test_unit.py
+|   |   
+|   +---deprecated
+|   |       test_parse_tree.py
+|   |       test_slice_writer.py
+|   |       test_suite.py
+|   |       test_toc_extractor.py
+|   |       
+|   \---test_fixtures
+\---topics
+    \---2. User Guides
+        +---2.1 Application Framework
+        |   +---2.1.1 T24 Archiving
+        |   +---2.1.10 Force Dispo
+        |   +---2.1.11 Global Processing
+        |   +---2.1.12 Installation
+        |   +---2.1.13 Local Reference and Alternate Keys
+        |   +---2.1.14 Mass Changes
+        |   +---2.1.15 Multi Language
+        |   +---2.1.16 Multi Time Zone
+        |   +---2.1.17 Non-Stop Processing
+        |   +---2.1.18 Open Financial Service
+        |   +---2.1.19 Protocol
+        |   +---2.1.2 Archiving and Data Lifecycle Management
+        |   +---2.1.20 Report Generator
+        |   +---2.1.21 Report Control
+        |   +---2.1.22 Security
+        |   +---2.1.23 Tool Box
+        |   +---2.1.24 Updates
+        |   +---2.1.25 Upgrading T24
+        |   +---2.1.3 Build Control
+        |   +---2.1.4 Close of Business
+        |   +---2.1.5 Constraints
+        |   +---2.1.6 Component Framework
+        |   +---2.1.7 Document Management
+        |   +---2.1.8 Dynamic Applications
+        |   \---2.1.9 Enquiry
+        +---2.10 Process Orchestration
+        |   +---2.10.1 Process Workflow
+        |   \---2.10.2 Rules Engine
+        +---2.11 Retail Banking
+        |   +---2.11.1 Agency Commissions
+        |   +---2.11.10 Mortgages
+        |   +---2.11.11 Origination
+        |   +---2.11.12 Past Due Processing
+        |   +---2.11.13 Preferential Pricing
+        |   +---2.11.14 Retail Accounts
+        |   +---2.11.15 Retail Bundle
+        |   +---2.11.16 Retail Deposits
+        |   +---2.11.17 Retail Lending
+        |   +---2.11.18 Rewards Schemes
+        |   +---2.11.19 Safe Deposit Box
+        |   +---2.11.2 Arrangements
+        |   +---2.11.20 Teller
+        |   +---2.11.21 Teller Financial Services
+        |   +---2.11.22 Transaction Recycler
+        |   +---2.11.23 All-in-One-Account
+        |   +---2.11.24 How to Guides for Retail Banking
+        |   +---2.11.3 ARC Origination
+        |   +---2.11.4 Cheque Issue and Management
+        |   +---2.11.5 Campaign Management
+        |   +---2.11.6 Collections
+        |   +---2.11.7 Customer Relationship Management
+        |   +---2.11.8 External Products
+        |   \---2.11.9 Loans and Deposits
+        +---2.12 Enterprise Framework
+        |   +---2.12.1 Connectivity Framework
+        |   |   |   Connectivity_Framework.docx
+        |   |   |   Connectivity_Framework_NAV_INDEX.json
+        |   |   |   Connectivity_Framework_NAV_PANE.csv
+        |   |   |   Connectivity_Framework_NAV_PANE.txt
+        |   |   |   Connectivity_Framework_NAV_PANE.xlsx
+        |   |   |   Connectivity_Framework_tree.txt
+        |   |   |   granularity.json
+        |   |   |   Nav_Pane.txt
+        |   |   |   nav_panel_extractor.py
+        |   |   |   nav_panel_extractor_builtin.py
+        |   |   |   
+        |   |   +---doc_extracts
+        |   |   |       1 TOCFEE.txt
+        |   |   |       1 TOCFEE_light.docx
+        |   |   |       1.1 TOCFEE.txt
+        |   |   |       1.1 TOCFEE_light.docx
+        |   |   |       1.1.1 Introduction.txt
+        |   |   |       1.1.1 Introduction_light.docx
+        |   |   |       1.1.10 Resources.txt
+        |   |   |       1.1.10 Resources_light.docx
+        |   |   |       1.1.10_Resources.docx
+        |   |   |       1.1.11 Appendix.txt
+        |   |   |       1.1.11 Appendix_light.docx
+        |   |   |       1.1.11.1 Appendix A1 Editing deployment descriptors.txt
+        |   |   |       1.1.11.1 Appendix A1 Editing deployment descriptors_light.docx
+        |   |   |       1.1.11.1_Appendix A1- Editing deployment descript.docx
+        |   |   |       1.1.11.2 Appendix A2 JEE client functions.txt
+        |   |   |       1.1.11.2 Appendix A2 JEE client functions_light.docx
+        |   |   |       1.1.11.2_Appendix A2- JEE client functions.docx
+        |   |   |       1.1.11.3 Appendix A3 T24Utility.txt
+        |   |   |       1.1.11.3 Appendix A3 T24Utility_light.docx
+        |   |   |       1.1.11.3_Appendix A3- T24Utility.docx
+        |   |   |       1.1.11_Appendix.docx
+        |   |   |       1.1.1_Introduction.docx
+        |   |   |       1.1.2 Overview.txt
+        |   |   |       1.1.2 Overview_light.docx
+        |   |   |       1.1.2_Overview.docx
+        |   |   |       1.1.3 Assumptions.txt
+        |   |   |       1.1.3 Assumptions_light.docx
+        |   |   |       1.1.3_Assumptions.docx
+        |   |   |       1.1.4 Prerequisites.txt
+        |   |   |       1.1.4 Prerequisites_light.docx
+        |   |   |       1.1.4_Prerequisites.docx
+        |   |   |       1.1.5 Installation.txt
+        |   |   |       1.1.5 Installation_light.docx
+        |   |   |       1.1.5.1 JBoss.txt
+        |   |   |       1.1.5.1 JBoss_light.docx
+        |   |   |       1.1.5.1_JBoss.docx
+        |   |   |       1.1.5.2 JBoss EAP 6.1.txt
+        |   |   |       1.1.5.2 JBoss EAP 6.1_light.docx
+        |   |   |       1.1.5.2_JBoss EAP 6.1.docx
+        |   |   |       1.1.5.3 Weblogic.txt
+        |   |   |       1.1.5.3 Weblogic_light.docx
+        |   |   |       1.1.5.3_Weblogic.docx
+        |   |   |       1.1.5.4 Websphere.txt
+        |   |   |       1.1.5.4 Websphere_light.docx
+        |   |   |       1.1.5.4_Websphere.docx
+        |   |   |       1.1.5_Installation.docx
+        |   |   |       1.1.6 TOCFEE componets.txt
+        |   |   |       1.1.6 TOCFEE componets_light.docx
+        |   |   |       1.1.6.1 T24 Resource Adapter.txt
+        |   |   |       1.1.6.1 T24 Resource Adapter_light.docx
+        |   |   |       1.1.6.1.1 Outbound connectivity.txt
+        |   |   |       1.1.6.1.1 Outbound connectivity_light.docx
+        |   |   |       1.1.6.1.1_Outbound connectivity.docx
+        |   |   |       1.1.6.1.2 Inbound connectivity with CALLJEE.txt
+        |   |   |       1.1.6.1.2 Inbound connectivity with CALLJEE_light.docx
+        |   |   |       1.1.6.1.2_Inbound connectivity with CALLJEE.docx
+        |   |   |       1.1.6.1_T24 Resource Adapter.docx
+        |   |   |       1.1.6.2 OFS Message MDB.txt
+        |   |   |       1.1.6.2 OFS Message MDB_light.docx
+        |   |   |       1.1.6.2_OFS Message MDB.docx
+        |   |   |       1.1.6.3 Delivery MDB.txt
+        |   |   |       1.1.6.3 Delivery MDB_light.docx
+        |   |   |       1.1.6.3_Delivery MDB.docx
+        |   |   |       1.1.6.4 TOCF EE Listeners.txt
+        |   |   |       1.1.6.4 TOCF EE Listeners_light.docx
+        |   |   |       1.1.6.4.1 Character encoding and Timeout properties.txt
+        |   |   |       1.1.6.4.1 Character encoding and Timeout properties_light.docx
+        |   |   |       1.1.6.4.1_Character encoding and Timeout propertie.docx
+        |   |   |       1.1.6.4.2 Enabling Logging.txt
+        |   |   |       1.1.6.4.2 Enabling Logging_light.docx
+        |   |   |       1.1.6.4.2_Enabling Logging.docx
+        |   |   |       1.1.6.4.3 Adding custom listeners.txt
+        |   |   |       1.1.6.4.3 Adding custom listeners_light.docx
+        |   |   |       1.1.6.4.3_Adding custom listeners.docx
+        |   |   |       1.1.6.4_TOCF (EE) Listeners.docx
+        |   |   |       1.1.6_TOCF(EE) componets.docx
+        |   |   |       1.1.7 Deploying TOCFEE components.txt
+        |   |   |       1.1.7 Deploying TOCFEE components_light.docx
+        |   |   |       1.1.7.1 Configuring JMS.txt
+        |   |   |       1.1.7.1 Configuring JMS_light.docx
+        |   |   |       1.1.7.1.1 JBoss.txt
+        |   |   |       1.1.7.1.1 JBoss_light.docx
+        |   |   |       1.1.7.1.1_JBoss.docx
+        |   |   |       1.1.7.1.2 Weblogic.txt
+        |   |   |       1.1.7.1.2 Weblogic_light.docx
+        |   |   |       1.1.7.1.2_Weblogic.docx
+        |   |   |       1.1.7.1.3 Websphere.txt
+        |   |   |       1.1.7.1.3 Websphere_light.docx
+        |   |   |       1.1.7.1.3_Websphere.docx
+        |   |   |       1.1.7.1_Configuring JMS.docx
+        |   |   |       1.1.7.2 Modifying TOCFEE prior to deployment.txt
+        |   |   |       1.1.7.2 Modifying TOCFEE prior to deployment_light.docx
+        |   |   |       1.1.7.2.1 Removing unused components from the TOCFEE Enterprise Archive.txt
+        |   |   |       1.1.7.2.1 Removing unused components from the TOCFEE Enterprise Archive_light.docx
+        |   |   |       1.1.7.2.1_Removing unused components from the TOCF.docx
+        |   |   |       1.1.7.2.2 Customizing OFSMessage MDB.txt
+        |   |   |       1.1.7.2.2 Customizing OFSMessage MDB_light.docx
+        |   |   |       1.1.7.2.2_Customizing OFSMessage MDB.docx
+        |   |   |       1.1.7.2.3 Customizing Delivery MDB.txt
+        |   |   |       1.1.7.2.3 Customizing Delivery MDB_light.docx
+        |   |   |       1.1.7.2.3_Customizing Delivery MDB.docx
+        |   |   |       1.1.7.2.4 Customizing TOCFEE Listeners.txt
+        |   |   |       1.1.7.2.4 Customizing TOCFEE Listeners_light.docx
+        |   |   |       1.1.7.2.4_Customizing TOCF(EE) Listeners.docx
+        |   |   |       1.1.7.2_Modifying TOCF(EE) prior to deployment.docx
+        |   |   |       1.1.7_Deploying TOCF(EE) components.docx
+        |   |   |       1.1.8 Monitoring and Logging.txt
+        |   |   |       1.1.8 Monitoring and Logging_light.docx
+        |   |   |       1.1.8.1 Logging JMS messages.txt
+        |   |   |       1.1.8.1 Logging JMS messages_light.docx
+        |   |   |       1.1.8.1.1 JBoss.txt
+        |   |   |       1.1.8.1.1 JBoss_light.docx
+        |   |   |       1.1.8.1.1_JBoss.docx
+        |   |   |       1.1.8.1.2 JBoss EAP 6.1.txt
+        |   |   |       1.1.8.1.2 JBoss EAP 6.1_light.docx
+        |   |   |       1.1.8.1.2_JBoss EAP 6.1.docx
+        |   |   |       1.1.8.1.3 Weblogic.txt
+        |   |   |       1.1.8.1.3 Weblogic_light.docx
+        |   |   |       1.1.8.1.3_Weblogic.docx
+        |   |   |       1.1.8.1.4 Websphere.txt
+        |   |   |       1.1.8.1.4 Websphere_light.docx
+        |   |   |       1.1.8.1.4_Websphere.docx
+        |   |   |       1.1.8.1_Logging JMS messages.docx
+        |   |   |       1.1.8.2 Monitoring message endpoints.txt
+        |   |   |       1.1.8.2 Monitoring message endpoints_light.docx
+        |   |   |       1.1.8.2.1 JBoss.txt
+        |   |   |       1.1.8.2.1 JBoss_light.docx
+        |   |   |       1.1.8.2.1_JBoss.docx
+        |   |   |       1.1.8.2.2 Weblogic.txt
+        |   |   |       1.1.8.2.2 Weblogic_light.docx
+        |   |   |       1.1.8.2.2_Weblogic.docx
+        |   |   |       1.1.8.2.3 Websphere.txt
+        |   |   |       1.1.8.2.3 Websphere_light.docx
+        |   |   |       1.1.8.2.3_Websphere.docx
+        |   |   |       1.1.8.2_Monitoring message endpoints.docx
+        |   |   |       1.1.8.3 Monitoring inbound message flow.txt
+        |   |   |       1.1.8.3 Monitoring inbound message flow_light.docx
+        |   |   |       1.1.8.3_Monitoring inbound message flow.docx
+        |   |   |       1.1.8.4 Monitoring inbound listeners and outbound connection pools of a RA.txt
+        |   |   |       1.1.8.4 Monitoring inbound listeners and outbound connection pools of a RA_light.docx
+        |   |   |       1.1.8.4.1 Weblogic.txt
+        |   |   |       1.1.8.4.1 Weblogic_light.docx
+        |   |   |       1.1.8.4.1_Weblogic.docx
+        |   |   |       1.1.8.4_Monitoring inbound listeners and outboun.docx
+        |   |   |       1.1.8.5 Logging TOCFEE component activity.txt
+        |   |   |       1.1.8.5 Logging TOCFEE component activity_light.docx
+        |   |   |       1.1.8.5_Logging TOCF(EE) component activity.docx
+        |   |   |       1.1.8.6 Property for capturing tafc_agent output.txt
+        |   |   |       1.1.8.6 Property for capturing tafc_agent output_light.docx
+        |   |   |       1.1.8.6_Property for capturing tafc_agent output.docx
+        |   |   |       1.1.8_Monitoring and Logging.docx
+        |   |   |       1.1.9 Security.txt
+        |   |   |       1.1.9 Security_light.docx
+        |   |   |       1.1.9_Security.docx
+        |   |   |       1.1_TOCF(EE).docx
+        |   |   |       1.2 TOCF - SSL Encryption.txt
+        |   |   |       1.2 TOCF - SSL Encryption_light.docx
+        |   |   |       1.2_TOCF - SSL Encryption.docx
+        |   |   |       1.3 TOCF Nonmanaged Interface.txt
+        |   |   |       1.3 TOCF Nonmanaged Interface_light.docx
+        |   |   |       1.3_TOCF Nonmanaged Interface.docx
+        |   |   |       1.4 TOCF EE High Availability.txt
+        |   |   |       1.4 TOCF EE High Availability_light.docx
+        |   |   |       1.4_TOCF (EE) High Availability.docx
+        |   |   |       1.5 Secure Document Transfer JBOSS.txt
+        |   |   |       1.5 Secure Document Transfer JBOSS_light.docx
+        |   |   |       1.5.1 Introduction.txt
+        |   |   |       1.5.1 Introduction_light.docx
+        |   |   |       1.5.10 Appendix.txt
+        |   |   |       1.5.10 Appendix_light.docx
+        |   |   |       1.5.10.1 References.txt
+        |   |   |       1.5.10.1 References_light.docx
+        |   |   |       1.5.10.1_References.docx
+        |   |   |       1.5.10_Appendix.docx
+        |   |   |       1.5.1_Introduction.docx
+        |   |   |       1.5.2 Overview.txt
+        |   |   |       1.5.2 Overview_light.docx
+        |   |   |       1.5.2_Overview.docx
+        |   |   |       1.5.3 Pre-requisites.txt
+        |   |   |       1.5.3 Pre-requisites_light.docx
+        |   |   |       1.5.3_Pre-requisites.docx
+        |   |   |       1.5.4 Deployment Artifacts.txt
+        |   |   |       1.5.4 Deployment Artifacts_light.docx
+        |   |   |       1.5.4.1 List of Deployed Artifacts.txt
+        |   |   |       1.5.4.1 List of Deployed Artifacts_light.docx
+        |   |   |       1.5.4.1_List of Deployed Artifacts.docx
+        |   |   |       1.5.4_Deployment Artifacts.docx
+        |   |   |       1.5.5 Setup.txt
+        |   |   |       1.5.5 Setup_light.docx
+        |   |   |       1.5.5.1 Browser Parameters.txt
+        |   |   |       1.5.5.1 Browser Parameters_light.docx
+        |   |   |       1.5.5.1.1 browserParameters.xml.txt
+        |   |   |       1.5.5.1.1 browserParameters.xml_light.docx
+        |   |   |       1.5.5.1.1_browserParameters.xml.docx
+        |   |   |       1.5.5.1.2 browserConnection.xml.txt
+        |   |   |       1.5.5.1.2 browserConnection.xml_light.docx
+        |   |   |       1.5.5.1.2_browserConnection.xml.docx
+        |   |   |       1.5.5.1.3 Channels.xml.txt
+        |   |   |       1.5.5.1.3 Channels.xml_light.docx
+        |   |   |       1.5.5.1.3_Channels.xml.docx
+        |   |   |       1.5.5.1_Browser Parameters.docx
+        |   |   |       1.5.5.2 TOCF Parameters  Application Server.txt
+        |   |   |       1.5.5.2 TOCF Parameters  Application Server_light.docx
+        |   |   |       1.5.5.2.1 t24-jdbc-ds.xml.txt
+        |   |   |       1.5.5.2.1 t24-jdbc-ds.xml_light.docx
+        |   |   |       1.5.5.2.1_t24-jdbc-ds.xml.docx
+        |   |   |       1.5.5.2.2 tocfplugin-ra.rar.txt
+        |   |   |       1.5.5.2.2 tocfplugin-ra.rar_light.docx
+        |   |   |       1.5.5.2.2_tocfplugin-ra.rar.docx
+        |   |   |       1.5.5.2.3 tcserver.xml.txt
+        |   |   |       1.5.5.2.3 tcserver.xml_light.docx
+        |   |   |       1.5.5.2.3_tcserver.xml.docx
+        |   |   |       1.5.5.2.4 tocflistener-ejb.jar.txt
+        |   |   |       1.5.5.2.4 tocflistener-ejb.jar_light.docx
+        |   |   |       1.5.5.2.4_tocflistener-ejb.jar.docx
+        |   |   |       1.5.5.2.5 Ejb-jar.xml.txt
+        |   |   |       1.5.5.2.5 Ejb-jar.xml_light.docx
+        |   |   |       1.5.5.2.5_Ejb-jar.xml.docx
+        |   |   |       1.5.5.2.6 jboss.xml.txt
+        |   |   |       1.5.5.2.6 jboss.xml_light.docx
+        |   |   |       1.5.5.2.6_jboss.xml.docx
+        |   |   |       1.5.5.2.7 File upload and download.txt
+        |   |   |       1.5.5.2.7 File upload and download_light.docx
+        |   |   |       1.5.5.2.7_File upload and download.docx
+        |   |   |       1.5.5.2_TOCF Parameters - Application Server.docx
+        |   |   |       1.5.5_Setup.docx
+        |   |   |       1.5.6 Starting JBoss.txt
+        |   |   |       1.5.6 Starting JBoss_light.docx
+        |   |   |       1.5.6.1 Debug Settings.txt
+        |   |   |       1.5.6.1 Debug Settings_light.docx
+        |   |   |       1.5.6.1.1 Jboss-log4.xml.txt
+        |   |   |       1.5.6.1.1 Jboss-log4.xml_light.docx
+        |   |   |       1.5.6.1.1_Jboss-log4.xml.docx
+        |   |   |       1.5.6.1.2 tclientlog.properties.txt
+        |   |   |       1.5.6.1.2 tclientlog.properties_light.docx
+        |   |   |       1.5.6.1.2_tclientlog.properties.docx
+        |   |   |       1.5.6.1_Debug Settings.docx
+        |   |   |       1.5.6_Starting JBoss.docx
+        |   |   |       1.5.7 Testing.txt
+        |   |   |       1.5.7 Testing_light.docx
+        |   |   |       1.5.7.1 Start jbase_agent.txt
+        |   |   |       1.5.7.1 Start jbase_agent_light.docx
+        |   |   |       1.5.7.1_Start jbase_agent.docx
+        |   |   |       1.5.7.2 Table Creation.txt
+        |   |   |       1.5.7.2 Table Creation_light.docx
+        |   |   |       1.5.7.2.1 Create table in Oracle.txt
+        |   |   |       1.5.7.2.1 Create table in Oracle_light.docx
+        |   |   |       1.5.7.2.1_Create table in Oracle.docx
+        |   |   |       1.5.7.2_Table Creation.docx
+        |   |   |       1.5.7_Testing.docx
+        |   |   |       1.5.8 DocumentImage Upload.txt
+        |   |   |       1.5.8 DocumentImage Upload_light.docx
+        |   |   |       1.5.8.1 Image uploads with Image Management IM Product.txt
+        |   |   |       1.5.8.1 Image uploads with Image Management IM Product_light.docx
+        |   |   |       1.5.8.1_Image uploads with Image Management (IM).docx
+        |   |   |       1.5.8_Document-Image Upload.docx
+        |   |   |       1.5.9 Documentimage Download.txt
+        |   |   |       1.5.9 Documentimage Download_light.docx
+        |   |   |       1.5.9_Document-image Download.docx
+        |   |   |       1.5_Secure Document Transfer JBOSS.docx
+        |   |   |       1.6 Secure Document Transfer WAS.txt
+        |   |   |       1.6 Secure Document Transfer WAS_light.docx
+        |   |   |       1.6.1 Introduction.txt
+        |   |   |       1.6.1 Introduction_light.docx
+        |   |   |       1.6.10 Documentimage Download.txt
+        |   |   |       1.6.10 Documentimage Download_light.docx
+        |   |   |       1.6.10_Document-image Download.docx
+        |   |   |       1.6.11 Appendix.txt
+        |   |   |       1.6.11 Appendix_light.docx
+        |   |   |       1.6.11.1 References.txt
+        |   |   |       1.6.11.1 References_light.docx
+        |   |   |       1.6.11.1_References.docx
+        |   |   |       1.6.11_Appendix.docx
+        |   |   |       1.6.1_Introduction.docx
+        |   |   |       1.6.2 Overview.txt
+        |   |   |       1.6.2 Overview_light.docx
+        |   |   |       1.6.2_Overview.docx
+        |   |   |       1.6.3 Prerequisites.txt
+        |   |   |       1.6.3 Prerequisites_light.docx
+        |   |   |       1.6.3_Prerequisites.docx
+        |   |   |       1.6.4 Deployment Artifacts.txt
+        |   |   |       1.6.4 Deployment Artifacts_light.docx
+        |   |   |       1.6.4.1 List of Deployed Artifacts.txt
+        |   |   |       1.6.4.1 List of Deployed Artifacts_light.docx
+        |   |   |       1.6.4.1_List of Deployed Artifacts.docx
+        |   |   |       1.6.4_Deployment Artifacts.docx
+        |   |   |       1.6.5 Setup.txt
+        |   |   |       1.6.5 Setup_light.docx
+        |   |   |       1.6.5.1 Browser Parameters.txt
+        |   |   |       1.6.5.1 Browser Parameters_light.docx
+        |   |   |       1.6.5.1.1 browserParameters.xml.txt
+        |   |   |       1.6.5.1.1 browserParameters.xml_light.docx
+        |   |   |       1.6.5.1.1_browserParameters.xml.docx
+        |   |   |       1.6.5.1.2 browserConnection.xml.txt
+        |   |   |       1.6.5.1.2 browserConnection.xml_light.docx
+        |   |   |       1.6.5.1.2_browserConnection.xml.docx
+        |   |   |       1.6.5.1.3 Channels.xml.txt
+        |   |   |       1.6.5.1.3 Channels.xml_light.docx
+        |   |   |       1.6.5.1.3_Channels.xml.docx
+        |   |   |       1.6.5.1_Browser Parameters.docx
+        |   |   |       1.6.5.2 TOCF Parameters  Application Server.txt
+        |   |   |       1.6.5.2 TOCF Parameters  Application Server_light.docx
+        |   |   |       1.6.5.2.1 tocfplugin-ra.rar.txt
+        |   |   |       1.6.5.2.1 tocfplugin-ra.rar_light.docx
+        |   |   |       1.6.5.2.1_tocfplugin-ra.rar.docx
+        |   |   |       1.6.5.2.2 tcserver.xml.txt
+        |   |   |       1.6.5.2.2 tcserver.xml_light.docx
+        |   |   |       1.6.5.2.2_tcserver.xml.docx
+        |   |   |       1.6.5.2.3 tocflistener-ejb.jar.txt
+        |   |   |       1.6.5.2.3 tocflistener-ejb.jar_light.docx
+        |   |   |       1.6.5.2.3_tocflistener-ejb.jar.docx
+        |   |   |       1.6.5.2.4 Ejb-jar.xml.txt
+        |   |   |       1.6.5.2.4 Ejb-jar.xml_light.docx
+        |   |   |       1.6.5.2.4_Ejb-jar.xml.docx
+        |   |   |       1.6.5.2.5 Ibm-ejb-jar-bnd-xmi.txt
+        |   |   |       1.6.5.2.5 Ibm-ejb-jar-bnd-xmi_light.docx
+        |   |   |       1.6.5.2.5_Ibm-ejb-jar-bnd-xmi.docx
+        |   |   |       1.6.5.2_TOCF Parameters - Application Server.docx
+        |   |   |       1.6.5_Setup.docx
+        |   |   |       1.6.6 Starting Websphere.txt
+        |   |   |       1.6.6 Starting Websphere_light.docx
+        |   |   |       1.6.6.1 Debug Settings.txt
+        |   |   |       1.6.6.1 Debug Settings_light.docx
+        |   |   |       1.6.6.1.1 log4j.xml.txt
+        |   |   |       1.6.6.1.1 log4j.xml_light.docx
+        |   |   |       1.6.6.1.1_log4j.xml.docx
+        |   |   |       1.6.6.1.2 tclientlog.properties.txt
+        |   |   |       1.6.6.1.2 tclientlog.properties_light.docx
+        |   |   |       1.6.6.1.2_tclientlog.properties.docx
+        |   |   |       1.6.6.1_Debug Settings.docx
+        |   |   |       1.6.6_Starting Websphere.docx
+        |   |   |       1.6.7 Testing.txt
+        |   |   |       1.6.7 Testing_light.docx
+        |   |   |       1.6.7.1 Start jbase_agent.txt
+        |   |   |       1.6.7.1 Start jbase_agent_light.docx
+        |   |   |       1.6.7.1_Start jbase_agent.docx
+        |   |   |       1.6.7_Testing.docx
+        |   |   |       1.6.8 Table Creation.txt
+        |   |   |       1.6.8 Table Creation_light.docx
+        |   |   |       1.6.8.1 Create table in Oracle.txt
+        |   |   |       1.6.8.1 Create table in Oracle_light.docx
+        |   |   |       1.6.8.1_Create table in Oracle.docx
+        |   |   |       1.6.8_Table Creation.docx
+        |   |   |       1.6.9 DocumentImage Upload.txt
+        |   |   |       1.6.9 DocumentImage Upload_light.docx
+        |   |   |       1.6.9.1 Image uploads with Image Management IM Product.txt
+        |   |   |       1.6.9.1 Image uploads with Image Management IM Product_light.docx
+        |   |   |       1.6.9.1_Image uploads with Image Management (IM).docx
+        |   |   |       1.6.9_Document-Image Upload.docx
+        |   |   |       1.6_Secure Document Transfer WAS.docx
+        |   |   |       1_TOCF(EE).docx
+        |   |   |       2 OFSML 1.4.txt
+        |   |   |       2 OFSML 1.4_light.docx
+        |   |   |       2.1 Overview.txt
+        |   |   |       2.1 Overview_light.docx
+        |   |   |       2.1_Overview.docx
+        |   |   |       2.2 Prerequisites.txt
+        |   |   |       2.2 Prerequisites_light.docx
+        |   |   |       2.2_Prerequisites.docx
+        |   |   |       2.3 Getting Started.txt
+        |   |   |       2.3 Getting Started_light.docx
+        |   |   |       2.3.1 OFSEnquiry.txt
+        |   |   |       2.3.1 OFSEnquiry_light.docx
+        |   |   |       2.3.1_OFSEnquiry.docx
+        |   |   |       2.3.2 OFSRoutine.txt
+        |   |   |       2.3.2 OFSRoutine_light.docx
+        |   |   |       2.3.2_OFSRoutine.docx
+        |   |   |       2.3.3 OFSTransaction.txt
+        |   |   |       2.3.3 OFSTransaction_light.docx
+        |   |   |       2.3.3_OFSTransaction.docx
+        |   |   |       2.3.4 OFSEnquiryResponse.txt
+        |   |   |       2.3.4 OFSEnquiryResponse_light.docx
+        |   |   |       2.3.4_OFSEnquiryResponse.docx
+        |   |   |       2.3.5 OFSRoutineResponse.txt
+        |   |   |       2.3.5 OFSRoutineResponse_light.docx
+        |   |   |       2.3.5_OFSRoutineResponse.docx
+        |   |   |       2.3.6 OFSTransactionResponse.txt
+        |   |   |       2.3.6 OFSTransactionResponse_light.docx
+        |   |   |       2.3.6_OFSTransactionResponse.docx
+        |   |   |       2.3.7 OFSFaultResponse.txt
+        |   |   |       2.3.7 OFSFaultResponse_light.docx
+        |   |   |       2.3.7_OFSFaultResponse.docx
+        |   |   |       2.3.8 OFSML Sample Request.txt
+        |   |   |       2.3.8 OFSML Sample Request_light.docx
+        |   |   |       2.3.8_OFSML Sample Request.docx
+        |   |   |       2.3.9 OFSML Sample Response.txt
+        |   |   |       2.3.9 OFSML Sample Response_light.docx
+        |   |   |       2.3.9.1 Transaction in BFL.txt
+        |   |   |       2.3.9.1 Transaction in BFL_light.docx
+        |   |   |       2.3.9.1_Transaction in BFL.docx
+        |   |   |       2.3.9_OFSML Sample Response.docx
+        |   |   |       2.3_Getting Started.docx
+        |   |   |       2_OFSML 1.4.docx
+        |   |   |       3 Transaction Tracing - User Guide.txt
+        |   |   |       3 Transaction Tracing - User Guide_light.docx
+        |   |   |       3.1 Prerequisites.txt
+        |   |   |       3.1 Prerequisites_light.docx
+        |   |   |       3.1_Prerequisites.docx
+        |   |   |       3.2 Getting Started.txt
+        |   |   |       3.2 Getting Started_light.docx
+        |   |   |       3.2_Getting Started.docx
+        |   |   |       3_Transaction Tracing - User Guide.docx
+        |   |   |       _index.json
+        |   |   |       
+        |   |   +---doc_extracts_backup
+        |   |   \---logs
+        |   |           run_20260827_213334.log
+        |   |           run_20260827_215835.log
+        |   |           run_20260827_224831.log
+        |   |           run_20260827_231526.log
+        |   |           run_20260827_235509.log
+        |   |           run_20260828_004547.log
+        |   |           run_20260828_014535.log
+        |   |           run_20260828_032543.log
+        |   |           run_20260829_160431.log
+        |   |           run_20260829_161710.log
+        |   |           run_20260829_194647.log
+        |   |           run_20260829_210010.log
+        |   |           run_20260829_220533.log
+        |   |           run_20260829_225433.log
+        |   |           topic_tree.log
+        |   |           
+        |   +---2.12.10 Multi Tenant
+        |   +---2.12.11 T24 External BPM
+        |   +---2.12.12 How to Guides
+        |   +---2.12.2 Platform Framework
+        |   |   +---1. jBC
+        |   |   +---2. TAFC
+        |   |   \---3. TAFJ
+        |   +---2.12.3 Integration Framework
+        |   +---2.12.4 T24 Custom Adapters
+        |   +---2.12.5 Interaction Framework
+        |   |   +---Data Composer .NET
+        |   |   \---IRIS with Design Studio
+        |   +---2.12.6 Component Framework
+        |   |   +---OFSML 1.4
+        |   |   +---TOCF (EE)
+        |   |   \---Transaction Tracing
+        |   +---2.12.7 Data Framework
+        |   +---2.12.8 Monitoring
+        |   \---2.12.9 Webservices
+        +---2.13 Treasury
+        |   +---2.13.1 Foreign Exchange
+        |   +---2.13.2 Forward Rate Agreements
+        |   +---2.13.3 Interest Rate Swaps
+        |   +---2.13.4 Money Market
+        |   +---2.13.5 Non-Deliverable Forward
+        |   +---2.13.6 OTC Clearing
+        |   \---2.13.7 Position Management
+        +---2.14 Treasury Trader
+        |   +---2.14.1 Introduction
+        |   +---2.14.2 All Dealing
+        |   +---2.14.3 Deal Manager
+        |   +---2.14.4 Enquiries
+        |   +---2.14.5 Maintenance
+        |   +---2.14.6 Positions
+        |   +---2.14.7 Risk Management
+        |   +---2.14.8 Servers
+        |   \---2.14.9 Utilities
+        +---2.15 Wealth
+        |   +---2.15.1 Alerts
+        |   +---2.15.2 Asset Management
+        |   +---2.15.3 Derivatives
+        |   +---2.15.4 Fiduciaries
+        |   +---2.15.5 Mutual Funds
+        |   +---2.15.6 Repo
+        |   +---2.15.7 Securities
+        |   +---2.15.8 Structured Products
+        |   \---2.15.9 How to Guides
+        +---2.2 Banking Framework
+        |   +---2.2.1 Accounts
+        |   +---2.2.10 Enterprise Customer Management
+        |   +---2.2.11 EURO
+        |   +---2.2.12 Expected Receipts
+        |   +---2.2.13 EU FTT
+        |   +---2.2.14 FATCA
+        |   +---2.2.15 Financial Accounting
+        |   +---2.2.16 Financial Reporting
+        |   +---2.2.17 IBAN
+        |   +---2.2.18 IFRS
+        |   +---2.2.19 Interest and Charges
+        |   +---2.2.2 Accounting Unit
+        |   +---2.2.20 ISO20022 XML Account Statement
+        |   +---2.2.21 Limit
+        |   +---2.2.22 Loan Loss Provisioning
+        |   +---2.2.23 Multi Company Extended Multi Company
+        |   +---2.2.24 MultiGaap
+        |   +---2.2.25 Muultiple Data Capture
+        |   +---2.2.26 Payment Order
+        |   +---2.2.27 Nostro Reconciliations
+        |   +---2.2.28 Retail Sweeping
+        |   +---2.2.29 Soft Accounting
+        |   +---2.2.3 Business Events
+        |   +---2.2.30 Standing Orders
+        |   +---2.2.31 System Tables
+        |   +---2.2.32 Tax
+        |   +---2.2.33 Transaction Cycler
+        |   +---2.2.34 How to Guides
+        |   +---2.2.4 Collateral
+        |   +---2.2.5 Common Reporting Standards
+        |   +---2.2.6 Confirmation Matching
+        |   +---2.2.7 Data Capture
+        |   +---2.2.8 Data Framework
+        |   \---2.2.9 Delivery
+        +---2.3 Business Intelligence
+        |   +---2.3.1 Insight
+        |   +---2.3.2 DW Export
+        |   \---2.3.3 Insight Risk
+        +---2.4 Channels
+        |   +---2.4.1 Mobile Banking
+        |   +---2.4.2 Digital Engagement Platform
+        |   +---2.4.3 Temenos Channels
+        |   +---2.4.4 UXP Browser
+        |   +---2.4.5 Browser
+        |   +---2.4.6 Image Management
+        |   \---2.4.7 Desktop
+        +---2.5 Corporate Banking
+        |   +---2.5.1 Cash Manaagement
+        |   +---2.5.2 Factoring and Forfating
+        |   +---2.5.3 Letters of Credit
+        |   +---2.5.4 Miscellaneous Deals
+        |   +---2.5.6 Syndicated Lending
+        |   \---2.5.7 TCIB Corporate
+        +---2.6 Database
+        |   +---2.6.1 JBASE database management
+        |   +---2.6.2 JBase to RDBMS conversion
+        |   +---2.6.3 Direct Connect Drivers
+        |   +---2.6.4 System Z
+        |   +---2.6.5 Data Separation
+        |   \---2.6.6 Data Model
+        +---2.7 Country or Regional Solutions
+        |   +---2.7.1 Canada
+        |   +---2.7.1 Generic Regional Solutions
+        |   \---2.7.1 US
+        +---2.8 Islamic Banking
+        |   +---2.8.1 Back Dated Change for Ijara
+        |   +---2.8.10 Forward Ijara - Project Finance
+        |   +---2.8.11 Import LC Finance
+        |   +---2.8.12 Islamic Inward Collections
+        |   +---2.8.13 Istisna - Construction Finance
+        |   +---2.8.14 Murabaha Customer Finance
+        |   +---2.8.15 Parallel Istisna
+        |   +---2.8.16 Profit Recognition using IA
+        |   +---2.8.17 Qard Hassan
+        |   +---2.8.18 Retail Diminishing Musharaka
+        |   +---2.8.19 Retail Ijarah
+        |   +---2.8.2 Bai Salam
+        |   +---2.8.20 Retail Murabaha
+        |   +---2.8.21 Retail Musawama
+        |   +---2.8.22 Retail Service Ijara
+        |   +---2.8.23 Service Ijara with Overdraft
+        |   +---2.8.24 Tawrruq Taqseet - Islamic Credit Card
+        |   +---2.8.25 Treasury - Bai Ajel
+        |   +---2.8.26 Treasury - Commodity Murabaha
+        |   +---2.8.27 Treasury - Reverse Murabaha
+        |   +---2.8.28 Treasury - Tawarruq Bulk Trading
+        |   +---2.8.28 Treasury - Tawarruq Single Trading
+        |   +---2.8.29 Vendor Payments
+        |   +---2.8.3 Bulk Tawarruq
+        |   +---2.8.30 Wakala Musawama
+        |   +---2.8.31 Islamic Banking AA
+        |   +---2.8.32 How to Guides
+        |   +---2.8.4 Corporate Ijarah
+        |   +---2.8.5 Corporate Istisna
+        |   +---2.8.6 Corporate Mudaraba
+        |   +---2.8.7 Corporate Musawama
+        |   +---2.8.8 Corporate Musharaka
+        |   \---2.8.9 Export LC Finance
+        \---2.9 Payments
+            +---2.9.1 Anti-Money Laundering
+            +---2.9.2 Bulk Payments
+            +---2.9.3 Cheque and Draft Issue Management
+            +---2.9.4 Direct Debits
+            +---2.9.5 Funds Transfer
+            +---2.9.6 Local Clearing
+            +---2.9.7 SEPA
+            +---2.9.8 Payments Hub
+            \---2.9.9 How to Guides

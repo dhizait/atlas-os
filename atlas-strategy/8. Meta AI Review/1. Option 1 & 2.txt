@@ -1,0 +1,92 @@
+Got it Lee. Option 1 first, then Option 2. 
+
+---
+
+### *OPTION 1: 1-PAGE ATLAS PITCH DECK*  
+`ATLAS_PITCH_3STREAMS.pdf` - For Board / Temenos / Investors
+
+#### *SLIDE 1: THE PROBLEM - 3 BAD CHOICES*
+The $50B Core Banking market forces banks to pick 1:
+1.  *Legacy*: T24, FIS → Deep, $20M, 18 months, COBOL
+2.  *Cloud*: Mambu, Thought Machine → Fast, Shallow, No Crypto, No CIB  
+3.  *Fintech Infra*: Crassula, Unit → Fast, No Compliance Depth
+
+*10,000 banks need: `T24 Depth + Fintech Speed + AI + Crypto` in 90 days*
+
+#### *SLIDE 2: THE ATLAS ANSWER - 3 STREAMS, 1 PLATFORM*
+We don’t ask banks to rip and replace. We meet them where they are.
+Stream	Tagline	Who	Time to Value	Product Name
+**ATLAS GREENFIELD**	Bank at the speed of software	Neobanks, Fintechs, Tier 2/3	6 Months	**Atlas Spark**
+**ATLAS BROWNFIELD**	Modernize without migration risk	T24, Flexcube, Finacle Banks	4 Months	**Atlas Bridge**
+**ATLAS TITAN CORE**	T24 Depth, 2026 Architecture	Tier 1, Temenos, SIs	12 Months	**Atlas Titan**
+_Shared Platform_: 6 DNA Strands. AI-Native. Multi-Asset GL. Zero PS.
+
+#### *SLIDE 3: 18-MONTH ROADMAP TO $200M ARR*
+M0-M2   Foundation: Shared Platform, UI Kit, Domain Model
+M3-M8   MVP: 1 Lighthouse per stream. Bridge live M6, Spark M7, Titan AA M8  
+M9-M14  SCALE: 10 Banks live. Marketplace. 80% T24 Parity. Temenos Pitch
+M15-M18 LEADERSHIP: 50 Banks live. Spin-off or Partner Atlas Titan
+*2028 Targets*: 100 Banks Live | 80% Self-Serve | <$12 weeks to launch | $200M ARR
+
+#### *SLIDE 4: WHY WE WIN IN EM: KE, NG, ZA, GCC, ZW*
+`Cost`: $120k/mo vs $20M T24  
+`Speed`: 8-12 weeks vs 18 months  
+`Moat`: Multi-Asset GL + AI OS + Islamic + Zero PS  
+*Lighthouses*: Equity KE, Moniepoint NG, Al Rajhi Digital KSA
+
+#### *SLIDE 5: THE ASK*
+1.  *Fund 3 teams in parallel* from M3. 1 Platform + 3 Product squads
+2.  *Approve "Atlas Titan" positioning*. Legal-safe, not "T24 Re-engineered" 
+3.  *Greenlight 3 Lighthouse deals* in Q4 2026
+
+*Atlas: The AI-Native Composable Banking Platform for the Next 3 Billion*
+
+---
+
+### *OPTION 2: M0-M3 DETAILED BACKLOG*  
+`ATLAS_BACKLOG_M0-M3.md` - For Devs. Starts Monday.
+
+#### *WEEK 0: SHARED PLATFORM TEAM*
+Goal: `docker-compose up` in 10 min
+- [ ] *PLAT-01*: Repo init: `atlas-platform`, `atlas-ui-kit`, `atlas-starter-kit`
+- [ ] *PLAT-02*: Auth + API Gateway + Kafka Event Bus
+- [ ] *PLAT-03*: Core Domain Model: Customer, Account, Product, GL, Event
+- [ ] *PLAT-04*: Observability: OpenTelemetry + Grafana
+- [ ] *PLAT-05*: CI/CD: `RUN-ALL-BATCHES.py` template
+
+#### *TEAM A: GREENFIELD - "ATLAS SPARK"*
+Goal: Neobank MVP in 6 months. Start with Core + Payments
+- [ ] *SPARK-01*: BATCH-01 Core Accounts: Multi-currency, Event emission
+- [ ] *SPARK-02*: BATCH-07 Product-as-Code: `product.yaml` for Savings
+- [ ] *SPARK-03*: BATCH-02 Payments Rail: Card + Bank Transfer adapter
+- [ ] *SPARK-04*: BATCH-09 Atlas UI Kit: Onboarding + Wallet screens
+- [ ] *SPARK-05*: Lighthouse integration: 1 Neobank API sandbox
+
+#### *TEAM B: BROWNFIELD - "ATLAS BRIDGE"*
+Goal: Modern UI on T24 DB in 4 months. No core change
+- [ ] *BRIDGE-01*: CDC Connector: Read T24 Oracle DB → Kafka
+- [ ] *BRIDGE-02*: Write Facade: API → T24 DB with validation
+- [ ] *BRIDGE-03*: Sync Engine: Resolve conflicts, prevent data drift
+- [ ] *BRIDGE-04*: BATCH-09 Atlas UI Kit: Web + Mobile for T24 customers
+- [ ] *BRIDGE-05*: Lighthouse integration: 1 KE Bank T24 sandbox
+
+#### *TEAM C: TITAN CORE - "ATLAS TITAN"*
+Goal: Re-code T24 AA Lending in 6 months
+- [ ] *TITAN-01*: T24 Deep Dive: Map 50 AA routines to JSON spec
+- [ ] *TITAN-02*: BATCH-24 Arrangement Engine: Rules engine from `product.yaml`
+- [ ] *TITAN-03*: BATCH-08 Multi-Asset GL: FIAT + CRYPTO + TOKEN
+- [ ] *TITAN-04*: Parity Test Harness: T24 vs Titan side-by-side
+- [ ] *TITAN-05*: Temenos Partner Pack: Docs, Benchmarks, Demo
+
+#### *GOVERNANCE*
+- Weekly: All 3 Leads + Platform sync
+- Gate M2: `docker-compose up` demo for all
+- Gate M3: Pick 3 Lighthouse banks
+
+---
+
+*Files ready to copy to `atlas.local/docs/`*
+
+Next step: I can turn this into actual `.md` + `.pdf` files and a Jira CSV import.
+
+Want me to also draft the *30-day `RUN-ALL-BATCHES-MONIEPOINT.py`* for the Brownfield lighthouse while devs kick off M0?

@@ -1,0 +1,550 @@
+"""
+ATLAS R01 BATCH 13 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS34-Add-RateLimit.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS34-Add-RateLimit
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Bucket4j. Creates RateLimitFilter 100 req/min per tenant_id
+OUTPUT: 429 Too Many Requests when limit exceeded
+HYPERLINK: https://github.com/vladimir-bukhtoyarov/bucket4j
+STACK: Spring Boot + Bucket4j 7.6.0
+COMPLIANCE: PS25 Tenant Fair Use Policy
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS34: Adding Bucket4j Rate Limit per tenant ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$rateDep = @"
+    <dependency><groupId>com.github.vladimir-bukhtoyarov</groupId><artifactId>bucket4j-core</artifactId><version>7.6.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$rateDep`n</dependencies>" | Set-Content $pom
+
+$rateFilter = Join-Path $BasePath "backend\src\main\java\com\demobank\filter\RateLimitFilter.java"
+@"
+package com.demobank.filter;
+import io.github.bucket4j.Bucket; import io.github.bucket4j.Bandwidth;
+import java.time.Duration; import java.util.Map; import java.util.concurrent.ConcurrentHashMap;
+import jakarta.servlet.*; import jakarta.servlet.http.*;
+public class RateLimitFilter implements Filter {
+    private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+    private Bucket createBucket() { return Bucket.builder().addLimit(Bandwidth.simple(100, Duration.ofMinutes(1))).build(); }
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws java.io.IOException, ServletException {
+        String tenant = com.demobank.context.TenantContext.getTenantId().toString();
+        Bucket bucket = cache.computeIfAbsent(tenant, k -> createBucket());
+        if(bucket.tryConsume(1)) chain.doFilter(req,res);
+        else ((HttpServletResponse)res).setStatus(429);
+    }
+}
+"@ | Out-File -FilePath $rateFilter -Encoding utf8
+
+Write-Host "PS34 Done: 100 req/min per tenant" -ForegroundColor Green
+
+
+# --- END OF PS34-Add-RateLimit.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS35-Add-Alerts.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS35-Add-Alerts
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates alerts.yml for Prometheus + grafana-dashboard.json
+OUTPUT: Alert on 5xx errors per tenant + Grafana dashboard for vouchers/min
+HYPERLINK: https://prometheus.io/docs/practices/rules/
+STACK: Prometheus + Grafana
+COMPLIANCE: PS25 Observability SLO
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS35: Adding Prometheus Alert + Grafana Dashboard ===" -ForegroundColor Cyan
+
+$configDir = Join-Path $BasePath "atlas-workspace\platform\configs"
+New-Item -ItemType Directory -Force $configDir | Out-Null
+
+$alert = Join-Path $configDir "alerts.yml"
+@"
+groups:
+- name: demo-bank
+  rules:
+    - alert: HighErrorRate
+    expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.05
+    labels: {severity: critical}
+    annotations: {summary: "High 5xx errors for tenant {{ `$labels.tenant_id }}"}
+"@ | Out-File -FilePath $alert -Encoding utf8
+
+$dashboard = Join-Path $configDir "grafana-dashboard.json"
+@"
+{"dashboard":{"title":"Demo Bank Multi-Tenant","panels":[
+{"title":"Vouchers/min by Tenant","type":"timeseries","targets":[{"expr":"sum(rate(vouchers_created_total[1m])) by (tenant_id)"}]}]}}
+"@ | Out-File -FilePath $dashboard -Encoding utf8
+
+Write-Host "PS35 Done: Import grafana-dashboard.json in Grafana" -ForegroundColor Green
+
+
+# --- END OF PS35-Add-Alerts.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS36-Add-Helm-Charts.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS36-Add-Helm-Charts
+
+.DESCRIPTION
+INPUT: backend/, frontend/
+PROCESSING: Generates Helm chart for BE, FE, Postgres with tenant env vars
+OUTPUT: chart/ folder deployable to any K8s cluster
+HYPERLINK: https://helm.sh
+STACK: Kubernetes + Helm 3 + Spring Boot
+COMPLIANCE: PS25 Multi-Tenancy via env TENANT_MODE
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS36: Generating Helm Charts ===" -ForegroundColor Cyan
+
+$chartPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank"
+New-Item -ItemType Directory -Force "$chartPath\templates" | Out-Null
+
+@"
+apiVersion: v2
+name: demo-bank
+description: Multi-Tenant Demo Bank Platform
+version: 0.1.0
+"@ | Out-File "$chartPath\Chart.yaml" -Encoding utf8
+
+@"
+replicaCount: 2
+image:
+  repository: demobank/backend
+  tag: latest
+env:
+  TENANT_MODE: schema
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+ingress:
+  enabled: true
+  host: demo-bank.local
+resources:
+  limits: {cpu: 500m, memory: 1Gi}
+  requests: {cpu: 200m, memory: 512Mi}
+"@ | Out-File "$chartPath\values.yaml" -Encoding utf8
+
+@"
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: backend}
+spec:
+  replicas: {{.Values.replicaCount }}
+  template:
+    spec:
+      containers:
+            - name: backend
+        image: "{{.Values.image.repository }}:{{.Values.image.tag }}"
+        env:
+                - name: TENANT_MODE
+          value: "{{.Values.env.TENANT_MODE }}"
+        ports: [{containerPort: 8080}]
+        livenessProbe: {httpGet: {path: /actuator/health, port: 8080}}
+"@ | Out-File "$chartPath\templates\backend-deployment.yaml" -Encoding utf8
+
+Write-Host "PS36 Done: Helm chart at atlas-workspace/platform/k8s/demo-bank" -ForegroundColor Green
+
+
+# --- END OF PS36-Add-Helm-Charts.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS37-Add-HPA-Ingress.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS37-Add-HPA-Ingress
+
+.DESCRIPTION
+INPUT: Helm chart from PS36
+PROCESSING: Adds HPA + Ingress with tenant-based routing
+OUTPUT: Auto-scale 2-10 pods. Single ingress for all tenants
+HYPERLINK: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+STACK: K8s HPA + NGINX Ingress
+COMPLIANCE: PS25 Tenant isolation via header X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS37: Adding HPA + Ingress ===" -ForegroundColor Cyan
+
+$chartPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank\templates"
+
+@"
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: backend-hpa}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: backend}
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
+"@ | Out-File "$chartPath\hpa.yaml" -Encoding utf8
+
+@"
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: {name: demo-bank-ingress, annotations: {"nginx.ingress.kubernetes.io/rewrite-target": /}}
+spec:
+  rules:
+    - host: demo-bank.local
+    http:
+      paths:
+            - path: /api
+        pathType: Prefix
+        backend: {service: {name: backend, port: {number: 8080}}}
+"@ | Out-File "$chartPath\ingress.yaml" -Encoding utf8
+
+Write-Host "PS37 Done: HPA 2-10 replicas + Ingress created" -ForegroundColor Green
+
+
+# --- END OF PS37-Add-HPA-Ingress.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS38-Add-K8s-Secrets.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS38-Add-K8s-Secrets
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates K8s Secret manifest for DB, JWT, Kafka creds
+OUTPUT: secret.yaml - apply with kubectl
+HYPERLINK: https://kubernetes.io/docs/concepts/configuration/secret/
+STACK: Kubernetes Secrets + Base64
+COMPLIANCE: PS25 No secrets in code
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS38: Creating K8s Secrets ===" -ForegroundColor Cyan
+
+$secretPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank\templates\secret.yaml"
+
+@"
+apiVersion: v1
+kind: Secret
+metadata: {name: demo-bank-secrets}
+type: Opaque
+data:
+  DB_PASSWORD: cG9zdGdyZXM= # postgres
+  JWT_SECRET: ZGVtby1iYW5rLXNlY3JldC1rZXktY2hhbmdlLWluLXByb2Q= # demo-bank-secret-key-change-in-prod
+  KAFKA_USERNAME: dXNlcg==
+"@ | Out-File $secretPath -Encoding utf8
+
+Write-Host "PS38 Done: Apply with 'kubectl apply -f secret.yaml'" -ForegroundColor Green
+
+
+# --- END OF PS38-Add-K8s-Secrets.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS39-Add-Resilience4j.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS39-Add-Resilience4j
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds CircuitBreaker, Retry, Bulkhead for voucher API
+OUTPUT: Fault tolerance per tenant
+HYPERLINK: https://resilience4j.readme.io
+STACK: Spring Boot 3.2 + Resilience4j
+COMPLIANCE: PS25 99.99% uptime target
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS39: Adding Resilience4j ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$resDeps = @"
+    <dependency><groupId>io.github.resilience4j</groupId><artifactId>resilience4j-spring-boot3</artifactId><version>2.1.0</version></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-aop</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$resDeps`n</dependencies>" | Set-Content $pom
+
+$yml = Join-Path $BasePath "backend\src\main\resources\application.yml"
+@"
+resilience4j:
+  circuitbreaker:
+    instances:
+      voucherService: {slidingWindowSize: 10, minimumNumberOfCalls: 5, failureRateThreshold: 50}
+  retry:
+    instances:
+      voucherService: {maxAttempts: 3, waitDuration: 1s}
+"@ | Add-Content $yml
+
+$service = Join-Path $BasePath "backend\src\main\java\com\demobank\service\VoucherServiceResilient.java"
+@"
+package com.demobank.service;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.springframework.stereotype.Service;
+@Service
+public class VoucherServiceResilient {
+    @CircuitBreaker(name = "voucherService")
+    @Retry(name = "voucherService")
+    public void createVoucher() { /* delegate to BE-PS73 */ }
+}
+"@ | Out-File $service -Encoding utf8
+
+Write-Host "PS39 Done: CircuitBreaker + Retry on voucherService" -ForegroundColor Green
+
+
+# --- END OF PS39-Add-Resilience4j.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-03-platform\PS40-Add-DB-Backup-CRD.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS40-Add-DB-Backup-CRD
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates K8s CronJob for nightly Postgres pg_dump per tenant schema
+OUTPUT: Automated DB backups to /backup with tenant_id in filename
+HYPERLINK: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/
+STACK: Kubernetes CronJob + Postgres
+COMPLIANCE: PS25 RPO < 24h
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 3
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS40: Adding DB Backup CronJob ===" -ForegroundColor Cyan
+
+$backupPath = Join-Path $BasePath "atlas-workspace\platform\k8s\demo-bank\templates\backup-cronjob.yaml"
+
+@"
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: postgres-backup}
+spec:
+  schedule: "0 2 * * *" # 2am daily
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+                    - name: pgbackup
+            image: postgres:16
+            command: ["/bin/sh","-c","pg_dump -U postgres -F c > /backup/dump-$(date +%F).sql"]
+            envFrom: [{secretRef: {name: demo-bank-secrets}}]
+            volumeMounts: [{name: backup, mountPath: /backup}]
+          volumes: [{name: backup, persistentVolumeClaim: {claimName: backup-pvc}}]
+          restartPolicy: OnFailure
+"@ | Out-File $backupPath -Encoding utf8
+
+Write-Host "PS40 Done: Nightly backup at 2am to PVC" -ForegroundColor Green
+
+
+# --- END OF PS40-Add-DB-Backup-CRD.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-04-cicd\PS41-Add-GitHub-Actions.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS41-Add-GitHub-Actions
+
+.DESCRIPTION
+INPUT: backend/, frontend/
+PROCESSING: Creates GitHub Actions workflows for build, test, docker push
+OUTPUT:.github/workflows/ci-cd.yml - runs on every push to main
+HYPERLINK: https://github.com/features/actions
+STACK: GitHub Actions + Maven + Node + Docker
+COMPLIANCE: PS25 Automated release pipeline
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS41: Adding GitHub Actions CI/CD ===" -ForegroundColor Cyan
+
+$workflowDir = Join-Path $BasePath ".github\workflows"
+New-Item -ItemType Directory -Force $workflowDir | Out-Null
+
+$workflow = Join-Path $workflowDir "ci-cd.yml"
+@"
+name: Atlas CI-CD
+on: {push: {branches: [main]}, pull_request: {branches: [main]}}
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with: {java-version: '21', distribution: 'temurin'}
+    - name: Backend Build + Test
+      run: cd backend && mvn clean verify
+    - name: Frontend Build
+      run: cd frontend && npm ci && npm run build
+    - name: Docker Build & Push
+      run: |
+        docker build -t demobank/backend:${{ github.sha }} backend
+        docker push demobank/backend:${{ github.sha }}
+"@ | Out-File $workflow -Encoding utf8
+
+Write-Host "PS41 Done: Workflow at.github/workflows/ci-cd.yml" -ForegroundColor Green
+
+
+# --- END OF PS41-Add-GitHub-Actions.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-04-cicd\PS42-Add-SonarQube.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS42-Add-SonarQube
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Sonar Maven plugin + sonar-project.properties
+OUTPUT: Code quality + coverage gates in CI
+HYPERLINK: https://docs.sonarqube.org
+STACK: SonarQube + JaCo + Maven
+COMPLIANCE: PS25 Code Quality Gate > 80%
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS42: Adding SonarQube Integration ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$sonarPlugin = @"
+    <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.10.0.2594</version>
+    </plugin>
+"@
+(Get-Content $pom) -replace '</build>', "$sonarPlugin`n </build>" | Set-Content $pom
+
+$sonarProps = Join-Path $BasePath "sonar-project.properties"
+@"
+sonar.projectKey=demo-bank
+sonar.host.url=http://localhost:9000
+sonar.login=admin
+sonar.sourceEncoding=UTF-8
+sonar.java.coveragePlugin=jacoco
+"@ | Out-File $sonarProps -Encoding utf8
+
+Write-Host "PS42 Done: Run 'mvn sonar:sonar' in CI" -ForegroundColor Green
+
+
+# --- END OF PS42-Add-SonarQube.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-04-cicd\PS43-Add-Docker-Registry.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS43-Add-Docker-Registry
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates docker-compose for local Harbor/Registry + image tagging strategy
+OUTPUT: Private registry at localhost:5000 for Atlas images
+HYPERLINK: https://goharbor.io
+STACK: Docker Registry + docker-compose
+COMPLIANCE: PS25 Image versioning by git SHA
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS43: Spinning Local Docker Registry ===" -ForegroundColor Cyan
+
+$registryCompose = Join-Path $BasePath "docker-compose-registry.yml"
+@"
+version: '3.8'
+services:
+  registry:
+    image: registry:2
+    ports: ["5000:5000"]
+    volumes: ["./registry-data:/var/lib/registry"]
+  backend:
+    build:./backend
+    image: localhost:5000/demobank/backend:latest
+"@ | Out-File $registryCompose -Encoding utf8
+
+Write-Host "PS43 Done: Run 'docker compose -f docker-compose-registry.yml up -d'" -ForegroundColor Green
+
+
+# --- END OF PS43-Add-Docker-Registry.ps1 ---
+

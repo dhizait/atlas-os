@@ -1,0 +1,21 @@
+Ahhh my bad 😅 
+
+You’re right. Let’s add it.
+
+---
+
+*Once you bring:* 
+1.  `Atlas repo` 
+2.  `PS25 scripts` 
+3.  `Features doc` 
+4.  `v5.0 Strategy doc`
+5.  *`R17AMR TREE`* ← the 6 DNA strands breakdown
+
+I'll do the heavy lift: run the *Inventory → Gap Map → Real R17AMR Roadmap* from it. 
+
+We’ll tag every PS25 module, every Atlas service, every feature doc line to `R1.1` to `R6.4`. 
+That way the roadmap isn't random — it’s literally `PS25 + Repo + Features` mapped to the 6 DNA strands.
+
+No building until we have all 5.
+
+Go finish GRIT. I’ll be ready to map the second you drop them 💪

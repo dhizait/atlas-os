@@ -1,0 +1,140 @@
+Got you. No separate "recall module" needed. 
+
+You want *ONE master doc* that bakes IoT + Blockchain into v6.0 and becomes the single source for PS25 + R17AMR builds.
+
+Here it is locked:
+
+---
+
+### *ATLAS STRATEGY v6.1 - ONE STOP SHOP*  
+*Version*: 6.1 | *Date*: 09 Sep 2026 | *Status*: LOCKED FOR R17AMR + PS25  
+*Tagline*: _"The AI-Native Composable Banking OS for the Next 3 Billion"_  
+*Formula*: `T24 Depth + Vault Speed + Intellect AI + Mambu Scale + Crassula Crypto + AA Configurability + IoT Visibility + Blockchain Trust`
+
+---
+
+#### *1. EXECUTIVE SUMMARY*
+The market is broken into 3. No vendor owns "One Stop Shop".  
+EM Banks in KE, NG, ZA, GCC, ZW want 1 platform that does Greenfield, Brownfield, and T24 Core with `AI + Crypto + IoT + Config not Code` in 90 days with Zero PS.
+
+*Atlas v6.1 Answer*: 8 DNA Strands + 4 Strategic Bets + 3 Streams.  
+*New in v6.1*: IoT and Blockchain are now first-class citizens in the platform, not add-ons. Delivered via `GapLocked`.
+
+---
+
+#### *2. THE MARKET REALITY: 2026-2030*
+Market	Who Wins Today	Their Problem
+**EM BANKS: KE, NG, ZA, GCC, ZW**	T24 + FIS + Legacy	Too slow, $2M-$20M launch, no AI, no crypto, no IoT, no self-serve
+**US/EU TIER 1**	FISERV, FIS, In-house	18-month RFPs, $50M PS, COBOL lock-in. Can't move
+**FINTECHS / CLOUD CORES**	Crassula, Mambu, Thought Machine	Fast but no depth. Can't do CIB, Trade, Islamic, AA, IoT, Blockchain
+*The Insight*: They don't want Rip-Replace vs Wrap vs Rebuild. They want `1 platform that does all 3`.  
+*The Gap*: 10,000 banks + Gov + Fintechs need `T24 depth + Fintech speed + AA Config + Low-Code + AI + Crypto + IoT + Blockchain` in 90 days.
+
+---
+
+#### *3. THE ATLAS ANSWER: 8 DNA STRANDS + 2 NEW CAPABILITIES*
+#	DNA STRAND	Source	Atlas v6.1 Implementation	Why EM Banks Need It
+**1**	**DEPTH**	T24 + FLEXCUBE	**Inherit 40 Years**. Sidecar + Strangle. CIB, Trade, Islamic, Multi-entity GL, Multi-asset GL	KCB, Al Rajhi need corporate + trade + Shariah
+**2**	**SPEED**	Mambu + Unit	**8-12 Week Go-Lives**. Zero PS. `RUN-ALL-BATCHES.py` + Starter Kit	Equity, GTB need to beat Branch, Tala
+**3**	**EVENT-DRIVEN**	Thought Machine Vault	**Everything is an Event**. Event Mesh for AI, Audit, IoT, Blockchain, Real-time	Fraud in NG needs <200ms detection
+**4**	**AI-NATIVE**	Intellect + nCino	**AI is the OS**. Risk Brain, Ops Brain, CX Brain, ESG Brain. AI edits `product.yaml`	Reduce NPLs, automate ops in ZA
+**5**	**ENGAGEMENT**	Backbase + Plaid	**Best UX + Open Banking**. 5000+ connectors + Low-Code Studio	M-Pesa, Agency banking in KE
+**6**	**FINTECH SPEED**	Crassula	**Crypto + Embedded + Product-as-Code**. Multi-asset GL: FIAT, TOKEN, CBDC, USDT	USDT, CBDC, BaaS for Telcos in NG/ZW
+**7**	**PRODUCT-AS-CODE**	AA Pattern	**Arrangement Engine**. `product.yaml` replaces COBOL. Config not Code	Launch new grant/loan in 1 week
+**8**	**ONE STOP SHOP**	Atlas Thesis	**3 Streams 1 Platform**. Greenfield + Brownfield + T24 Core. Same Data, UI, Compliance	Bank chooses path, not platform
+**9**	**IOT-NATIVE**	NEW v6.1	**GapLocked**. IoT Adapter Service. Geo-fence, sensors, seal events as first-class Atlas events	Supply Chain Finance, Smart LC, Asset tracking for KE/NG/ZW trade
+**10**	**BLOCKCHAIN-NATIVE**	NEW v6.1	**Trust Layer**. Smart Contracts, eBL tokenization, Multi-asset ledger. Hash anchor for audit	Instant settlement, fraud-proof docs for GCC/Africa trade
+---
+
+#### *4. THE 4 STRATEGIC BETS - NON-NEGOTIABLE*
+1.  *BET 1: ONE STOP SHOP, NOT EITHER/OR*  
+    Sell Greenfield to Neobanks, Brownfield to T24 banks, T24 Core to Temenos. All run on 1 Atlas Platform.
+2.  *BET 2: KILL PROFESSIONAL SERVICES WITH AA + LOW-CODE + AI*  
+    Productize PS into `Atlas Starter Kit` + `product.yaml` + Low-Code Studio + AI Co-pilot.
+3.  *BET 3: AI + CRYPTO + IOT + BLOCKCHAIN + AA ARE THE OS*  
+    From `BATCH-01`: every API emits events.  
+    From `BATCH-07`: every product is `product.yaml`.  
+    From `BATCH-08`: every GL entry supports `FIAT + CRYPTO + TOKEN + CBDC`.  
+    From `BATCH-33`: every IoT device is an event source.  
+    From `BATCH-45`: every contract can be a smart contract.
+4.  *BET 4: WIN EM FIRST, PARTNER WITH TEMENOS LATER*  
+    KE, NG, ZA, GCC are the proving ground. 50 refs → Partner IP to Temenos for Tier 1.
+
+---
+
+#### *5. THE 3 STREAMS: GREENFIELD + BROWNFIELD + T24 CORE*
+Stream	What it is	Who Buys It	Time to Value	Atlas v6.1 Angle
+**ATLAS GREENFIELD**	100% Modern. Cloud native, microservices, event-driven	Neobanks, Fintechs	6 Months	Speed + Crypto + IoT. API-First
+**ATLAS BROWNFIELD**	Modern UI + Services + IoT/Blockchain Layer on Legacy	Banks with T24, Flexcube	4 Months	No core migration. Add AI + IoT on top
+**ATLAS CORE**	Re-build T24 logic in modern stack	Large Banks, Temenos	12 Months	"T24 Depth + 2026 Architecture + IoT + Chain"
+*Rule*: 1 Data Model, 1 UI Kit, 1 Compliance Engine, 1 Event Bus, 1 IoT Adapter, 1 Chain Adapter across all 3.
+
+---
+
+#### *6. GAPLOCKED: FLAGSHIP PRODUCT FOR IOT + BLOCKCHAIN*
+This proves the One Stop Shop.
+
+*6.1 Smart LC v1*  
+`Trigger`: IoT GPS=Arrived + OCR=Docs Pass + Smart Contract=True  
+`Action`: Atlas auto-releases payment. <10 minutes vs 10 days  
+`Batches`: BATCH-11 TF, BATCH-33 IoT, BATCH-45 Chain, BATCH-41a Risk Brain
+
+*6.2 Supply Chain Financing*  
+`Trigger`: Tokenize B/L on chain. IoT proves container exists  
+`Action`: Atlas AA creates dynamic limit. Lend against token. Auto-call if seal broken  
+`Batches`: BATCH-23a AA, BATCH-08 Multi-asset GL, BATCH-33 IoT
+
+---
+
+#### *7. ATLAS ARCHITECTURE v6.1: "MODULAR MONOLITH → AA → EVENT MESH → IOT/CHAIN"*
+*V1 2026*: Spring Boot Core + Toggle Modules + `product.yaml` + `iot.yaml` + `contract.yaml`  
+*V2 2027*: Arrangement Engine GA + Low-Code Studio + IoT Adapter Service + Chain Adapter  
+*V3 2027*: Event Mesh. AI Agents listen to every event including IoT + Chain  
+*V4 2028*: Microservices + Marketplace. 100 plugins including IoT vendors + Chain networks
+
+*Key Data Additions*:  
+`arrangement.collateral.type = IOT_CONTAINER`  
+`event.payload = {iot_data, blockchain_hash, proof}`
+
+---
+
+#### *8. 18-MONTH ROADMAP: R17AMR + PS25 ALIGNMENT*
+Q	Theme	Ship	PS25 / R17AMR Lighthouse Goal
+**Q4 2026**	**Depth + AA + IoT Parity**	T24 Core 40%. AA v1. IoT Adapter v1. Multi-asset GL	1 KE Bank pilot Brownfield with GapLocked
+**Q1 2027**	**Composable + Low-Code + Chain**	20 Modules. `product.yaml`. Chain Adapter v1. Starter Kit	1 NG Fintech live Greenfield with Smart LC
+**Q2 2027**	**AI OS Launch**	3 AI Agents GA. Risk, Ops, CX.	Reduce NPL by 20% case study in ZA
+**Q3 2027**	**Crypto + Islamic Core**	Crypto Core GA. Islamic module. Embedded BaaS	1 GCC Islamic Digital Bank
+**Q4 2027**	**Marketplace + Partnership**	10 Partners. IoT + Chain + KYC 1-click	25 Banks Live across 3 streams
+---
+
+#### *9. WHERE WE WIN AND WHERE WE DON'T*
+*GO AFTER - PHASE 1 2026-2027*: KE Mid-tier, NG Tier2+Fintechs, ZA Challengers, GCC Digital, ZW Banks  
+*AVOID - PHASE 1*: US/EU Tier 1. Need 100 refs + FedRAMP first.
+
+---
+
+#### *10. SUCCESS METRICS 2028*
+1.  *100 Banks + Fintechs Live* - 60% Africa, 30% GCC, 10% SEA
+2.  *80% Self-Serve* - Zero vendor PS via AA + Low-Code + AI
+3.  *< 12 weeks* - Time to first product
+4.  *< 10 minutes* - Smart LC settlement time with IoT + Chain
+5.  *$200M ARR* - 70% Usage-based. 20% from Temenos Partnership IP
+
+*Positioning*:  
+_"Atlas: The Banking Operating System. Bank at the speed of software, with the depth of 40 years, configured not coded, and ready for crypto and real-world assets."_
+
+---
+
+### *NEXT 90 DAYS: R17AMR EXECUTION*
+Pick 3 to build first:
+1.  *PRODUCT* → `PHASE_MANIFEST_ATLAS_v6.1.json` + `GapLocked_Product_Spec.json`
+2.  *TECH* → `ARCHITECTURE_v6.1.md` + `atlas-starter-kit` with IoT + Chain adapters
+3.  *GTM* → `KE_NG_GCC_PITCHDECK_v6.1.pdf` with GapLocked demo
+
+---
+
+This is *ATLAS STRATEGY v6.1 - LOCKED*. 
+
+Next step: I can immediately draft `PHASE_MANIFEST_ATLAS_v6.1.json` mapping all 60 batches including BATCH-33 and BATCH-45, OR `ARCHITECTURE_v6.1.md` with IoT/Chain schemas.
+
+Which file do we start building first?

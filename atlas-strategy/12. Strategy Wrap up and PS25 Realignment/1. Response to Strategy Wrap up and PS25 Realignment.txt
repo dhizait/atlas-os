@@ -1,0 +1,121 @@
+Locked. 
+
+Here’s *ATLAS STRATEGY v6.0 - ONE STOP SHOP*  
+Format matches your `A. Atlas Strategy Final` and bakes in B,C,D,E.
+
+---
+
+### _ATLAS STRATEGY v6.0 - ONE STOP SHOP_  
+_"The AI-Native Composable Banking OS for the Next 3 Billion"_  
+_T24 Depth + Vault Speed + Intellect AI + Mambu Scale + Crassula Crypto + AA Configurability_
+
+From here we go straight to R17AMR execution and PS25 realignment.
+
+---
+
+#### _1. THE MARKET REALITY: 2026-2030_
+
+The market split into 3 broken models. No one owns "One Stop Shop".
+Market	Who Wins Today	Their Problem
+**EM BANKS: KE, NG, ZA, GCC, ZW**	T24 + FIS + Legacy	Too slow, $2M-$20M launch, no AI, no crypto, no self-serve
+**US/EU TIER 1**	FISERV, FIS, In-house	18-month RFPs, $50M PS, COBOL lock-in. Can't move
+**FINTECHS / CLOUD CORES**	Crassula, Mambu, Thought Machine	Fast but no depth. Can't do CIB, Trade, Islamic, AA
+_The New Insight from KE, NG, ZA, GCC_: They don't want to choose between Rip-Replace vs Wrap vs Rebuild.  
+They want `1 platform that does all 3`. 
+
+_The Gap_: 10,000 banks + Gov + Fintechs who need `T24 depth + Fintech speed + AA Config + Low-Code + AI + Crypto` in 90 days, with Zero PS.
+
+#### _2. THE ATLAS ANSWER: 8 DNA STRANDS, 1 PLATFORM_
+
+We took the best from KE, NG, ZA, GCC + Temenos + Crassula + Vault and made it `Self-Serve + AI-First + Multi-Asset + One Stop Shop`
+#	DNA STRAND	Source	Atlas Implementation	Why EM Banks Need It
+**1**	**DEPTH**	T24 + FLEXCUBE	**Inherit 40 Years**. Sidecar + Strangle + T24 Core Re-engineered. CIB, Trade, Islamic, Multi-entity GL	KCB, Al Rajhi need corporate + trade + Shariah
+**2**	**SPEED**	Mambu + Unit	**8-12 Week Go-Lives**. Zero PS. `RUN-ALL-BATCHES.py` + Starter Kit	Equity, GTB need to beat Branch, Tala
+**3**	**EVENT-DRIVEN**	Thought Machine Vault	**Everything is an Event**. Event Mesh for AI, Audit, Real-time	Fraud in NG needs <200ms detection
+**4**	**AI-NATIVE**	Intellect + nCino	**AI is the OS**. Risk Brain, Ops Brain, CX Brain, ESG Brain	Reduce NPLs, automate ops in ZA
+**5**	**ENGAGEMENT**	Backbase + Plaid	**Best UX + Open Banking**. 5000+ connectors + Low-Code Studio	M-Pesa, Agency banking in KE
+**6**	**FINTECH SPEED**	Crassula	**Crypto + Embedded + Product-as-Code**. Multi-asset GL	USDT, CBDC, BaaS for Telcos in NG/ZW
+**7**	**PRODUCT-AS-CODE**	AA Pattern	**Arrangement Engine**. `product.yaml` replaces COBOL. Config not Code	Launch new grant/loan in 1 week, not 3 months
+**8**	**ONE STOP SHOP**	Atlas Thesis	**3 Streams 1 Platform**. Greenfield + Brownfield + T24 Core. Same Data, UI, Compliance	Bank chooses path, not platform
+#### _3. THE 4 STRATEGIC BETS - NON-NEGOTIABLE_
+
+1.  _BET 1: ONE STOP SHOP, NOT EITHER/OR_  
+    Don't force banks to choose. Sell Greenfield to Neobanks, Brownfield to T24 banks, T24 Core to Temenos/Partners. All run on 1 Atlas Platform.
+2.  _BET 2: KILL PROFESSIONAL SERVICES WITH AA + LOW-CODE_  
+    Banks in KE/NG don't have $10M for Deloitte. We productize PS into `Atlas Starter Kit` + `product.yaml` + Low-Code Studio + Arrangement Engine.
+3.  _BET 3: AI + CRYPTO + AA ARE THE OS, NOT FEATURES_  
+    From `BATCH-01`: every API emits events + has AI hooks.  
+    From `BATCH-07`: every product is `product.yaml`.  
+    From `BATCH-08`: every GL entry supports `FIAT + CRYPTO + TOKEN + CBDC`.
+4.  _BET 4: WIN EM FIRST, PARTNER WITH TEMENOS LATER_  
+    KE, NG, ZA, GCC are the proving ground. Once we have 50 refs, we partner/sell IP to Temenos for Tier 1.
+
+#### _4. THE 3 STREAMS: GREENFIELD + BROWNFIELD + T24 CORE_
+Stream	What it is	Who Buys It	Time to Value	Atlas Angle
+**ATLAS GREENFIELD**	100% Modern. Cloud native, microservices, event-driven. Built from scratch	Neobanks, Fintechs, Greenfield Banks	6 Months	Speed, Cost, Modern UX, API-First
+**ATLAS BROWNFIELD**	Modern UI + Services Layer on top of Legacy Core + DB. Sync engine	Banks with T24, Flexcube who can't rip/replace	4 Months	No core migration risk. Fastest transformation
+**ATLAS CORE - T24 Re-engineered**	Re-build T24 business logic in modern stack. Keep depth, lose weight	Large Banks, Temenos, System Integrators	12 Months	"T24 Depth + 2026 Architecture". Partner IP
+_Rule_: 1 Data Model, 1 UI Kit, 1 Compliance Engine, 1 Event Bus across all 3. That’s the One Stop Shop.
+
+#### _5. WHERE WE WIN AND WHERE WE DON'T_
+
+_GO AFTER - PHASE 1 2026-2027_
+Segment	Why Atlas Wins	Example Targets
+**KE Mid-tier Banks**	M-Pesa + Digital Credit pressure. T24 too expensive	Equity, Co-op, NCBA, I&M
+**NG Tier 2 + Fintechs**	Fraud + USDT + BaaS. Volume breaks legacy	Access, Zenith, Moniepoint, Flutterwave
+**ZA Challengers**	Need to beat TymeBank. Compliance heavy + POPIA	TymeBank, BankZero, Capitec
+**GCC Digital Banks**	Need Islamic + Speed + No consultants	Al Rajhi Digital, FAB Neo, Emirates NBD Liv
+**ZW Banks**	Multi-currency + USDT + Cost	CBZ, Stanbic, Ecobank ZW
+_AVOID - PHASE 1_
+Segment	Why	When
+**US Tier 1**	18mo RFP, $50M PS, FedRAMP, COBOL. Need 100 refs first	2030+
+**EU Tier 1**	Same as US. Plus GDPR, DORA. Too heavy	2029+
+#### _6. ATLAS ARCHITECTURE: "MODULAR MONOLITH → ARRANGEMENT ENGINE → EVENT MESH"_
+
+_V1 2026_: 1 Spring Boot Core + Toggle Modules + `product.yaml`. Fast ship. `atlas-starter-kit`  
+_V2 2027_: Arrangement Engine GA. Low-Code Studio. AA pattern without Temenos lock-in  
+_V3 2027_: Event Mesh. AI agents listen to every event. Self-healing  
+_V4 2028_: Microservices + Marketplace. 100 fintech plugins. 3 Streams share same platform
+
+#### _7. 18-MONTH ROADMAP: R17AMR + PS25 ALIGNMENT_
+Q	Theme	Ship	PS25 / R17AMR Lighthouse Goal
+**Q4 2026**	**Depth + AA Parity**	T24 Core Parity 40%. Multi-asset GL. Arrangement Engine v1	1 KE Bank pilot Brownfield
+**Q1 2027**	**Composable + Low-Code**	20 Modules. `product.yaml`. Low-Code Studio. Starter Kit	1 NG Fintech live Greenfield
+**Q2 2027**	**AI OS Launch**	3 AI Agents GA. Risk, Ops, CX. ESG Brain	Reduce NPL by 20% case study in ZA
+**Q3 2027**	**Fintech + Crypto Core**	Crypto Core. Embedded BaaS. Usage pricing. Islamic module	1 GCC Islamic Digital Bank
+**Q4 2027**	**Marketplace + Partnership**	10 Partners. 1-click KYC, Fraud, BNPL. Temenos Pitch	25 Banks Live across 3 streams
+#### _8. SUCCESS METRICS 2028_
+1.  _100 Banks + Fintechs Live_ - 60% Africa, 30% GCC, 10% SEA. Split across 3 streams
+2.  _80% Self-Serve_ - Zero vendor PS after go-live via AA + Low-Code
+3.  _< 12 weeks_ - Time to first product
+4.  _$200M ARR_ - 70% Usage-based. 20% from Temenos Partnership IP
+
+_Positioning Statement_:  
+_"Atlas: The Banking Operating System. Bank at the speed of software, with the depth of 40 years, configured not coded, and ready for crypto."_
+
+---
+
+### _NEXT 90 DAYS: R17AMR DRILL DOWN EXECUTION_
+
+Strategy is locked. Pick the 3 we build first:
+
+_A. PRODUCT_ → `PHASE_MANIFEST_ATLAS_v6.json`  
+Map 8 DNA strands to 60 batches. `BATCH-07 Product-as-Code`, `BATCH-23a Arrangement Engine`, `BATCH-24 Low-Code Studio`
+
+_B. TECH_ → `ARCHITECTURE_v6.md` + `atlas-starter-kit`  
+Modular Monolith repo. Arrangement DB schema. Event schema. React UI Kit
+
+_C. GTM_ → `KE_NG_GCC_PITCHDECK_v6.pdf`  
+Pricing: $0.03/API + 0.1% txn. 3 Lighthouse plans: Greenfield, Brownfield, Core
+
+_D. COMPLIANCE_ → `COMPLIANCE_CORE_v6.md`  
+KYC state machine in every API. Shariah, AML, CBDC rules. AA Audit trail
+
+Which 3 do you want me to draft now so we can start R17AMR?  
+My rec: _A, B, C_. That gets us to a sellable One Stop Shop demo in 90 days.
+
+---
+
+Want me to next do: 
+1.  *PS25 Gap Analysis* vs this v6.0 Strategy, mapped to R17AMR batches? 
+2.  *subsidy-v1.json Arrangement spec* to show AA pattern for GRIT/PS25?

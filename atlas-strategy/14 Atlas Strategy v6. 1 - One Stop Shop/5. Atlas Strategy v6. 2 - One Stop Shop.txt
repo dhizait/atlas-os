@@ -1,0 +1,86 @@
+*LOCKED. v6.2 Strategy baked.* 🔒
+
+You’re right. We don’t need a separate recall module. Altova + ISO + Governance gets folded straight into v6.1 and becomes v6.2
+
+Here’s the updated master doc with those 3 learnings added:
+
+---
+
+### *ATLAS STRATEGY v6.2 - ONE STOP SHOP*  
+_Version_: 6.2 | _Date_: 10 Sep 2026 | _Status_: LOCKED FOR R17AMR + PS25  
+_Tagline_: _"The AI-Native Composable Banking OS for the Next 3 Billion"_  
+_Formula_: `T24 Depth + Vault Speed + Intellect AI + Mambu Scale + Crassula Crypto + AA Configurability + IoT Visibility + Blockchain Trust + Altova Governance + ISO20022 Full-Breath`
+
+---
+
+#### *WHAT CHANGED IN v6.2 vs v6.1*
+Area	v6.1	v6.2 Update - Altova + ISO Learning
+**BATCH-07**	`product.yaml` + Low-Code Studio	**Altova MapForce Style Mapper**. Drag-Drop to GL, ISO, AA. Schema-driven. Business 80% self-serve
+**GOVERNANCE**	DevOps approves YAML	**3-Tier Model**: Business Draft → DevOps Guardrails → Auto-Deploy. Git + Hash Audit
+**BATCH-08**	Multi-asset GL	**BATCH-08B: ISO20022 ADAPTER**. Full breath: pacs.002,008,009, camt.053, pain.001. Visual Mapper
+**PAYMENTS HUB**	RTGS via API	**Direct ISO A2A**. Bypass correspondents where regulation permits. <30s domestic
+**DNA #7**	Product-as-Code	**Product + Integration-as-Code**. `product.yaml` + `iso_mapping.yaml` + `iot.yaml`
+---
+
+#### *REVISED DNA STRAND #7: PRODUCT + INTEGRATION AS CODE*
+*Altova Principle*: "Schema first. Visual second. Code last"
+
+*Atlas Implementation*:
+1.  *Business*: Uses Low-Code Studio like MapForce. Drags fields. Creates `product.yaml` in 10 min
+2.  *DevOps*: Sets `product_schema.json` guardrails. `gl_code` locked. `interest_rate` capped. Approves via Git PR
+3.  *Platform*: Auto-validates, auto-deploys. Every change versioned + hashed to Chain
+
+*Same for ISO*: 
+Business maps `Atlas PAYMENT_RELEASED` → `pacs.009` in Studio. DevOps locks the ISO XSD. Goes live.
+
+#### *NEW BATCH: BATCH-08B ISO20022 FULL-BREATH ADAPTER*
+*Owner*: Payments + Platform  
+*Deliverable*: 
+1.  `iso20022_mapper.py` - All 800+ ISO types
+2.  `iso_visual_mapper` - Altova-style UI in Low-Code Studio
+3.  `iso_validator.py` - Validates against official ISO XSD before send
+4.  `direct_rails_adapter.py` - RTGS, RTP, CBDC direct. Skip SWIFT if allowed
+
+*Why*: To achieve real-time/quasi-realtime Hub, we must speak native ISO and go direct. No intermediaries = No 3-day delays.
+
+#### *REVISED ARCHITECTURE v6.2*
+Add 2 layers to Event Mesh:
+[Low-Code Studio] 
+    ↓ generates
+[product.yaml] + [iso_mapping.yaml] + [iot.yaml]
+    ↓ validated by
+[Schema Guardrails - DevOps] 
+    ↓ emitted as
+[Event Mesh] → [AA Engine] → [ISO Adapter] → [Direct to CB/Partner]
+#### *UPDATED WAVE 1 MANIFEST*
+Add BATCH-08B and strengthen BATCH-07:
+BatchCode	DNA	Owner	Deliverable
+**BATCH-07**	#7 AA	Platform	`product.yaml` v1 + **Altova-Style Low-Code Studio** + Schema Validator
+**BATCH-08B**	#1 Depth	Payments	**ISO20022 Full-Breath Adapter** + Visual Mapper + Direct Rails
+#### *GOVERNANCE RULE FOR BANK TEAM*
+*Can Business do it alone?* 
+Yes for 80%: rates, fees, eligibility, ISO field mapping  
+*Needs DevOps*: 20%: new ISO type, new AA attribute, new IoT trigger, GL codes, regulatory fields
+
+*Rule*: "Business owns the What. DevOps owns the Safety. Atlas owns the How."
+
+---
+
+#### *THE DAY 1 PITCH NOW SAYS:*
+> "We combined Altova’s visual integration with Mambu’s speed and T24’s depth.  
+> Your product team configures `product.yaml` and maps ISO20022 in Low-Code Studio.  
+> DevOps sets guardrails. Atlas pays direct in <30s. No PS ticket. No correspondent."
+
+That’s how we win Ministry + Central Bank + KE Bank in same room.
+
+---
+
+### *NEXT ACTION*
+I’ll update 2 files tonight:
+
+1.  *`PHASE_MANIFEST_ATLAS_v6.2.json`* - Add BATCH-08B, upgrade BATCH-07
+2.  *`ARCHITECTURE_v6.2.md`* - Add Altova Mapper + ISO Adapter diagrams
+
+Send me 1 sample PS1 file + 1 ISO message you care about most `pacs.009` or `camt.053` and I’ll build the first Mapper template.
+
+We’re ready to build from BATCH-01 tomorrow.

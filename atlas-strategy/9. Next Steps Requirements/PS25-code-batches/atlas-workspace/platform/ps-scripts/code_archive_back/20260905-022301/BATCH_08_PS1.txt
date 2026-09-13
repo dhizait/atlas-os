@@ -1,0 +1,271 @@
+"""
+ATLAS R01 BATCH 08 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS106-Add-React-Native-App.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS106-Add-React-Native-App
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Scaffolds React Native app with tenant login + voucher list
+OUTPUT: /mobile app for iOS/Android
+HYPERLINK: https://reactnative.dev
+STACK: React Native 0.75 + Axios + AsyncStorage
+COMPLIANCE: PS25 Mobile access
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS106: Adding React Native App ===" -ForegroundColor Cyan
+
+$mobileDir = Join-Path $BasePath "mobile"
+New-Item -ItemType Directory -Force $mobileDir | Out-Null
+
+$appTsx = Join-Path $mobileDir "App.tsx"
+@"
+import React from 'react';
+import {View, Text, FlatList} from 'react-native';
+import axios from 'axios';
+
+export default function App() {
+  const [vouchers, setVouchers] = React.useState([]);
+  React.useEffect(() => {
+    axios.get('https://api.demo-bank.com/api/vouchers', {
+      headers: {'X-Tenant-ID': 'TENANT001'}
+    }).then(r => setVouchers(r.data));
+  }, []);
+  return <View><FlatList data={vouchers} renderItem={({item}) => <Text>{item.id}</Text>}/></View>
+}
+"@ | Out-File $appTsx -Encoding utf8
+
+$pkg = Join-Path $mobileDir "package.json"
+@"
+{
+  "name": "demo-bank-mobile",
+  "dependencies": {"react": "18.2.0", "react-native": "0.75.0", "axios": "^1.7.0"}
+}
+"@ | Out-File $pkg -Encoding utf8
+
+Write-Host "PS106 Done: cd mobile && npx react-native run-android" -ForegroundColor Green
+
+
+# --- END OF PS106-Add-React-Native-App.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS107-Add-iOS-SDK.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS107-Add-iOS-SDK
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates Swift Package for DemoBank API
+OUTPUT: DemoBankSDK for iOS apps. Handles tenant_id header
+HYPERLINK: https://developer.apple.com/swift
+STACK: Swift 5.9 + URLSession
+COMPLIANCE: PS25 Partner SDK
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS107: Adding iOS SDK ===" -ForegroundColor Cyan
+
+$sdkDir = Join-Path $BasePath "sdk\ios\DemoBankSDK"
+New-Item -ItemType Directory -Force $sdkDir | Out-Null
+
+$swift = Join-Path $sdkDir "DemoBankClient.swift"
+@"
+import Foundation
+public class DemoBankClient {
+    private let tenantId: String
+    public init(tenantId: String) { self.tenantId = tenantId }
+
+    public func createVoucher(amount: Decimal, completion: @escaping (Result<Data, Error>) -> Void) {
+        var req = URLRequest(url: URL(string: "https://api.demo-bank.com/api/vouchers")!)
+        req.httpMethod = "POST"
+        req.setValue(tenantId, forHTTPHeaderField: "X-Tenant-ID")
+        URLSession.shared.dataTask(with: req, completionHandler: completion).resume()
+    }
+}
+"@ | Out-File $swift -Encoding utf8
+
+Write-Host "PS107 Done: Swift Package at sdk/ios/DemoBankSDK" -ForegroundColor Green
+
+
+# --- END OF PS107-Add-iOS-SDK.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS108-Add-Android-SDK.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS108-Add-Android-SDK
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates Android Library AAR for DemoBank API
+OUTPUT: demobank-sdk.aar with tenant interceptor
+HYPERLINK: https://developer.android.com
+STACK: Kotlin + OkHttp + Retrofit
+COMPLIANCE: PS25 Partner SDK
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS108: Adding Android SDK ===" -ForegroundColor Cyan
+
+$androidDir = Join-Path $BasePath "sdk\android\demobank-sdk"
+New-Item -ItemType Directory -Force $androidDir | Out-Null
+
+$kt = Join-Path $androidDir "DemoBankClient.kt"
+@"
+package com.demobank.sdk
+import okhttp3.*
+
+class DemoBankClient(private val tenantId: String) {
+    private val client = OkHttpClient.Builder()
+       .addInterceptor { chain ->
+            chain.proceed(chain.request().newBuilder().header("X-Tenant-ID", tenantId).build())
+        }.build()
+
+    fun createVoucher(amount: Double) { /* POST to /api/vouchers */ }
+}
+"@ | Out-File $kt -Encoding utf8
+
+Write-Host "PS108 Done: Android Library at sdk/android/demobank-sdk" -ForegroundColor Green
+
+
+# --- END OF PS108-Add-Android-SDK.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS109-Add-Push-Notifications.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS109-Add-Push-Notifications
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds FCM integration. Sends push on voucher created
+OUTPUT: /api/notifications/send + Firebase config
+HYPERLINK: https://firebase.google.com/docs/cloud-messaging
+STACK: Spring Boot + Firebase Admin SDK
+COMPLIANCE: PS25 Real-time alerts
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS109: Adding Push Notifications ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$fcmDep = @"
+    <dependency><groupId>com.google.firebase</groupId><artifactId>firebase-admin</artifactId><version>9.2.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$fcmDep`n</dependencies>" | Set-Content $pom
+
+$pushSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\notifications\PushService.java"
+@"
+package com.demobank.notifications;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+@Service
+public class PushService {
+    public void sendToTenant(String tenantId, String title, String body) {
+        Message msg = Message.builder()
+           .putData("tenant_id", tenantId)
+           .setNotification(com.google.firebase.messaging.Notification.builder().setTitle(title).setBody(body).build())
+           .setTopic("tenant_" + tenantId)
+           .build();
+        FirebaseMessaging.getInstance().send(msg);
+    }
+}
+"@ | Out-File $pushSvc -Encoding utf8
+
+Write-Host "PS109 Done: Set GOOGLE_APPLICATION_CREDENTIALS env" -ForegroundColor Green
+
+
+# --- END OF PS109-Add-Push-Notifications.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS110-Add-Deep-Linking.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS110-Add-Deep-Linking
+
+.DESCRIPTION
+INPUT: mobile/ + backend/
+PROCESSING: Adds deep links: demobank://voucher/{id}
+OUTPUT: Mobile opens directly to voucher detail
+HYPERLINK: https://reactnavigation.org/docs/deep-linking
+STACK: React Native + Spring Redirect
+COMPLIANCE: PS25 UX
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS110: Adding Deep Linking ===" -ForegroundColor Cyan
+
+$linkConfig = Join-Path $BasePath "mobile\linking.ts"
+@"
+export const linking = {
+  prefixes: ['demobank://', 'https://app.demo-bank.com'],
+  config: {
+    screens: {
+      VoucherDetail: 'voucher/:id'
+    }
+  }
+}
+"@ | Out-File $linkConfig -Encoding utf8
+
+$redirectCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\web\RedirectController.java"
+@"
+package com.demobank.web;
+@Controller
+public class RedirectController {
+    @GetMapping("/voucher/{id}")
+    public String redirect(@PathVariable String id) {
+        return "redirect:demobank://voucher/" + id;
+    }
+}
+"@ | Out-File $redirectCtrl -Encoding utf8
+
+Write-Host "PS110 Done: https://api.demo-bank.com/voucher/123 opens app" -ForegroundColor Green
+
+
+# --- END OF PS110-Add-Deep-Linking.ps1 ---
+

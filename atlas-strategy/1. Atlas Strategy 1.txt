@@ -1,0 +1,47 @@
+Here’s the *Atlas Strategy One-Pager* — board/investor/CIO ready. No fluff.
+
+---
+
+### *ATLAS R17AMR*  
+*The First AI-Native Composable Banking Platform for Emerging Markets*
+
+#### *THE PROBLEM*
+Banks are stuck.  
+*T24*: 40 years of depth, 18 months + $20M to launch 1 product.  
+*Mambu/Intellect*: Fast + AI, but shallow on transaction banking and compliance.  
+*Result*: Banks choose between speed or scale. They get neither.
+
+#### *THE ATLAS ANSWER*
+*T24-grade banking. Tesla-grade delivery. AI-native from day 1.*
+
+We don’t ask banks to rip and replace. We sidecar and strangle.  
+We don’t sell software + consultants. We sell outcomes you deploy yourself.  
+We don’t bolt AI on. We built the platform with AI as the OS.
+
+#### *THE 3 STRATEGIC BETS*
+Bet	Market Reality	Atlas Advantage
+**1. Speed + AI > Legacy**	Banks want to launch in 30 days, not 18 months	**Inherit 40 years in 1 day**. Sidecar on T24. Move capability by capability
+**2. Zero Professional Services**	PS25 fatigue. Banks have dev teams now	**Self-Serve Platform**. 1 command deploy. We teach, you run
+**3. AI as Ambient Layer**	AI is an afterthought bolt-on	**AI is the OS**. Risk, Ops, and CX agents live in every layer from day 1
+#### *THE ATLAS APPROACH: COMPOSABLE + AI FIRST*
+1.  *Composable Core*: 80 business capabilities as independent modules. Turn on "Loans" or "Payments" like Lego.
+2.  *AI Orchestration Layer*: 3 agents at launch: `Risk Brain`, `Ops Brain`, `CX Brain`. Every decision is faster and explainable.
+3.  *Outcome-Based Delivery*: From contract to go-live in 2-8 weeks. No 50-person vendor team.
+
+#### *WHERE WE WIN*
+*Target*: Mid-tier Banks $500M-$10B, Credit Unions, Digital Challengers in KE, NG, ZA, GCC  
+*Focus*: Retail Lending, Transaction Banking, Compliance  
+*Avoid*: US Tier 1, Capital Markets v1
+
+#### *12-MONTH ROADMAP*
+Q4 2026	Q1 2027	Q2 2027	Q3 2027
+T24 Parity Core Live	20 Composable Modules	3 AI Agents GA	Fintech Marketplace
+#### *THE ASK*
+We are building the platform banks wish T24 had built in 1993 if cloud and AI existed.  
+*Vision*: 100 banks live by 2028. 80% self-serve. 50% faster than Intellect. T24 depth.
+
+*Atlas: Bank at the speed of software.*
+
+---
+
+Want me to also export this as a `PDF / DOCX` with Atlas branding, or do you want a *2-slide deck version* of this for a CIO pitch?

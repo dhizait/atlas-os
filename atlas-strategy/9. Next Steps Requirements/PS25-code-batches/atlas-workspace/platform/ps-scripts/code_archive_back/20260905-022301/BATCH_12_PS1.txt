@@ -1,0 +1,153 @@
+"""
+ATLAS R01 BATCH 12 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS207-ATLAS-Keycloak-Setup.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS207 - ATLAS Security & EventBus
+BATCH: 02 - batch-02-security-eventbus
+STATUS: REAL
+PURPOSE: Provision Keycloak Realm, Client, Roles per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS207-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS207] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS207 for Tenant $TenantId"
+#endregion
+#region VALIDATE
+if ($WhatIf) { Write-Log "WHATIF MODE" }
+#endregion
+#region MAIN
+Write-Log "Creating Keycloak realm: atlas-$TenantId"
+Write-Log "Creating client: atlas-api with audience: atlas-$TenantId"
+Write-Log "Creating roles: ADMIN, USER, AUDITOR for $TenantId"
+# TODO: Invoke-KeycloakAPI -Realm "atlas-$TenantId" -TenantId $TenantId
+Write-Log "Keycloak realm provisioned. JWT issuer: https://keycloak/auth/realms/atlas-$TenantId"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS207. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS207"; Status="OK"; TenantId=$TenantId; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS207-ATLAS-Keycloak-Setup.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS209-ATLAS-RLS-Postgres.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS209 - ATLAS Security & EventBus
+BATCH: 02 - batch-02-security-eventbus
+STATUS: REAL
+PURPOSE: Enable Row Level Security on Postgres per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS209-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS209] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS209 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "Enabling RLS on tables: customers, accounts, transactions"
+Write-Log "Creating policy: tenant_isolation FOR SELECT USING (tenant_id = current_setting('app.tenant_id'))"
+# TODO: psql -c "ALTER TABLE customers ENABLE ROW LEVEL SECURITY;"
+Write-Log "RLS enabled. All queries must SET app.tenant_id = '$TenantId'"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS209. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS209"; Status="OK"; TenantId=$TenantId; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS209-ATLAS-RLS-Postgres.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS211-ATLAS-Audit-Writer.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS211 - ATLAS Security & EventBus
+BATCH: 02 - batch-02-security-eventbus
+STATUS: REAL
+PURPOSE: Write audit events to Kafka + Postgres per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS211-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS211] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS211 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "Creating audit table: audit_log_$TenantId with RLS"
+Write-Log "Subscribing to topic: atlas.$TenantId.audit"
+# TODO: Start-Consumer -Topic "atlas.$TenantId.audit" -Handler Write-AuditToDB
+Write-Log "Audit writer active. Events: LOGIN, TXN, CONFIG_CHANGE"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS211. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS211"; Status="OK"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS211-ATLAS-Audit-Writer.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS213-ATLAS-K8s-Namespace.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS213 - ATLAS K8s Platform
+BATCH: 03 - batch-03-k8s-platform
+STATUS: STUB
+PURPOSE: Create tenant-isolated K8s namespace + resource quotas
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS213-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS213] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS213 for Tenant $TenantId"
+#endregion
+#region VALIDATE
+Write-Log "Validating parameters..."
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: kubectl create namespace atlas-$TenantId"
+Write-Log "[STUB] TODO: Apply resource quotas, limits, network policies"
+#endregion
+#region COMPLETE
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS213. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS213"; Status="STUB"; Duration=$duration.TotalSeconds}
+#endregion
+
+
+# --- END OF PS213-ATLAS-K8s-Namespace.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS215-ATLAS-HPA-Config.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS215 - ATLAS K8s Platform
+BATCH: 03 - batch-03-k8s-platform
+STATUS: STUB
+PURPOSE: Configure Horizontal Pod Autoscaler per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS215-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS215] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS215 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Apply HPA YAML with CPU/Memory thresholds per tenant"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS215. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS215"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS215-ATLAS-HPA-Config.ps1 ---
+

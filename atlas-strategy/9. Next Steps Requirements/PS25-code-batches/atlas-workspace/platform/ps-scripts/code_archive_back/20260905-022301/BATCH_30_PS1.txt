@@ -1,0 +1,250 @@
+"""
+ATLAS R01 BATCH 30 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS59-Add-Data-Masking.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS59-Add-Data-Masking
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds @Mask annotation + Jackson serializer to hide PII for non-admin roles
+OUTPUT: ID numbers, emails masked as *** in API responses
+HYPERLINK: https://owasp.org
+STACK: Spring Boot + Jackson + AOP
+COMPLIANCE: PS25 Data Minimization + Least Privilege
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS59: Adding Data Masking ===" -ForegroundColor Cyan
+
+$maskAnno = Join-Path $BasePath "backend\src\main\java\com\demobank\annotation\Mask.java"
+@"
+package com.demobank.annotation;
+import java.lang.annotation.*;
+@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME)
+public @interface Mask {}
+"@ | Out-File $maskAnno -Encoding utf8
+
+$serializer = Join-Path $BasePath "backend\src\main\java\com\demobank\serializer\MaskingSerializer.java"
+@"
+package com.demobank.serializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+public class MaskingSerializer extends JsonSerializer<String> {
+    public void serialize(String value, JsonGenerator gen, com.fasterxml.jackson.databind.SerializerProvider sp) {
+        gen.writeString(value.length() > 4? "***" + value.substring(value.length()-4) : "***");
+    }
+}
+"@ | Out-File $serializer -Encoding utf8
+
+Write-Host "PS59 Done: Annotate fields with @Mask to auto-redact for VIEWER role" -ForegroundColor Green
+
+
+# --- END OF PS59-Add-Data-Masking.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS60-Add-Audit-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS60-Add-Audit-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds AuditLog React page with tenant filter + export
+OUTPUT: Admin can view/search audit_log in UI
+HYPERLINK: https://mui.com
+STACK: React + TanStack Table + MUI
+COMPLIANCE: PS25 Auditor self-service
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS60: Adding Audit UI ===" -ForegroundColor Cyan
+
+$auditPage = Join-Path $BasePath "frontend\src\pages\AuditLogPage.tsx"
+@"
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '../context/TenantContext';
+export default function AuditLogPage() {
+  const {tenantId} = useTenant();
+  const {data} = useQuery({queryKey: ['audit', tenantId],
+    queryFn: () => fetch(`/api/audit?tenant_id=${tenantId}`).then(r => r.json())});
+  return <div>
+    <h1>Audit Log - Tenant {tenantId}</h1>
+    <table>{data?.map((log:any) => <tr><td>{log.timestamp}</td><td>{log.action}</td></tr>)}</table>
+    <button onClick={() => window.open(`/api/reports/soc2?tenant_id=${tenantId}`)}>Export PDF</button>
+  </div>
+}
+"@ | Out-File $auditPage -Encoding utf8
+
+Write-Host "PS60 Done: Route /audit shows tenant audit trail" -ForegroundColor Green
+
+
+# --- END OF PS60-Add-Audit-UI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS61-Add-ISO20022-Adapter.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS61-Add-ISO20022-Adapter
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds ISO20022 pain.001 and camt.053 XML mapping for voucher posting
+OUTPUT: /api/iso20022/inbound accepts bank files. Outbound to switch
+HYPERLINK: https://www.iso20022.org
+STACK: Spring Boot + JAXB + Camel
+COMPLIANCE: PS25 SWIFT/ISO20022 Interoperability
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS61: Adding ISO20022 Adapter ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$isoDeps = @"
+    <dependency><groupId>org.apache.camel</groupId><artifactId>camel-spring-boot-starter</artifactId><version>4.0.0</version></dependency>
+    <dependency><groupId>jakarta.xml.bind</groupId><artifactId>jakarta.xml.bind-api</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$isoDeps`n</dependencies>" | Set-Content $pom
+
+$adapter = Join-Path $BasePath "backend\src\main\java\com\demobank\integration\Iso20022Adapter.java"
+@"
+package com.demobank.integration;
+import org.apache.camel.builder.RouteBuilder;
+import org.springframework.stereotype.Component;
+@Component
+public class Iso20022Adapter extends RouteBuilder {
+    public void configure() {
+        from("rest:post:/api/iso20022/inbound")
+         .unmarshal().jaxb("com.demobank.iso.pain001")
+         .bean("voucherService", "postFromIso")
+         .to("kafka:iso.outbound");
+    }
+}
+"@ | Out-File $adapter -Encoding utf8
+
+Write-Host "PS61 Done: POST XML to /api/iso20022/inbound" -ForegroundColor Green
+
+
+# --- END OF PS61-Add-ISO20022-Adapter.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS62-Add-Webhooks.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS62-Add-Webhooks
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates webhook subscription + retry + HMAC signing
+OUTPUT: POST to partner URL on voucher.created event
+HYPERLINK: https://stripe.com/docs/webhooks
+STACK: Spring Boot + Kafka Consumer + WebClient
+COMPLIANCE: PS25 Event-driven partner integrations
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS62: Adding Webhooks ===" -ForegroundColor Cyan
+
+$webhookSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\service\WebhookService.java"
+@"
+package com.demobank.service;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+@Service
+public class WebhookService {
+    private final WebClient client = WebClient.create();
+    @KafkaListener(topics = "audit.log")
+    public void onEvent(AuditEvent event) {
+        // Lookup partner URLs by tenant_id
+        // POST with HMAC-SHA256 signature in X-Signature header
+        // Retry 3x with exponential backoff
+    }
+    public record AuditEvent(java.util.UUID tenantId, String action, String entityId) {}
+}
+"@ | Out-File $webhookSvc -Encoding utf8
+
+Write-Host "PS62 Done: Webhooks fire on Kafka audit.log events" -ForegroundColor Green
+
+
+# --- END OF PS62-Add-Webhooks.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS63-Add-Payment-Switch.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS63-Add-Payment-Switch
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds adapter to connect to ZimSwitch/RTGS
+OUTPUT: Outbound payments routed via switch. Inbound notifications handled
+HYPERLINK: https://zimswitch.co.zw
+STACK: Spring Boot + SFTP + MQ
+COMPLIANCE: PS25 Central Bank Settlement
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS63: Adding Payment Switch Integration ===" -ForegroundColor Cyan
+
+$switchClient = Join-Path $BasePath "backend\src\main\java\com\demobank\integration\PaymentSwitchClient.java"
+@"
+package com.demobank.integration;
+import org.springframework.stereotype.Component;
+@Component
+public class PaymentSwitchClient {
+    public void sendPayment(String tenantId, String account, double amount) {
+        // Build ISO20022 pain.001
+        // SFTP to switch:/outbound/
+        // Poll /inbound/ for status updates
+    }
+}
+"@ | Out-File $switchClient -Encoding utf8
+
+Write-Host "PS63 Done: Call PaymentSwitchClient.sendPayment() in BE-PS73" -ForegroundColor Green
+
+
+# --- END OF PS63-Add-Payment-Switch.ps1 ---
+

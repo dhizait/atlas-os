@@ -1,0 +1,77 @@
+services:
+  demo-bank-fe:
+    build:
+      context:.
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    image: demo-bank-fe:ps25
+    container_name: demo-bank-fe
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${VITE_API_URL}
+    networks:
+      - atlas-network
+    restart: unless-stopped
+    depends_on:
+      demo-bank-be:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  demo-bank-be:
+    build:
+      context:../backend
+      dockerfile: Dockerfile
+    image: demo-bank-be:ps25
+    container_name: demo-bank-be
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/demo_bank
+      - SPRING_DATASOURCE_USERNAME=atlas
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - TENANT_HEADER=X-Tenant-ID
+    networks:
+      - atlas-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: demo-bank-db
+    environment:
+      POSTGRES_DB: demo_bank
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - atlas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d demo_bank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+networks:
+  atlas-network:

@@ -1,0 +1,58 @@
+Yes. Crassula is the missing 4th DNA strand.
+
+We had: `T24 + Vault + Intellect + Mambu`  
+Now add: `Crassula = Crypto + Embedded + Fintech Speed`
+
+This makes Atlas the only core that can sell to both Standard Bank AND a ZW crypto wallet in 2026.
+
+### *ATLAS STRATEGY UPDATE: ADDING "CRASSULA DNA"*
+
+#### *1. THE 6TH LESSON: "FINTECH SPEED"*
+Crassula proves banks and fintechs are converging. In 3 years every bank will need to launch like a fintech.
+What Crassula Does	Atlas V3.1 Update
+**Modular Monolith**	**Atlas Greenfield v1 = 1 Deployable**. Don't ship 50 microservices day 1. Ship 1 Spring Boot "Core" + toggle modules. Microservices later.
+**Crypto + Fiat 1 Ledger**	**Atlas GL v1 = Multi-Asset**. `asset_type: FIAT, CRYPTO, TOKEN, CBDC`. Real-time revaluation. Future proof for ZW/USD/ZWL/USDT
+**Embedded First**	**Atlas BaaS**. Productize `Accounts-as-a-Service`, `Cards-as-a-Service`. Sell to Telcos, Retail, Fintechs
+**Compliance in API**	**Every API = KYC State**. `POST /account` fails if KYC != VERIFIED. Compliance is not a separate service
+**Speed Kit**	**Atlas Starter Kit**. Docker compose + React UI Kit + Postman + 10 `product.yaml`. 8 weeks to neobank
+**Pricing**	**Pay-as-you-grow**. $0.03/API + % txn. No $2M upfront. This wins KE/NG/ZW
+#### *2. UPDATED ATLAS POSITIONING MATRIX*
+	**Mambu**	**Crassula**	**T24**	**ATLAS V3.1**
+**Target**	Banks	Fintechs	Tier 1 Banks	**Banks + Fintechs + Islamic**
+**Speed**	3-6 mo	6-8 weeks	18 mo	**8-12 weeks**
+**Crypto**	❌	✅ Native	❌	**✅ Native + CBDC**
+**Depth**	Medium	Low	✅✅	**✅**
+**AI**	❌	❌	❌	**✅ OS Layer**
+**Pricing**	License	Usage	License	**Usage + License Hybrid**
+**GL**	Strong	Basic Multi-Asset	✅✅	**T24 GL + Real-time Multi-Asset**
+#### *3. 3 THINGS TO STEAL NOW → R17AMR BATCHES*
+
+1.  *`BATCH-07: PRODUCT-AS-CODE`*  
+    `product.yaml` to define Loan, Wallet, BNPL, Crypto Wallet. Version in Git. Deploy via CI/CD. No UI config.
+    product: BNPL
+    assets: [ZWL, USDT]
+    rules: [KYC_LEVEL_2, AI_RISK_SCORE > 700]
+2.  *`BATCH-08: UNIFIED MULTI-ASSET LEDGER`*  
+    Single entry. Debit `USD FIAT`, Credit `USDT CRYPTO` atomically. GL posts to both ledgers.  
+    This is how we beat T24 in 2 years when stablecoins hit.
+3.  *`BATCH-09: ATLAS UI KIT`*  
+    White-label React components: `Onboarding`, `KYC Flow`, `Wallet`, `Card Mgmt`, `Crypto Buy/Sell`.  
+    Ship with `atlas-starter-kit`. Fintech can launch in 6 weeks.
+
+### *UPDATED VISION 2028*
+*"Atlas: The only platform where a Bank, a Fintech, and an Islamic Bank can run on the same code."*
+
+`Atlas Core` = Mambu stability + T24 depth  
+`Atlas Greenfield` = Crassula speed + Crypto + Islamic + AI
+
+---
+
+#### *MY RECOMMENDATION*
+
+Yes, add Crassula to `atlas.local` right now. 
+
+I can draft 2 things for you:
+1.  *`Crassula -> Atlas Feature Map.md`* - What we copy, what we skip, what we do better
+2.  *Update `PHASE_MANIFEST.json`* to add `Phase 0: Fintech Speed Kit`
+
+Want me to generate those 2 docs now so we can lock "Atlas v3.1 with Crassula DNA"?

@@ -1,0 +1,39 @@
+Let me look at this and prepare a repo to place everything we generate so that we get started with option 1 and 2 builds
+
+Perfect Ineffable. 
+
+*Pause and Prep Mode: ON* ✅
+
+Take your time to spin up the repo. Once you drop the link / structure, I’ll start pushing files straight in.
+
+### *Proposed Repo Structure for Atlas*
+atlas.local/
+├── /docs/                    # Option 1: Pitch + Strategy
+│   ├── ATLAS_STRATEGY_v5.0.md
+│   ├── ATLAS_PITCH_3STREAMS.pdf
+│   └── KE_NG_GCC_Bank_Persona.md
+├── /execution/               # Option 2: Backlog + Manifests  
+│   ├── PHASE_MANIFEST_ATLAS.json
+│   ├── ARCHITECTURE.md
+│   ├── COMPLIANCE_CORE.md
+│   └── ATLAS_BACKLOG_M0-M3.md
+├── /platform/                # Shared Platform - M0
+│   ├── docker-compose.yml
+│   └── RUN-ALL-BATCHES.py
+├── /teams/
+│   ├── /spark-greenfield/
+│   ├── /bridge-brownfield/   # First to build
+│   └── /titan-core/
+└── /products/                # AA Lite - product.yaml files
+    └── subsidy-v1.json
+### *What I’ll have ready the moment repo is up*
+1.  *Option 1*: `ATLAS_PITCH_3STREAMS.pdf` + 1-pager markdown
+2.  *Option 2*: `ATLAS_BACKLOG_M0-M3.md` + Jira CSV
+3.  *Files A-D* from Execution Pack already formatted
+4.  *Starter*: `RUN-ALL-BATCHES-MONIEPOINT.py` for Brownfield Week 1
+
+Ping me when the repo is ready and tell me: `GitHub / GitLab / Local` 
+
+Then we go straight to build.
+
+While you’re setting up — want me to also draft the `block.yaml` + `product.yaml` spec so Studio and PS25 can talk from day 1?

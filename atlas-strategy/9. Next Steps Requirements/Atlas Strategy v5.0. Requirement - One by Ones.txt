@@ -1,0 +1,20 @@
+Atlas Strategy v5.0. Requirements
+
+For untangling PS25 in order to plan for building new PS25 scripts that align with our new strategy,
+you made the following requirememts for which we provide the requested cocuments one by one as ff:
+ 
+*Once you bring:* 
+1.  `Atlas repo` - Atlas_Tree_Full_Domains_20260904_234720.csv for demo-bank-services & Full Atlas tree 
+2.  `PS25 scripts` - We have 19 code-batchs  for PS25 and 1 batch with 20  README.mds
+3.  `Features doc`- Atlas_Feature_Target_Master_v1.0.csv
+4.  `v5.0 Strategy doc`  - See Atlas Strategy v5.0.txt
+5.  *`R17AMR TREE`* ← the 6 DNA strands breakdown - R17AMR Tree 
+
+I'll do the heavy lift: run the *Inventory → Gap Map → Real R17AMR Roadmap* from it. 
+
+We’ll tag every PS25 module, every Atlas service, every feature doc line to `R1.1` to `R6.4`. 
+That way the roadmap isn't random — it’s literally `PS25 + Repo + Features` mapped to the 6 DNA strands.
+
+No building until we have all 5.
+
+=============================

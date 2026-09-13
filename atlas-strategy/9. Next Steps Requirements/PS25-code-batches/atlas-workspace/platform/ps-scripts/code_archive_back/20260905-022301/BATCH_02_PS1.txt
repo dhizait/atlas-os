@@ -1,0 +1,394 @@
+"""
+ATLAS R01 BATCH 02 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS62-Verify-Tenant-Isolation.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS62-Verify-Tenant-Isolation
+
+.DESCRIPTION
+INPUT: TenantBase.java, TenantFilter.java
+PROCESSING: Checks isolation artifacts exist
+OUTPUT: Console verification report
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS62-Verify-Tenant-Isolation.ps1
+# PURPOSE: Implements multi-tenancy context and isolation
+# FILE: BE-PS62-Verify-Tenant-Isolation.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS62: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Verifying tenant isolation for Spring Boot" "INFO"
+if ($DryRun) { Write-Host "[PS62 DRY RUN] Would verify tenant isolation"; exit 0 }
+
+# 1. Check JPA TenantBase
+$tenantBase = Join-Path $BeRoot "src\main\java\com\demobank\domain\TenantBase.java"
+if (Test-Path $tenantBase) {
+  $content = Get-Content $tenantBase -Raw
+  if ($content -match "tenantId" -and $content -match "@MappedSuperclass") {
+    Write-Log "Found TenantBase with tenantId. PS25 isolation enabled" "SUCCESS"
+  } else { Write-Log "TenantBase incomplete. Run PS57 first" "WARN" }
+} else { Write-Log "TenantBase.java not found. Run PS57 first" "WARN" }
+
+# 2. Check test utils
+$testUtil = Join-Path $BeRoot "src\test\java\com\demobank\util\TenantTestUtil.java"
+if (Test-Path $testUtil) { Write-Log "Found TenantTestUtil.java from PS60" "SUCCESS" }
+else { Write-Log "TenantTestUtil.java not found. Run PS60 first" "WARN" }
+
+# 3. Check TenantFilter
+$filterFile = Join-Path $BeRoot "src\main\java\com\demobank\config\TenantFilter.java"
+if (Test-Path $filterFile) { Write-Log "Found TenantFilter.java for header extraction" "SUCCESS" }
+else { Write-Log "TenantFilter.java not found. Run PS65 first" "WARN" }
+
+Write-Log "PS62 Complete: Tenant isolation verification ready" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS62-Verify-Tenant-Isolation.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS63-Add-Tenant-Unit-Tests.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS63-Add-Tenant-Unit-Tests
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates TenantIsolationTest.java
+OUTPUT: src/test/java/com/demobank/service/TenantIsolationTest.java
+HYPERLINK: https://junit.org
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS63-Add-Tenant-Unit-Tests.ps1
+# PURPOSE: Implements multi-tenancy context and isolation
+# FILE: BE-PS63-Add-Tenant-Unit-Tests.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$testDir = Join-Path $BeRoot "src\test\java\com\demobank\service"
+$testFile = Join-Path $testDir "TenantIsolationTest.java"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS63: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Adding JUnit tests for tenant isolation" "INFO"
+if (-not (Test-Path $testDir)) { New-Item -ItemType Directory -Path $testDir -Force | Out-Null }
+
+if ($DryRun) { Write-Host "[PS63 DRY RUN] Would write to $testFile"; exit 0 }
+
+@'
+package com.demobank.service;
+
+import com.demobank.util.TenantTestUtil;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class TenantIsolationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testTenantIsolation() throws Exception {
+        UUID tenantA = TenantTestUtil.createTestTenant();
+        UUID tenantB = TenantTestUtil.createTestTenant();
+
+        // Create voucher for tenantA
+        mockMvc.perform(post("/api/v1/vouchers")
+              .header("X-Tenant-ID", tenantA)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"amount\":100}"))
+              .andExpect(status().isOk());
+
+        // tenantB should see 0 vouchers
+        mockMvc.perform(get("/api/v1/vouchers")
+              .header("X-Tenant-ID", tenantB))
+              .andExpect(status().isOk())
+              .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void testMissingTenantHeaderReturns401() throws Exception {
+        mockMvc.perform(get("/api/v1/vouchers"))
+              .andExpect(status().isUnauthorized());
+    }
+}
+'@ | Set-Content $testFile -Encoding UTF8
+
+Write-Log "PS63 Complete: JUnit tests added for tenant isolation" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS63-Add-Tenant-Unit-Tests.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS64-Run-Tenant-Tests.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS64-Run-Tenant-Tests
+
+.DESCRIPTION
+INPUT: pom.xml
+PROCESSING: Runs `mvn test -Dtest=TenantIsolationTest`
+OUTPUT: Test results
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS64-Run-Tenant-Tests.ps1
+# PURPOSE: Implements multi-tenancy context and isolation
+# FILE: BE-PS64-Run-Tenant-Tests.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS64: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Running tenant isolation tests via Maven" "INFO"
+if ($DryRun) { Write-Host "[PS64 DRY RUN] Would run mvn test for tenant isolation"; exit 0 }
+
+Push-Location $BeRoot
+try {
+  if (-not (Test-Path "pom.xml")) { Write-Log "pom.xml not found. Run PS59 first" "WARN"; exit 1 }
+
+  Write-Log "Running: mvn test -Dtest=TenantIsolationTest" "INFO"
+  mvn test -Dtest="TenantIsolationTest"
+  if ($LASTEXITCODE -ne 0) { throw "mvn test failed with exit code $LASTEXITCODE" }
+
+  Write-Log "PS64 Complete: Tenant isolation tests passed" "SUCCESS"; exit 0
+}
+catch {
+  Write-Log "PS64 Error: Tests failed - $($_.Exception.Message)" "ERROR"; exit 1
+}
+finally { Pop-Location }
+
+
+# --- END OF BE-PS64-Run-Tenant-Tests.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS65-Update-API-Docs.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS65-Update-API-Docs
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates TenantFilter.java to extract X-Tenant-ID
+OUTPUT: src/main/java/com/demobank/config/TenantFilter.java
+HYPERLINK: https://www.openapis.org
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS65-Update-API-Docs.ps1
+# PURPOSE: Performs core PS25 automation task
+# FILE: BE-PS65-Update-API-Docs.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$configDir = Join-Path $BeRoot "src\main\java\com\demobank\config"
+$filterFile = Join-Path $configDir "TenantFilter.java"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS65: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Updating OpenAPI docs with X-Tenant-ID header" "INFO"
+if (-not (Test-Path $configDir)) { New-Item -ItemType Directory -Path $configDir -Force | Out-Null }
+
+if ($DryRun) { Write-Host "[PS65 DRY RUN] Would write to $filterFile"; exit 0 }
+
+@'
+package com.demobank.config;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Component;
+import java.io.IOException;
+import java.util.UUID;
+
+@Component
+public class TenantFilter implements Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String tenantId = httpRequest.getHeader("X-Tenant-ID");
+        if (tenantId == null || tenantId.isEmpty()) {
+            throw new ServletException("X-Tenant-ID header is required");
+        }
+        TenantContext.setTenantId(UUID.fromString(tenantId));
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            TenantContext.clear();
+        }
+    }
+}
+'@ | Set-Content $filterFile -Encoding UTF8
+
+Write-Log "PS65 Complete: TenantFilter added. Add @OpenAPIDefinition with header param for docs" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS65-Update-API-Docs.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS66-Final-Smoke-Test.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS66-Final-Smoke-Test
+
+.DESCRIPTION
+INPUT: pom.xml
+PROCESSING: Runs `mvn clean test` full suite
+OUTPUT: Test results + exit code
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 4
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS66-Final-Smoke-Test.ps1
+# PURPOSE: Runs unit/integration tests for tenant isolation
+# FILE: BE-PS66-Final-Smoke-Test.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS66: $Msg" -ForegroundColor $color
+}
+
+Write-Host "================================================" -ForegroundColor Magenta
+Write-Host " PS66: Final Smoke Test" -ForegroundColor Magenta
+Write-Host " Running mvn test for PS25 verification" -ForegroundColor Magenta
+Write-Host "================================================" -ForegroundColor Magenta
+
+if ($DryRun) { Write-Host "[PS66 DRY RUN] Would run 'mvn test' in $BeRoot"; exit 0 }
+
+Push-Location $BeRoot
+try {
+  if (-not (Test-Path "pom.xml")) { Write-Log "pom.xml not found. Run PS59 first" "WARN"; exit 1 }
+
+  Write-Log "Running: mvn clean test" "INFO"
+  mvn clean test
+  if ($LASTEXITCODE -ne 0) { throw "mvn test failed with exit code $LASTEXITCODE" }
+
+  Write-Log "PS66 Complete: All JUnit tests passed" "SUCCESS"
+  Write-Log "PS25 IMPLEMENTATION VERIFIED" "SUCCESS"; exit 0
+}
+catch {
+  Write-Log "PS66 Error: Tests failed - $($_.Exception.Message)" "ERROR"; exit 1
+}
+finally { Pop-Location }
+
+
+# --- END OF BE-PS66-Final-Smoke-Test.ps1 ---
+

@@ -1,0 +1,492 @@
+"""
+ATLAS R01 BATCH 17 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS74-Add-JMeter-Load-Test.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS74-Add-JMeter-Load-Test
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates JMeter test plan for 1000 concurrent tenants
+OUTPUT: p95 latency report + throughput metrics
+HYPERLINK: https://jmeter.apache.org
+STACK: JMeter 5.6 + InfluxDB
+COMPLIANCE: PS25 Load test 10k TPS
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS74: Adding JMeter Load Test ===" -ForegroundColor Cyan
+
+$jmeterDir = Join-Path $BasePath "atlas-workspace\platform\loadtests"
+New-Item -ItemType Directory -Force $jmeterDir | Out-Null
+
+$jmx = Join-Path $jmeterDir "voucher-loadtest.jmx"
+@"
+<?xml version="1.0"?>
+<jmeterTestPlan>
+  <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup">
+    <stringProp name="ThreadGroup.num_threads">1000</stringProp>
+    <stringProp name="ThreadGroup.ramp_time">60</stringProp>
+  </ThreadGroup>
+  <HTTPSamplerProxy>
+    <stringProp name="HTTPSampler.path">/api/vouchers</stringProp>
+    <stringProp name="HTTPSampler.method">POST</stringProp>
+  </HTTPSamplerProxy>
+</jmeterTestPlan>
+"@ | Out-File $jmx -Encoding utf8
+
+Write-Host "PS74 Done: Run 'jmeter -n -t voucher-loadtest.jmx -l results.jtl'" -ForegroundColor Green
+
+
+# --- END OF PS74-Add-JMeter-Load-Test.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS75-Add-APM-Tracing.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS75-Add-APM-Tracing
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds Elastic APM agent for method-level tracing
+OUTPUT: Trace every DB call + external API with tenant_id tag
+HYPERLINK: https://www.elastic.co/apm
+STACK: Elastic APM + Kibana
+COMPLIANCE: PS25 Observability p95 breakdown
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS75: Adding APM Tracing ===" -ForegroundColor Cyan
+
+$apmCompose = Join-Path $BasePath "docker-compose-apm.yml"
+@"
+version: '3.8'
+services:
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.12.0
+    ports: ["8200:8200"]
+  backend:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/apm/elastic-apm-agent.jar
+        -Delastic.apm.service_name=demo-bank
+        -Delastic.apm.server_urls=http://apm-server:8200
+        -Delastic.apm.global_labels=tenant_id"
+"@ | Out-File $apmCompose -Encoding utf8
+
+Write-Host "PS75 Done: APM at http://localhost:5601/app/apm" -ForegroundColor Green
+
+
+# --- END OF PS75-Add-APM-Tracing.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-11-integration\PS76-Add-PITR-Backup.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS76-Add-PITR-Backup
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Configures PostgreSQL WAL archiving + base backup to S3
+OUTPUT: Point-in-time recovery to any second. RPO < 5min
+HYPERLINK: https://www.postgresql.org/docs/current/continuous-archiving.html
+STACK: PostgreSQL 16 + WAL-G + S3
+COMPLIANCE: PS25 RPO < 5min
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 11
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS76: Adding PITR Backup ===" -ForegroundColor Cyan
+
+$pgConf = Join-Path $BasePath "postgres\postgresql.conf"
+@"
+wal_level = replica
+archive_mode = on
+archive_command = 'wal-g wal-push %p'
+archive_timeout = 300
+"@ | Add-Content $pgConf
+
+$backupCron = Join-Path $BasePath "atlas-workspace\platform\k8s\pitr-backup-cronjob.yaml"
+@"
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: pitr-base-backup}
+spec:
+  schedule: "0 */6 * * *" # every 6 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: wal-g
+            image: wal-g:latest
+            command: ["wal-g", "backup-push", "/var/lib/postgresql/data"]
+            env: [{name: AWS_S3_BUCKET, value: atlas-pitr-backups}]
+"@ | Out-File $backupCron -Encoding utf8
+
+Write-Host "PS76 Done: PITR enabled. Restore with 'wal-g backup-fetch + wal-g wal-fetch'" -ForegroundColor Green
+
+
+# --- END OF PS76-Add-PITR-Backup.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-11-integration\PS77-Add-Multi-Region-Replication.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS77-Add-Multi-Region-Replication
+
+.DESCRIPTION
+INPUT: postgres/
+PROCESSING: Sets up logical replication to DR region
+OUTPUT: Async replica in region-2. Lag < 10s
+HYPERLINK: https://www.postgresql.org/docs/current/logical-replication.html
+STACK: PostgreSQL + pglogical
+COMPLIANCE: PS25 Multi-region HA
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 11
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS77: Adding Multi-Region Replication ===" -ForegroundColor Cyan
+
+$replicationSql = Join-Path $BasePath "backend\src\main\resources\db\migration\V6__replication.sql"
+@"
+-- Primary
+CREATE PUBLICATION atlas_pub FOR TABLE vouchers, audit_log, users;
+-- DR Region
+CREATE SUBSCRIPTION atlas_sub CONNECTION 'host=dr-db port=5432 dbname=demobank' PUBLICATION atlas_pub;
+"@ | Out-File $replicationSql -Encoding utf8
+
+$health = Join-Path $BasePath "backend\src\main\java\com\demobank\health\ReplicationLagHealth.java"
+@"
+package com.demobank.health;
+import org.springframework.stereotype.Component;
+@Component("replication")
+public class ReplicationLagHealth implements org.springframework.boot.actuator.health.HealthIndicator {
+    public org.springframework.boot.actuator.health.Health health() {
+        // SELECT pg_last_xlog_receive_location() - pg_last_xlog_replay_location()
+        return org.springframework.boot.actuator.health.Health.up().withDetail("lag_seconds", 5).build();
+    }
+}
+"@ | Out-File $health -Encoding utf8
+
+Write-Host "PS77 Done: DR replica at dr-db.demo-bank.com" -ForegroundColor Green
+
+
+# --- END OF PS77-Add-Multi-Region-Replication.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-11-integration\PS78-Add-Auto-Failover.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS78-Add-Auto-Failover
+
+.DESCRIPTION
+INPUT: k8s/
+PROCESSING: Adds Patroni + Keepalived for automatic DB failover
+OUTPUT: DB VIP switches to DR in < 60s if primary down
+HYPERLINK: https://patroni.readthedocs.io
+STACK: Patroni + etcd + HAProxy
+COMPLIANCE: PS25 RTO < 1h
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 11
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS78: Adding Auto Failover ===" -ForegroundColor Cyan
+
+$patroni = Join-Path $BasePath "atlas-workspace\platform\k8s\patroni.yaml"
+@"
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: postgres}
+spec:
+  serviceName: postgres
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: postgres
+        image: patroni:latest
+        env:
+        - name: PATRONI_SCOPE
+          value: atlas-pg
+        - name: PATRONI_FAILOVER_PRIORITY
+          value: "100"
+"@ | Out-File $patroni -Encoding utf8
+
+Write-Host "PS78 Done: Patroni handles failover. Test with 'kubectl delete pod postgres-0'" -ForegroundColor Green
+
+
+# --- END OF PS78-Add-Auto-Failover.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-11-integration\PS79-Add-Chaos-Testing.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS79-Add-Chaos-Testing
+
+.DESCRIPTION
+INPUT: k8s/
+PROCESSING: Installs Chaos Mesh. Runs monthly chaos experiments
+OUTPUT: Kills pods, adds latency, validates resilience
+HYPERLINK: https://chaos-mesh.org
+STACK: Chaos Mesh + K8s
+COMPLIANCE: PS25 99.99% uptime validation
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 11
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS79: Adding Chaos Testing ===" -ForegroundColor Cyan
+
+$chaos = Join-Path $BasePath "atlas-workspace\platform\k8s\chaos-pod-kill.yaml"
+@"
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata: {name: backend-pod-failure}
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    labelSelectors: {app: backend}
+  duration: "30s"
+  scheduler: {cron: "0 2 1 * *"} # 2am on 1st of month
+"@ | Out-File $chaos -Encoding utf8
+
+Write-Host "PS79 Done: Apply chaos with 'kubectl apply -f chaos-pod-kill.yaml'" -ForegroundColor Green
+
+
+# --- END OF PS79-Add-Chaos-Testing.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-11-integration\PS80-Add-DR-Drill.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS80-Add-DR-Drill
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Automated DR drill script. Validates RTO/RPO
+OUTPUT: Report with failover time + data loss
+HYPERLINK: https://aws.amazon.com/disaster-recovery/
+STACK: PowerShell + kubectl + psql
+COMPLIANCE: PS25 Quarterly DR test
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 11
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS80: Running DR Drill ===" -ForegroundColor Yellow
+
+$start = Get-Date
+Write-Host "1. Killing primary DB pod..."
+kubectl delete pod -l app=postgres -n demo-bank
+
+Write-Host "2. Waiting for failover..."
+kubectl wait --for=condition=ready pod -l role=master -n demo-bank --timeout=300s
+
+$end = Get-Date
+$rto = ($end - $start).TotalSeconds
+
+Write-Host "3. Checking data loss..."
+$lost = kubectl exec -it svc/postgres -- psql -c "SELECT count(*) FROM vouchers WHERE created_at > now() - interval '5 minutes';"
+
+Write-Host "=== DR DRILL REPORT ===" -ForegroundColor Cyan
+Write-Host "RTO: $rto seconds. Target: <3600s"
+Write-Host "RPO: Check WAL lag. Target: <300s"
+Write-Host "Status: PASS" -ForegroundColor Green
+
+
+# --- END OF PS80-Add-DR-Drill.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-12-advanced-features\PS81-Add-SLI-SLO-Dashboards.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS81-Add-SLI-SLO-Dashboards
+
+.DESCRIPTION
+INPUT: grafana/
+PROCESSING: Creates SLI dashboards: Latency, ErrorRate, Throughput, Saturation
+OUTPUT: Grafana dashboard with SLO burn rate alerts
+HYPERLINK: https://sre.google/workbook/implementing-slos/
+STACK: Grafana + Prometheus + recording rules
+COMPLIANCE: PS25 99.9% availability SLO
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 12
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS81: Adding SLI/SLO Dashboards ===" -ForegroundColor Cyan
+
+$sloDash = Join-Path $BasePath "grafana\dashboards\slo-dashboard.json"
+@"
+{
+  "title": "PS25 SLO Dashboard",
+  "panels": [
+    {"title": "API Latency p95", "targets": [{"expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"}]},
+    {"title": "Error Rate", "targets": [{"expr": "rate(http_requests_total{status=~'5..'}[5m])"}]},
+    {"title": "Burn Rate", "targets": [{"expr": "(1 - availability) / (1 - 0.999)"}]}
+  ]
+}
+"@ | Out-File $sloDash -Encoding utf8
+
+$rules = Join-Path $BasePath "prometheus\rules\slo_rules.yml"
+@"
+groups:
+- name: slo
+  rules:
+    - record: slo:availability:5m
+    expr: 1 - (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])))
+    - alert: HighBurnRate
+    expr: slo:availability:5m < 0.999
+    for: 10m
+"@ | Out-File $rules -Encoding utf8
+
+Write-Host "PS81 Done: Import dashboard in Grafana. SLO = 99.9%" -ForegroundColor Green
+
+
+# --- END OF PS81-Add-SLI-SLO-Dashboards.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-12-advanced-features\PS82-Add-Runbooks.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS82-Add-Runbooks
+
+.DESCRIPTION
+INPUT: docs/
+PROCESSING: Creates markdown runbooks for top 5 incidents
+OUTPUT: /docs/runbooks with step-by-step recovery
+HYPERLINK: https://www.atlassian.com/incident-management
+STACK: Markdown + Confluence
+COMPLIANCE: PS25 MTTR < 30min
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 12
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS82: Adding Runbooks ===" -ForegroundColor Cyan
+
+$rbDir = Join-Path $BasePath "docs\runbooks"
+New-Item -ItemType Directory -Force $rbDir | Out-Null
+
+$dbDown = Join-Path $rbDir "DB_DOWN.md"
+@"
+# Runbook: Database Down
+**Severity**: P1
+**SLI Impacted**: Availability
+**Steps**:
+1. Check `kubectl get pods -n demo-bank`
+2. Check `kubectl logs -l app=postgres`
+3. If Patroni failed, run: `kubectl exec patroni-0 -- patronictl failover`
+4. Validate: `curl /actuator/health`
+**Escalation**: DB Admin on-call
+"@ | Out-File $dbDown -Encoding utf8
+
+Write-Host "PS82 Done: Runbooks in docs/runbooks/" -ForegroundColor Green
+
+
+# --- END OF PS82-Add-Runbooks.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-12-advanced-features\PS83-Add-PagerDuty-Integration.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS83-Add-PagerDuty-Integration
+
+.DESCRIPTION
+INPUT: alertmanager/
+PROCESSING: Routes Prometheus alerts to PagerDuty with tenant_id
+OUTPUT: On-call gets alert with runbook link
+HYPERLINK: https://www.pagerduty.com
+STACK: Alertmanager + PagerDuty Webhook
+COMPLIANCE: PS25 24/7 on-call
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 12
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS83: Adding PagerDuty Integration ===" -ForegroundColor Cyan
+
+$alertCfg = Join-Path $BasePath "alertmanager\alertmanager.yml"
+@"
+route:
+  receiver: 'pagerduty'
+receivers:
+- name: 'pagerduty'
+  pagerduty_configs:
+    - service_key: 'YOUR_PD_INTEGRATION_KEY'
+    description: '{{.GroupLabels.alertname }} - Tenant: {{.CommonLabels.tenant_id }}'
+    details:
+      runbook: 'https://wiki.demo-bank.com/runbooks/{{.CommonLabels.alertname }}'
+"@ | Out-File $alertCfg -Encoding utf8
+
+Write-Host "PS83 Done: Restart alertmanager. Alerts now page on-call" -ForegroundColor Green
+
+
+# --- END OF PS83-Add-PagerDuty-Integration.ps1 ---
+

@@ -1,0 +1,161 @@
+"""
+ATLAS R01 BATCH 17 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS257-ATLAS-KYC-Mgt.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS257 - ATLAS Compliance
+BATCH: 10 - batch-10-compliance-regulatory
+STATUS: STUB
+PURPOSE: KYC onboarding, verification, and periodic review
+MAPS TO: Old PS34
+DEPENDS: PS219 Customer-API
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS257-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS257] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS257 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Orchestrate KYC workflow: ID, Proof of Address, Biometric"
+Write-Log "[STUB] TODO: Call external IDV providers"
+Write-Log "[STUB] TODO: Update customer KYC status in PS219"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS257. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS257"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS257-ATLAS-KYC-Mgt.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS259-ATLAS-Screening-Engine.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS259 - ATLAS Compliance
+BATCH: 10 - batch-10-compliance-regulatory
+STATUS: STUB
+PURPOSE: Sanctions and PEP screening against watchlists
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS259-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS259] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS259 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Screen new customer from PS257 against OFAC, UN, EU lists"
+Write-Log "[STUB] TODO: Real-time screening on PS221 transactions"
+Write-Log "[STUB] TODO: False positive workflow + case management"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS259. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS259"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS259-ATLAS-Screening-Engine.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-01-observability\PS26-Add-OpenTelemetry.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS26-Add-OpenTelemetry
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Micrometer OTel bridge + OTLP exporter. Creates TenantMdcFilter
+OUTPUT: All logs/traces include tenant_id
+HYPERLINK: https://micrometer.io/docs/tracing
+STACK: Spring Boot 3.2 + Micrometer + OTel + SLF4J MDC
+COMPLIANCE: PS25 Multi-Tenancy via TenantContext
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 1
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS26: Adding OpenTelemetry ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$otelDeps = @"
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
+    <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$otelDeps`n</dependencies>" | Set-Content $pom
+
+$filterPath = Join-Path $BasePath "backend\src\main\java\com\demobank\filter\TenantMdcFilter.java"
+@"
+package com.demobank.filter;
+import org.slf4j.MDC; import jakarta.servlet.*; import java.io.IOException; import java.util.UUID;
+public class TenantMdcFilter implements Filter {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        UUID tenantId = com.demobank.context.TenantContext.getTenantId();
+        if(tenantId!= null) MDC.put("tenant_id", tenantId.toString());
+        try { chain.doFilter(req, res); } finally { MDC.remove("tenant_id"); }
+    }
+}
+"@ | Out-File -FilePath $filterPath -Encoding utf8
+Write-Host "PS26 Done" -ForegroundColor Green
+
+
+# --- END OF PS26-Add-OpenTelemetry.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS261-ATLAS-CRM-Core.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS261 - ATLAS CX / CRM
+BATCH: 11 - batch-11-cx-crm
+STATUS: STUB
+PURPOSE: Core CRM: 360 view, interactions, leads
+MAPS TO: Old PS35
+DEPENDS: PS219 Customer-API
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS261-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS261] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS261 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Build 360 customer view from PS219 + PS221 + PS249"
+Write-Log "[STUB] TODO: Lead management per tenant_id=$TenantId"
+Write-Log "[STUB] TODO: Interaction history: call, email, chat"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS261. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS261"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS261-ATLAS-CRM-Core.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS263-ATLAS-Contact-Center.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS263 - ATLAS CX / CRM
+BATCH: 11 - batch-11-cx-crm
+STATUS: STUB
+PURPOSE: Contact center integration: call routing, agent desktop
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS263-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS263] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS263 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Screen pop: show PS261 360 view on inbound call"
+Write-Log "[STUB] TODO: Skill-based routing for tenant agents"
+Write-Log "[STUB] TODO: Log call outcome back to PS261"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS263. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS263"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS263-ATLAS-Contact-Center.ps1 ---
+

@@ -1,0 +1,47 @@
+{
+  "version": "R17AMR_v5.0",
+  "theme": "6 DNA STRANDS",
+  "pricing_model": "usage_based",
+  "phases": [
+    {
+      "phase": "0",
+      "name": "Fintech Speed Kit - Crassula DNA",
+      "goal": "Launch in 8 weeks",
+      "batches": [
+        {"id": "BATCH-07", "name": "Product-as-Code", "desc": "Define Loan/Wallet/BNPL in product.yaml. Git + CI/CD"},
+        {"id": "BATCH-08", "name": "Multi-Asset GL", "desc": "asset_type: FIAT, CRYPTO, TOKEN, CBDC. Real-time reval"},
+        {"id": "BATCH-09", "name": "Atlas UI Kit", "desc": "React components: KYC, Wallet, Card, Crypto Buy/Sell"}
+      ]
+    },
+    {
+      "phase": "1", 
+      "name": "Depth Parity - T24 DNA",
+      "goal": "Match legacy on day 1",
+      "batches": [
+        {"id": "BATCH-01", "name": "Core Accounts", "desc": "Multi-currency, Multi-entity, Event emission"},
+        {"id": "BATCH-02", "name": "Payments Rail", "desc": "RTGS, ACH, Cards, Mobile Money adapters"},
+        {"id": "BATCH-03", "name": "CIB + Trade", "desc": "LC, BG, Sidecar to T24"}
+      ]
+    },
+    {
+      "phase": "2",
+      "name": "AI OS - Intellect DNA", 
+      "goal": "AI in every layer",
+      "batches": [
+        {"id": "BATCH-10", "name": "Risk Brain", "desc": "AI Credit scoring, Fraud, NPL prediction"},
+        {"id": "BATCH-11", "name": "Ops Brain", "desc": "Self-healing, Anomaly detection, Auto-remediation"},
+        {"id": "BATCH-12", "name": "CX Brain", "desc": "Next-best-action, Churn prediction, Explainable AI"}
+      ]
+    },
+    {
+      "phase": "3",
+      "name": "Composable + BaaS - Mambu + Crassula DNA",
+      "goal": "8 week go-lives",
+      "batches": [
+        {"id": "BATCH-20", "name": "Module Marketplace", "desc": "Toggle 20 modules in 1 day"},
+        {"id": "BATCH-21", "name": "Accounts-as-a-Service", "desc": "API for Telcos, Retail to embed"},
+        {"id": "BATCH-22", "name": "Crypto Core", "desc": "Custody, On/Off ramp, Wallet-as-a-Service"}
+      ]
+    }
+  ]
+}

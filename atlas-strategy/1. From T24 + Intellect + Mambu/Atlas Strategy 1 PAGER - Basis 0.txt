@@ -1,0 +1,57 @@
+Got it — my bad. Let’s lift up.
+
+We park GRIT batches for now.  
+This is pure *Strategy DL: R17AMR + Atlas* 
+
+### *ATLAS STRATEGY 2026-2028: "COMPOSABLE + AI-LAYER FIRST"*
+
+The goal: Pick what makes T24 leading, skip what makes PS25 painful, and leapfrog with AI.
+
+#### *1. STRATEGIC POSITIONING*
+*Not*: "Another core banking system"  
+*But*: "The first AI-Native Composable Banking Platform for Emerging Markets + Credit Unions"
+
+T24 wins on scale and risk. Intellect wins on AI. Mambu wins on speed.  
+*Atlas wins on*: `T24 depth + Intellect AI + Mambu speed`, deployed with zero PS.
+
+#### *2. 3 STRATEGIC PILLARS*
+Pillar	What It Means	Why We Win
+**1. Composable by Design**	80 Business Capabilities as independent modules. Bank picks only what it needs. "Product Lego"	Banks hate 5-year core replacements. We do 2-week capability swaps. No PS25 untangling
+**2. AI as the OS Layer**	AI sits ABOVE all APIs. Every decision, workflow, ops task routes through AI first	Competitors bolt AI on. We make AI the default. 30s loan decisions, self-healing ops
+**3. Outcome-Based Delivery**	We sell business outcomes: "Go live with Loans in 30 days". Not software licenses	Banks are tired of consulting. We productize implementation
+#### *3. WHERE WE PLAY vs WHERE WE DON'T*
+**We Play**	**We Avoid**
+Mid-Tier Banks $500M-$10B AUM	Global Top 20. Let T24/Oracle fight there
+Credit Unions + Digital Challengers	100% greenfield neobanks. Too risky
+Emerging Markets: KE, NG, ZA, GCC	US Tier 1. Compliance hell
+Transaction Banking + Lending	Investment Banking, Capital Markets v1
+This is exactly where Intellect just got 96 NA deals.
+
+#### *4. COMPETITIVE MOAT*
+
+1.  *Speed Moat*: 2-8 week go-lives vs 9-18 months for T24
+2.  *AI Moat*: AI-Layer is not optional. Every Atlas client gets "Risk Brain + Ops Brain + CX Brain" day 1
+3.  *Delivery Moat*: Zero PS model. Bank self-serves via pipeline. We sell platform, not people
+
+#### *5. R17AMR 12-MONTH STRATEGIC ROADMAP*
+Quarter	Strategic Goal	Proof Point
+**Q4 2026**	**"T24 Parity Core"**	Match T24 on Multi-currency, Multi-entity, Country Model
+**Q1 2027**	**"Composable Launch"**	20 capabilities live. Bank can turn on 1 product in 1 day
+**Q2 2027**	**"AI-Layer Launch"**	3 AI Agents live. Demo: AI approves loan, AI rolls back failed deploy
+**Q3 2027**	**"Marketplace Launch"**	10 Fintech partners. 1-click KYC, Fraud, BNPL
+**Q4 2027**	**"Category Leadership"**	Win 3 reference banks. Claim: "Fastest AI Core in EM"
+#### *6. KEY STRATEGIC BETS WE'RE MAKING*
+
+1.  *Bet 1*: Banks will pay more for speed + AI than for 40 years of legacy features
+2.  *Bet 2*: PS is dead. Banks will only buy platforms they can deploy themselves
+3.  *Bet 3*: AI regulation will favor "explainable AI layer" over black-box bolt-ons
+
+If 2 of 3 are true, we win.
+
+---
+
+This is the strategy doc we take to board/investors. Clean. No batches. No code.
+
+When you’re ready to come back down to tactical, we’ll map this strategy 1:1 to the GRIT batch approach you liked and do the same for Atlas.
+
+*Question*: Which of the 3 pillars do you want to double-down on first for R17AMR messaging: `Composable`, `AI-Layer`, or `Zero-PS Delivery`?

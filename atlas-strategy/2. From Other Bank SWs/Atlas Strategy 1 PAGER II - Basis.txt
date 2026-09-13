@@ -1,0 +1,88 @@
+Copy. Let's widen the scan beyond T24 + Intellect + Mambu.
+
+If Atlas wins on `Composable + AI-Layer + Zero-PS`, we need to steal the best DNA from everyone else too.
+
+### *EXPANDED STRATEGY SCAN: 10 SYSTEMS TO PICK FROM*
+
+#### *TIER 1: CORE BANKING GIANTS - "Depth + Compliance DNA"*
+
+1.  *Oracle FLEXCUBE*  
+    *What’s Leading*: Best-in-class for Corporate + Trade Finance. 900+ banks. Country model packs are brutal.  
+    *Atlas Steal*: `Corporate Banking Module Design`. Their "Product Factory" for loans/CIB is the best.  
+    *Gap*: Monolith. 2-year PS. We take their logic, make it microservice.
+
+2.  *FIS Profile / FIS Modern Banking Platform*  
+    *What’s Leading*: US Credit Union + Community Bank king. Owns the payments rails.  
+    *Atlas Steal*: `US Regulatory Compliance Pack`. BSA/AML/Fraud rules out of box.  
+    *Gap*: Legacy COBOL. We repackage their compliance into composable APIs.
+
+3.  *FISERV DNA / Precision*  
+    *What’s Leading*: #1 in US Core. Obsessed with "Bank in a Box" + BaaS.  
+    *Atlas Steal*: `BaaS + Embedded Banking`. Their partner marketplace is mature.  
+    *Gap*: Not cloud-native. We do "BaaS but API-first".
+
+#### *TIER 2: NEXT-GEN CORES - "Speed + Cloud DNA"*
+
+4.  *Thought Machine Vault*  
+    *What’s Leading*: Pure event-driven ledger. Every action is an event. Built for JP Morgan Chase.  
+    *Atlas Steal*: `Event-Driven Architecture`. This is how we make AI possible.  
+    *Gap*: Only for Tier 1. Too expensive. We bring event-driven to EM.
+
+5.  *Mambu*  
+    *What’s Leading*: Fastest go-live. 2 weeks. Marketplace of 300+ fintechs.  
+    *Atlas Steal*: `Go-to-Market Speed + Partner Marketplace`.  
+    *Gap*: Weak on core deposits/complex loans. We add T24 depth.
+
+6.  *nCino*  
+    *What’s Leading*: #1 for Commercial Lending. Built on Salesforce.  
+    *Atlas Steal*: `Domain-Specific AI`. Their "Banking Advisor" AI for loan officers is best.  
+    *Gap*: Only lending. We make "nCino for everything".
+
+#### *TIER 3: AI + DIGITAL LEADERS - "AI + CX DNA"*
+
+7.  *Backbase*  
+    *What’s Leading*: Best Digital Banking Engagement. "Engagement Banking Platform".  
+    *Atlas Steal*: `UX + Journey Orchestration`. Their drag-drop journey builder.  
+    *Gap*: No core. We pair their front-end with Atlas core + AI.
+
+8.  *Salt Edge / Plaid / Teller*  
+    *What’s Leading*: Open Banking + Data Aggregation kings.  
+    *Atlas Steal*: `Open Finance Connectors`. 5000+ bank APIs in 1 SDK.  
+    *Gap*: Not a core. We embed them as `BATCH-XX-OPEN-BANKING.txt`
+
+9.  *Unit / Treasury Prime / Marqeta*  
+    *What’s Leading*: Embedded Banking / Card Issuing. API-first, developer obsessed.  
+    *Atlas Steal*: `Developer Experience`. Docs, sandboxes, 1-day integration.  
+    *Gap*: Only US. We do "Embedded Banking for EM".
+
+#### *TIER 4: THE DARK HORSE - "AI OPERATING SYSTEM"*
+
+10. *Intellect eMACH.ai + Purple Fabric*  
+    *What’s Leading*: Only true "AI-Native" core. 329 microservices + agents for everything.  
+    *Atlas Steal*: `AI Agent Architecture`. How they structured agents per domain.  
+    *Gap*: Price + Complexity. We do "Purple Fabric but self-serve".
+
+---
+
+### *ATLAS V2 STRATEGY: "THE 5 DNA STRANDS"*
+
+From the scan, we now pick 5 strands to braid into Atlas:
+DNA Strand	Source	Atlas Implementation
+**1. Depth**	T24 + FLEXCUBE + FIS	Inherit 40 years via "Capability Marketplace"
+**2. Speed**	Mambu + Unit	2-week go-lives. Self-serve batches
+**3. Event-Driven**	Thought Machine	Everything emits events. AI listens
+**4. AI-Native**	Intellect + nCino	AI agents for Risk, Ops, CX built-in
+**5. Engagement**	Backbase + Plaid	Best-in-class UX + Open Banking out of box
+*New Positioning*:  
+*"Atlas = Vault's architecture + T24's depth + Intellect's AI + Mambu's speed + Backbase's UX"*
+
+### *2 ACTIONS FOR R17AMR NOW*
+
+1.  *Update PHASE_MANIFEST*: Add 5 new domains from scan: `Corporate`, `BaaS`, `Open Banking`, `Engagement`, `Embedded`
+2.  *Pick 2 Reference Banks*: 1 that looks like FLEXCUBE client, 1 that looks like Mambu client. Prove Atlas does both.
+
+---
+
+Which 2 from this list do you want me to deep-dive first? 
+
+I recommend: *Thought Machine* for architecture + *Intellect* for AI agents. Those are the 2 hardest to copy.

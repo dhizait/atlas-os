@@ -1,0 +1,381 @@
+ModuleCode,FeatureName,BusinessDomain,BusinessCode,Category,Parent,Priority,InScopeR17,SourceDoc,CoveredByTM,ExtensionNeeded,Method,Description,TechStack,Dependencies,SLA,GapStatus
+TM001,Party Master UBO KYC,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM001,No,ƒ?? Core,Party UBO KYC GDPR SCD2,J21,,99.99%,Covered
+TM002,GL Accounts DDA Savings,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM002,No,ƒ?? Core,GL DDA Savings Multi-ccy Posting Interest,J21,,99.99%,Covered
+TM003,Product Catalog Rules DSL,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM003,No,ƒ?? Core,Product Catalog Versioning Rules,J21,,99.90%,Covered
+TM004,Pricing Tables Curves Spreads,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM004,No,ƒ?? Core,Pricing tables and curves,J21,,99.90%,Covered
+TM005,Currency FX Rates Holidays,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM005,No,ƒ?? Core,Currency FX Rates Holidays,J21,,99.90%,Covered
+TM006,Payments Engine,Payments,,PAY,demo-bank-payments,P1,Y,Digital,TM006,No,ƒ?? Core,ACH Wire Instant Saga,J21,,99.99%,Covered
+TM007,Limits Framework v1,Core Banking,,CORE,demo-bank-core,P1,N,Digital,TM007,No,???? Replaced,Replaced by TM068,J21,,99.90%,Covered
+TM008,Tax Engine WHT VAT MMTax,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM008,No,ƒ?? Core,WHT VAT Mobile Money Tax,J21,,99.90%,Covered
+TM009,KYC Engine Rules EDD,Security & Compliance,,SEC,demo-bank-security,P1,Y,Digital,TM009,No,ƒ?? Core,KYC Rules EDD,J21,,99.90%,Covered
+TM010,System Parameters Calendar,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM010,No,ƒ?? Core,System Params Calendar Cutoffs,J21,,99.90%,Covered
+TM011,Web Banking SPA Session,CX,,DX,demo-bank-channels,P1,Y,Digital,TM011,No,ƒ?? Core,Web Banking SPA Session,J21+React,,99.90%,Covered
+TM012,Mobile Banking Biometric,CX,,DX,demo-bank-channels,P1,Y,Digital,TM012,No,ƒ?? Core,Mobile Biometric USSD Offline,J21+React,TM096,99.90%,Covered
+TM013,Open Banking API PSD2,CX,DX008,DX,demo-bank-channels,P1,Y,Digital,TM013,No,ƒ?? Core,Open Banking API PSD2 Consent,J21,TM065,99.90%,Covered
+TM014,Branch Platform 360 View,CX,,DX,demo-bank-channels,P1,Y,Digital,TM014,No,ƒ?? Core,Branch Platform 360 View,J21,TM085,99.90%,Covered
+TM015,Teller System Cash Vault,CX,,DX,demo-bank-channels,P1,Y,Digital,TM015,No,ƒ?? Core,Teller Cash Vault EOD,J21,,99.90%,Covered
+TM016,Call Center CTI IVR,CX,,DX,demo-bank-channels,P1,Y,Digital,TM016,No,ƒ?? Core,Call Center CTI IVR,J21,,99.90%,Covered
+TM017,ATM Acquiring ISO8583,CX,,DX,demo-bank-channels,P1,Y,Digital,TM017,No,ƒ?? Core,ATM ISO8583 HSM,J21,TM061,99.90%,Covered
+TM018,Document Mgmt v1,Operations,,OPS,demo-bank-platform,P1,N,Digital,TM018,No,???? Replaced,Replaced by TM097,J21,,99.90%,Covered
+TM019,ATM POS Driving Keys,CX,,DX,demo-bank-channels,P1,Y,Digital,TM019,No,ƒ?? Core,ATM POS Driving Keys,J21,TM061,99.90%,Covered
+TM020,Notifications v1,CX,,DX,demo-bank-channels,P1,N,Digital,TM020,No,???? Replaced,Replaced by TM060,J21,,99.90%,Covered
+TM021,Workflow v1,Operations,,OPS,demo-bank-platform,P1,N,Digital,TM021,No,???? Replaced,Replaced by TM063 TM069,J21,,99.90%,Covered
+TM022,Collateral Mgmt Valuation,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM022,No,ƒ?? Core,Collateral Valuation Liens,J21,,99.90%,Covered
+TM023,Covenants Tests Breach,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM023,No,ƒ?? Core,Covenants Tests Breach,J21,,99.90%,Covered
+TM024,Syndication Agent Participant,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM024,No,ƒ?? Core,Syndication Agent Participant,J21,,99.90%,Covered
+TM025,Leasing Residual Buyout,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM025,No,ƒ?? Core,Leasing Residual Buyout,J21,,99.90%,Covered
+TM026,Factoring Invoices Recourse,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM026,No,ƒ?? Core,Factoring Invoices Recourse,J21,,99.90%,Covered
+TM027,Reference Data BIC Countries,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM027,No,ƒ?? Core,Reference Data BIC Countries,J21,,99.90%,Covered
+TM028,Address Mgmt Validate Geocode,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM028,No,ƒ?? Core,Address Validation Geocode,J21,,99.90%,Covered
+TM029,Relationship Pricing v1,Core Banking,,CORE,demo-bank-core,P1,N,Digital,TM029,No,???? Replaced,Replaced by TM077,J21,,99.90%,Covered
+TM030,Cards Issuing Acq Auth,CX,AM001,CARD,demo-bank-payments,P1,Y,Digital,TM030,No,ƒ?? Core,Cards Issuing Acq Auth Disputes Contactless,J21,TM089,99.99%,Covered
+TM031,FX MM Spot Fwd Swap,Payments,,PAY,demo-bank-payments,P1,Y,Digital,TM031,No,ƒ?? Core,FX MM Spot Fwd Swap SWIFT,J21,,99.90%,Covered
+TM032,Loans Core Retail SME Corp,Lending & Credit,,LEND,demo-bank-services,P1,Y,Digital,TM032,No,ƒ?? Core,Loans Core Schedules,J21,TM090,99.90%,Covered
+TM033,Term Deposits Auto-renew,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM033,No,ƒ?? Core,Term Deposits Auto-renew Sweep,J21,TM091,99.90%,Covered
+TM034,Trade Finance LC Guarantees,Trade Finance,,TF,demo-bank-services,P1,Y,Digital,TM034,No,ƒ?? Core,Trade Finance LC Guarantees Docs,J21,TM092,99.90%,Covered
+TM035,Billing v1,Core Banking,,CORE,demo-bank-core,P1,N,Digital,TM035,No,???? Replaced,Replaced by TM099,J21,,99.90%,Covered
+TM036,Rewards Loyalty Points,CX,,CX,demo-bank-analytics,P1,Y,Digital,TM036,No,ƒ?? Core,Rewards Loyalty Points,J21,TM085,99.90%,Covered
+TM037,Insurance Broker Policies,Financial Planning,FP003,FP,demo-bank-services,P1,Y,Digital,TM037,No,ƒ?? Core,Insurance Policies Claims,J21,,99.90%,Covered
+TM038,Wealth Mgmt Advisory OMS,Financial Planning,FP001,FP,demo-bank-services,P1,Y,Digital,TM038,No,ƒ?? Core,Wealth Advisory OMS,J21,TM102,99.90%,Covered
+TM039,Custody Corp Actions,Financial Planning,,FP,demo-bank-services,P1,Y,Digital,TM039,No,ƒ?? Core,Custody Corp Actions Securities,J21,,99.90%,Covered
+TM040,Escrow Multi-sign Disputes,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM040,No,ƒ?? Core,Escrow Multi-sign Disputes,J21,,99.90%,Covered
+TM041,Sanctions v1,Risk & Compliance,,SEC,demo-bank-security,P1,N,Digital,TM041,No,???? Replaced,Replaced by TM043,J21,,99.90%,Covered
+TM042,PEP Adverse Media,Risk & Compliance,,SEC,demo-bank-security,P1,Y,Digital,TM042,No,ƒ?? Core,PEP Adverse Media,J21,TM043,99.90%,Covered
+TM043,Sanctions Screening,Risk & Compliance,SC001,SEC,demo-bank-security,P1,Y,Digital,TM043,No,ƒ?? Core,Sanctions Fuzzy Real-time,J21,,99.99%,Covered
+TM044,AML Scenarios v1,Risk & Compliance,,SEC,demo-bank-security,P1,N,Digital,TM044,No,???? Replaced,Replaced by TM078,J21,,99.90%,Covered
+TM045,Fraud Rules v1,Risk & Compliance,,SEC,demo-bank-security,P1,N,Digital,TM045,No,???? Replaced,Replaced by TM081,J21,,99.90%,Covered
+TM046,Credit Bureau Scores,Risk & Compliance,,RISK,demo-bank-security,P1,Y,Digital,TM046,No,ƒ?? Core,Credit Bureau Scores Reports,J21,TM079,99.90%,Covered
+TM047,BI Reporting v1,Analytics & Insights,,AI,demo-bank-analytics,P1,N,Digital,TM047,No,???? Replaced,Replaced by TM075 TM076,J21,,99.90%,Covered
+TM048,Regulatory Reports v1,Risk & Compliance,SC001,SEC,demo-bank-security,P1,N,Digital,TM048,No,???? Replaced,Replaced by TM074,J21,,99.90%,Covered
+TM049,Credit Risk v1,Risk & Compliance,,RISK,demo-bank-security,P1,N,Digital,TM049,No,???? Replaced,Replaced by TM079,J21,,99.90%,Covered
+TM050,Market Risk VaR PV01,Risk & Compliance,,RISK,demo-bank-security,P1,Y,Digital,TM050,No,ƒ?? Core,Market Risk VaR PV01,J21,,99.90%,Covered
+TM051,Nostro Mgmt Statements,Treasury,,TRES,demo-bank-treasury,P1,Y,Digital,TM051,No,ƒ?? Core,Nostro Statements,J21,TM093,99.90%,Covered
+TM052,Vostro Mgmt Billing,Treasury,,TRES,demo-bank-treasury,P1,Y,Digital,TM052,No,ƒ?? Core,Vostro Billing,J21,TM093,99.90%,Covered
+TM053,Liquidity v1,Treasury,,TRES,demo-bank-treasury,P1,N,Digital,TM053,No,???? Replaced,Replaced by TM072,J21,,99.90%,Covered
+TM054,Collateral Ops Margin Calls,Treasury,,TRES,demo-bank-treasury,P1,Y,Digital,TM054,No,ƒ?? Core,Collateral Margin Calls,J21,,99.90%,Covered
+TM055,SWIFT Bank I/F v1,Payments,,PAY,demo-bank-payments,P1,N,Digital,TM055,No,???? Replaced,Replaced by TM070 TM071,J21,,99.90%,Covered
+TM056,Clearing Settlement ACH RTGS,Payments,,PAY,demo-bank-payments,P1,Y,Digital,TM056,No,ƒ?? Core,Clearing Settlement ACH RTGS,J21,TM088,99.99%,Covered
+TM057,Exceptions v1,Operations,,OPS,demo-bank-platform,P1,N,Digital,TM057,No,???? Replaced,Replaced by TM069 TM073,J21,,99.90%,Covered
+TM058,MIS v1,Analytics & Insights,,AI,demo-bank-analytics,P1,N,Digital,TM058,No,???? Replaced,Replaced by TM074 TM076,J21,,99.90%,Covered
+TM059,Calendar EOD COB Chain,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM059,No,ƒ?? Core,Calendar EOD COB Chain,J21,TM064,99.90%,Covered
+TM060,Notifications Email SMS,CX,SC013,DX,demo-bank-channels,P1,Y,Digital,TM060,No,ƒ?? Core,Email SMS Push WhatsApp DLQ,J21,,99.90%,Covered
+TM061,Security Crypto Key Mgmt,Security & Compliance,SC007,SEC,demo-bank-security,P1,Y,Digital,TM061,No,ƒ?? Core,HSM Vault QRC Tokenization,J21+PY,,99.99%,Covered
+TM062,WORM Audit Trails,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM062,No,ƒ?? Core,WORM Storage Audit Trails,J21,TM097,99.90%,Covered
+TM063,Workflow Camunda,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM063,No,ƒ?? Core,Camunda Maker-Checker SLA,J21,TM098,99.90%,Covered
+TM064,Core Ledger DDA Multi-ccy,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM064,No,ƒ?? Core,Core Ledger DDA Multi-ccy,J21,TM002,99.99%,Covered
+TM065,API Gateway OAuth mTLS,Security & Compliance,DX008,SEC,demo-bank-platform,P1,Y,Digital,TM065,No,ƒ?? Core,API Gateway OAuth mTLS RateLimit,J21,,99.99%,Covered
+TM066,Data Lake Raw Curated,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,Digital,TM066,No,ƒ?? Core,Data Lake Raw Curated Delta,J21+PY,TM075,99.90%,Covered
+TM067,CDC Events Kafka,Platform,,PLAT,demo-bank-platform,P1,Y,Digital,TM067,No,ƒ?? Core,CDC Events Kafka Outbox,J21+Kafka,,99.99%,Covered
+TM068,Limits Engine HARD SOFT,Core Banking,AM002,CORE,demo-bank-core,P1,Y,Digital,TM068,No,ƒ?? Core,Limits HARD SOFT Redis,J21+Redis,TM007,99.99%,Covered
+TM069,Exceptions Ops Recon,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM069,No,ƒ?? Core,Exceptions Ops Recon,J21,TM098,99.90%,Covered
+TM070,SWIFT MT MX ISO20022,Payments,,PAY,demo-bank-payments,P1,Y,Digital,TM070,No,ƒ?? Core,SWIFT MT MX ISO20022 Adapter,J21,TM071,99.99%,Covered
+TM071,Payment Rails Adapters,Payments,,PAY,demo-bank-payments,P1,Y,Digital,TM071,No,ƒ?? Core,Rail Adapters ACH RTGS PAPSS,J21,TM088,99.99%,Covered
+TM072,Liquidity ALM Cash Forecast,Treasury,,TRES,demo-bank-treasury,P1,Y,Digital,TM072,No,ƒ?? Core,Liquidity ALM Cash Forecast,J21,TM053,99.90%,Covered
+TM073,Reconciliation v2,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM073,No,ƒ?? Core,Auto-Recon Discrepancies,J21,TM069,99.90%,Covered
+TM074,Reg Reporting XBRL,Security & Compliance,SC001,SEC,demo-bank-security,P1,Y,Digital,TM074,No,ƒ?? Core,Reg Reporting XBRL Basels,J21,TM108,99.90%,Covered
+TM075,DW Star Schema BI,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,Digital,TM075,No,ƒ?? Core,DW Star Schema BI,J21,TM066,99.90%,Covered
+TM076,BI Dashboards KPI,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,Digital,TM076,No,ƒ?? Core,BI Dashboards KPI,J21,TM075,99.90%,Covered
+TM077,Relationship Pricing v2,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM077,No,ƒ?? Core,Relationship Pricing v2,J21,TM029,99.90%,Covered
+TM078,AML Transaction Monitoring,Security & Compliance,SC002,SEC,demo-bank-security,P1,Y,"AI,TOC_II",TM078,No,ƒ?? Core,ML scenarios + graph SAR filing,J21+PY,TM080,50ms,Covered
+TM079,Credit Risk PD LGD EAD,Risk & Compliance,,RISK,demo-bank-security,P1,Y,"AI,TOC_II",TM079,No,ƒ?? Core,PD LGD EAD IFRS9,J21+PY,TM080,99.90%,Covered
+TM080,ML AI Platform Model Factory,Analytics & Insights,,AI,demo-bank-platform,P1,Y,"AI,Comprehensive",TM080,No,ƒ?? Core,Model factory feature store MLflow,PY,,99.99%,Covered
+TM081,Fraud Detection Real-time,Security & Compliance,SC015,SEC,demo-bank-security,P1,Y,"AI,TOC_II",TM081,No,ƒ?? Core,Real-time ML block 50ms,J21+PY,TM080,50ms,Covered
+TM082,Product Catalog DSL v2,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM082,No,ƒ?? Core,Product Catalog DSL v2,J21,TM003,99.90%,Covered
+TM083,Charges Fees Billing,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM083,No,ƒ?? Core,Charges Fees Billing,J21,TM099,99.90%,Covered
+TM084,Tax Engine v2 WHT VAT,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM084,No,ƒ?? Core,Tax Engine v2 WHT VAT,J21,TM008,99.90%,Covered
+TM085,Customer 360 NBA CLV,CX,DX005,CX,demo-bank-analytics,P1,Y,"AI,Comprehensive",TM085,No,ƒ?? Core,Segmentation NBA CLV,J21+PY,TM080,99.90%,Covered
+TM086,Party 360 UBO Links,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM086,No,ƒ?? Core,Party 360 UBO Links,J21,TM001,99.90%,Covered
+TM087,Accounts DDA TD v2,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM087,No,ƒ?? Core,Accounts DDA TD v2,J21,TM002,99.90%,Covered
+TM088,Payments Hub v2,Payments,PT002,PAY,demo-bank-payments,P1,Y,"Digital,Folder",TM088,No,ƒ?? Core,ACH Wire Instant Bill P2P QR Mobile Money PAPSS IoT,J21+Kafka,TM006,99.99%,Covered
+TM089,Cards Issuing Acq v2,Payments,AM001,CARD,demo-bank-payments,P1,Y,Digital,TM089,No,ƒ?? Core,Issuing Acq Tokens Contactless Biometric Cards,J21,TM061,99.99%,Covered
+TM090,Lending Core v2,Lending & Credit,FP004,LEND,demo-bank-services,P1,Y,Digital,TM090,No,ƒ?? Core,Retail SME Corp SACCO Agri Islamic,J21,TM022,99.90%,Covered
+TM091,Deposits TD v2,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM091,No,ƒ?? Core,Sweep Rates Islamic Digital Wallets,J21,TM033,99.90%,Covered
+TM092,Trade Finance LC v2,Trade Finance,,TF,demo-bank-services,P1,Y,Digital,TM092,No,ƒ?? Core,LC Guarantees Docs Blockchain,J21,TM034,99.90%,Covered
+TM093,Nostro Vostro v2,Treasury,,TRES,demo-bank-treasury,P1,Y,Digital,TM093,No,ƒ?? Core,Nostro Vostro Statements Fees,J21,TM051+TM052,99.90%,Covered
+TM094,Channels Digital v2,CX,DX008,DX,demo-bank-channels,P1,Y,Digital,TM094,No,ƒ?? Core,Web Mobile OpenBanking Wealth PFM Gamification,J21+React,TM011,99.90%,Covered
+TM095,Branch Teller v2,CX,,CX,demo-bank-channels,P1,Y,Digital,TM095,No,ƒ?? Core,ATM Cash Cardless Agent Banking,J21,TM015,99.90%,Covered
+TM096,Onboarding KYC v2,Security & Compliance,SC003,SEC,demo-bank-security,P1,Y,"AI,Comprehensive",TM096,No,ƒ?? Core,Liveness OCR SIM Check TM043,J21+PY,TM043,99.90%,Covered
+TM097,Document Mgmt v2,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM097,No,ƒ?? Core,E-sign WORM TM062,J21,TM062,99.90%,Covered
+TM098,Workflow Case Mgmt,Operations,AM007,OPS,demo-bank-platform,P1,Y,Digital,TM098,No,ƒ?? Core,Camunda SLA Maker-Checker,J21,,99.90%,Covered
+TM099,Billing v2,Core Banking,,CORE,demo-bank-core,P1,Y,Digital,TM099,No,ƒ?? Core,Billing Invoicing Dunning,J21,TM035,99.90%,Covered
+TM100,Disaster Recovery DR,Operations,,OPS,demo-bank-platform,P1,Y,Digital,TM100,No,ƒ?? Core,DR RTO RPO Backup,J21,,99.99%,Covered
+TM101,Agent Banking & Float Mgmt,Financial Inclusion,PT012,CX,demo-bank-services,P1,Y,"Misc,Folder",TM101,Yes,ƒ?? New TM101,Agent float commission cash-in cash-out,PY+J21,,99.90%,Covered
+TM102,GenAI Dashboards Advisors,AI & ML,DX011,AI,demo-bank-platform,P1,Y,"PHASE11,TOC_II",TM102,Yes,ƒ?? New TM102,LLM RAG Robo-Advisors Chatbots,PY+J21,TM080+TM075,99.90%,Covered
+TM103,ESG Data Lakehouse,Analytics & Insights,FP015,AI,demo-bank-platform,P2,Y,PHASE11,TM103,Yes,ƒ?? New TM103,Green Finance ESG Reporting,PY+J21,TM075,99.90%,Covered
+TM104,Open Finance API Marketplace,Open Banking,DX009,AI,demo-bank-platform,P1,Y,"PHASE11,TOC_II",TM104,Yes,ƒ?? New TM104,API Marketplace Composable Banking,J21,TM065,99.90%,Covered
+TM105,Low-Code Studio,Operations,,OPS,demo-bank-platform,P2,Y,"PHASE11,TOC_II",TM105,Yes,ƒ?? New TM105,RAD Visual Dev Drag-Drop,J21,,99.90%,Covered
+TM106,Super App Framework,CX,DX003,DX,demo-bank-channels,P2,Y,PHASE11,TM106,Yes,ƒ?? New TM106,Mini-App SDK Marketplace,J21+React,TM094,99.90%,Covered
+TM107,AI Agent Orchestrator,Operations & Efficiency,SC009,AI,demo-bank-platform,P1,Y,"PHASE11,TOC_II",TM107,Yes,ƒ?? New TM107,Agentic AI Autonomous RPA Predictive Maintenance,PY+J21,TM061+TM098,99.90%,Covered
+TM108,Compliance Orchestrator,Risk & Compliance,SC006,SEC,demo-bank-security,P1,Y,"PHASE11,TOC_II",TM108,No,ƒ?? Core,RegTech country.yml GDPR PCI-DSS AML,J21,TM043,99.99%,Covered
+TM109,Digital Assets DLT,Payments,PT003,AI,demo-bank-payments,P1,Y,"PHASE11,TOC_II",TM109,No,ƒ?? Core,CBDC Crypto Custody RWA Tokenization DeFi,J21+PY,,99.90%,Covered
+TM110,Alternative Data Credit,Lending & Credit,FP017,LEND,demo-bank-services,P1,Y,"PHASE11,AI",TM110,No,ƒ?? Core,Telco utility mobile psychometric ML,PY,TM079,99.90%,Covered
+TM111,Embedded Finance SDK,Open Banking,PT006,AI,demo-bank-platform,P1,Y,"PHASE11,TOC_II",TM111,Yes,ƒ?? New TM111,TFaaS BaaS API-Driven Insurance,J21,TM104,99.90%,Covered
+TM112,Channel Orchestrator,CX,DX001,DX,demo-bank-channels,P1,Y,"PHASE11,TOC_II",TM112,No,ƒ?? Core,USSD Voice WhatsApp ARVR IoT Cardless ATM,J21,TM060,99.90%,Covered
+ModuleCode,FeatureName,BusinessDomain,BusinessCode,Category,Parent,Priority,InScopeR17,SourceDoc,CoveredByTM,ExtensionNeeded,Method,Description,TechStack,Dependencies,SLA,GapStatus
+TM089,Card Freeze Unfreeze,Payments,AM001,CARD,demo-bank-payments,P1,Y,Digital_All,TM089,No,ƒ?? Core,Allow users to freeze/unfreeze cards,J21,TM061,99.99%,Covered
+TM068,Spending Limits Controls,Payments,AM002,CARD,demo-bank-security,P1,Y,Digital_All,TM068,No,ƒ?? Core,Enable users to set spending limits,J21+Redis,TM007,99.99%,Covered
+TM081,Transaction-Specific Controls,Risk & Compliance,AM003,SEC,demo-bank-security,P1,Y,Digital_All,TM081+TM068,No,ƒ?? Core,Location-based transaction restrictions,J21+PY,TM080,50ms,Covered
+TM086,Account Linking,Core Banking,AM004,CORE,demo-bank-core,P1,Y,Digital_All,TM086,No,ƒ?? Core,Link multiple accounts for management,J21,TM001,99.90%,Covered
+TM087,Transaction History Statements,Core Banking,AM005,CORE,demo-bank-core,P1,Y,Digital_All,TM087+TM099,No,ƒ?? Core,Provide transaction history and statements,J21,TM002,99.90%,Covered
+TM086,Account Details Settings,Core Banking,AM006,CORE,demo-bank-core,P1,Y,Digital_All,TM086+TM087,No,ƒ?? Core,Manage account details and settings,J21,TM001,99.90%,Covered
+TM098,Subscription Recurring Payments,Operations,AM007,OPS,demo-bank-platform,P1,Y,Digital_All,TM090+TM098,No,ƒ?? Core,Manage subscriptions and recurring payments,J21,TM063,99.90%,Covered
+TM087,Low-Cost Account Options,Core Banking,AM008,CORE,demo-bank-core,P1,Y,Digital_All,TM087+TM077,No,ƒ?? Core,Offer low-cost account options,J21,TM077,99.90%,Covered
+TM088,Bill Pay Presentment,Payments,PT001,PAY,demo-bank-payments,P1,Y,Digital_All,TM088,No,ƒ?? Core,Pay bills and view statements online,J21+Kafka,TM006,99.99%,Covered
+TM088,P2P Payments,Payments,PT002,PAY,demo-bank-payments,P1,Y,Digital_All,TM088,No,ƒ?? Core,Send and receive money P2P,J21+Kafka,TM006,99.99%,Covered
+TM109,Blockchain-Based Payments,Payments,PT003,PAY,demo-bank-payments,P1,Y,"Digital_All,TOC_II",TM109,No,ƒ?? Core,Enable blockchain-based transactions,J21+PY,,99.90%,Covered
+TM112,IoT Payments,Channels,PT004,DX,demo-bank-channels,P1,Y,"Digital_All,TOC_II",TM112,No,ƒ?? Core,Payments through IoT devices,J21,TM060,99.90%,Covered
+TM088,Cross-Border Payments,Payments,PT005,PAY,demo-bank-payments,P1,Y,Digital_All,TM088+TM071,No,ƒ?? Core,International money transfers,J21,TM070,99.99%,Covered
+TM111,Embedded Finance,Open Banking,PT006,AI,demo-bank-platform,P1,Y,"Digital_All,TOC_II",TM111,Yes,ƒ?? New TM111,Embedded finance solutions,J21,TM104,99.90%,Covered
+TM112,Voice-Activated Payments,Channels,PT007,DX,demo-bank-channels,P1,Y,"Digital_All,TOC_II",TM112,No,ƒ?? Core,Voice-activated payments,J21,TM060,99.90%,Covered
+TM111,Social Commerce Payments,Open Banking,PT0098,PAY,demo-bank-payments,P1,Y,Digital_All,TM111,Yes,ƒ?? New TM111,Payments through social commerce,J21,TM104,99.90%,Covered
+TM088,Digital Vouchers,Payments,PT009,PAY,demo-bank-payments,P1,Y,Digital_All,TM088,No,ƒ?? Core,Offer digital vouchers for transactions,J21,TM006,99.99%,Covered
+TM109,CBDC Integration,Payments,PT010,PAY,demo-bank-payments,P1,Y,"Digital_All,TOC_II",TM109,No,ƒ?? Core,Integrate CBDCs for transactions,J21+PY,,99.90%,Covered
+TM088,Mobile Money Services,Payments,PT011,PAY,demo-bank-payments,P1,Y,Digital_All,TM088,No,ƒ?? Core,Mobile money services,J21,TM071,99.99%,Covered
+TM101,Agent Banking,Financial Inclusion,PT012,CX,demo-bank-services,P1,Y,"Digital_All,Folder",TM101,Yes,ƒ?? New TM101,Enable agent banking services,PY+J21,,99.90%,Covered
+TM101,Cash-in Cash-out Services,Financial Inclusion,PT013,CX,demo-bank-services,P1,Y,Digital_All,TM101,Yes,ƒ?? New TM101,Cash-in and cash-out services,PY+J21,,99.90%,Covered
+TM089,Contactless Payments NFC,Payments,PT014,CARD,demo-bank-payments,P1,Y,Digital_All,TM089,No,ƒ?? Core,Tap-to-pay NFC payments,J21,TM061,99.99%,Covered
+TM088,QR Code Payments,Payments,PT015,PAY,demo-bank-payments,P1,Y,Digital_All,TM088,No,ƒ?? Core,QR code payment processing,J21,TM006,99.99%,Covered
+TM038,Investment Wealth Management,Financial Planning,FP001,FP,demo-bank-services,P1,Y,Digital_All,TM038+TM102,No,ƒ?? Core,Investment products portfolio management,J21,TM102,99.90%,Covered
+TM085,Personalized Financial Insights,CX,FP02,CX,demo-bank-analytics,P1,Y,Digital_All,TM085+TM080,No,ƒ?? Core,Personalized financial advice,J21+PY,TM080,99.90%,Covered
+TM037,Insurance Services,Financial Planning,FP003,FP,demo-bank-services,P1,Y,Digital_All,TM037,No,ƒ?? Core,Insurance quotes and policy management,J21,,99.90%,Covered
+TM090,Credit Scoring Lending,Lending & Credit,FP004,LEND,demo-bank-services,P1,Y,Digital_All,TM090+TM079,No,ƒ?? Core,Loan origination and lending,J21,TM079,99.90%,Covered
+TM085,Automated Savings Tools,CX,FP005,CX,demo-bank-analytics,P1,Y,Digital_All,TM085+TM077,No,ƒ?? Core,Round-up savings automated transfers,J21+PY,TM080,99.90%,Covered
+TM102,AI-Powered Financial Advisors,AI & ML,FP006,AI,demo-bank-platform,P1,Y,Digital_All,TM102,Yes,ƒ?? New TM102,AI-driven financial advisory,PY+J21,TM080,99.90%,Covered
+TM110,Real-Time Credit Scoring,Lending & Credit,FP007,LEND,demo-bank-services,P1,Y,Digital_All,TM110,No,ƒ?? Core,Real-time credit scoring services,PY,TM079,99.90%,Covered
+TM080,Predictive Analytics,Analytics & Insights,FP008,AI,demo-bank-analytics,P1,Y,"Digital_All,TOC_II",TM080,No,ƒ?? Core,Predictive analytics for insights,PY,,99.90%,Covered
+TM094,PFM Budgeting Tools,CX,FP009,CX,demo-bank-channels,P1,Y,Digital_All,TM094,No,ƒ?? Core,PFM tools for budgeting tracking,J21+React,TM011,99.90%,Covered
+TM090,Digital Lending Platforms,Lending & Credit,FP010,LEND,demo-bank-services,P1,Y,Digital_All,TM090,No,ƒ?? Core,Digital lending platforms,J21,TM022,99.90%,Covered
+TM109,Cryptocurrency Trading,Payments,FP011,AI,demo-bank-payments,P1,Y,"Digital_All,TOC_II",TM109,No,ƒ?? Core,Trading of cryptocurrencies,J21+PY,,99.90%,Covered
+TM102,Robo-Advisory Services,AI & ML,FP012,AI,demo-bank-platform,P1,Y,Digital_All,TM102+TM038,Yes,ƒ?? New TM102,Automated investment advisory,PY+J21,TM080,99.90%,Covered
+TM101,Financial Inclusion Solutions,Financial Inclusion,FP013,CX,demo-bank-services,P1,Y,Digital_All,TM101+TM096,Yes,ƒ?? New TM101,Solutions for financial inclusion,PY+J21,,99.90%,Covered
+TM037,InsurTech Integration,Financial Planning,FP014,FP,demo-bank-services,P1,Y,Digital_All,TM037+TM104,No,ƒ?? Core,InsurTech solutions integration,J21,TM104,99.90%,Covered
+TM103,Sustainability Tracking,Analytics & Insights,FP015,AI,demo-bank-platform,P2,Y,Digital_All,TM103,Yes,ƒ?? New TM103,Track sustainability metrics,PY+J21,TM075,99.90%,Covered
+TM109,Digital Asset Management,Payments,FP016,AI,demo-bank-payments,P1,Y,Digital_All,TM109,No,ƒ?? Core,Manage trade digital assets NFTs,J21+PY,,99.90%,Covered
+TM110,Financial Health Scoring,Lending & Credit,FP017,LEND,demo-bank-services,P1,Y,Digital_All,TM110,No,ƒ?? Core,Alternative data credit scoring,PY,TM079,99.90%,Covered
+TM102,AI Financial Planning Tool,AI & ML,FP018,AI,demo-bank-platform,P1,Y,Digital_All,TM102+TM080,Yes,ƒ?? New TM102,ML NLP data analytics planning,PY+J21,TM080,99.90%,Covered
+TM074,Regulatory Reporting,Security & Compliance,SC001,SEC,demo-bank-security,P1,Y,Digital_All,TM074+TM108,No,ƒ?? Core,Regulatory reporting services,J21,TM108,99.90%,Covered
+TM078,AML Fraud Detection,Security & Compliance,SC002,SEC,demo-bank-security,P1,Y,Digital_All,TM078+TM081,No,ƒ?? Core,Detect prevent money laundering,J21+PY,TM080,50ms,Covered
+TM096,KYC Identity Verification,Security & Compliance,SC003,SEC,demo-bank-security,P1,Y,Digital_All,TM096+TM043,No,ƒ?? Core,Verify customer identities,J21+PY,TM043,99.90%,Covered
+TM096,Biometric Authentication,Security & Compliance,SC004,SEC,demo-bank-security,P1,Y,Digital_All,TM096,No,ƒ?? Core,Biometric data authentication,J21,,99.90%,Covered
+TM086,Digital Identity Management,Core Banking,SC005,CORE,demo-bank-core,P1,Y,Digital_All,TM086,No,ƒ?? Core,Manage digital identities DID,J21,TM001,99.90%,Covered
+TM108,RegTech Compliance,Security & Compliance,SC006,SEC,demo-bank-security,P1,Y,"Digital_All,TOC_II",TM108,No,ƒ?? Core,Regulatory technology compliance,J21,TM043,99.99%,Covered
+TM061,Quantum Computing Security,Security & Compliance,SC007,SEC,demo-bank-security,P1,Y,"Digital_All,TOC_II",TM061,No,ƒ?? Core,Quantum-safe encryption QRC,J21,,99.99%,Covered
+TM089,Biometric Payment Cards,Payments,SC008,CARD,demo-bank-payments,P1,Y,Digital_All,TM089,No,ƒ?? Core,Issue biometric payment cards,J21,TM061,99.99%,Covered
+TM107,Agentic AI Fraud Detection,Operations & Efficiency,SC009,AI,demo-bank-platform,P1,Y,"Digital_All,TOC_II",TM107+TM081,Yes,ƒ?? New TM107,AI for fraud detection prevention,PY+J21,TM081,99.90%,Covered
+TM107,Predictive Maintenance,Operations & Efficiency,SC0110,AI,demo-bank-platform,P1,Y,Digital_All,TM107,Yes,ƒ?? New TM107,Predict prevent system failures,PY+J21,TM098,99.90%,Covered
+TM108,Automated Compliance,Security & Compliance,SC011,SEC,demo-bank-security,P1,Y,Digital_All,TM108,No,ƒ?? Core,Automate compliance processes,J21,TM043,99.99%,Covered
+TM078,Real-Time Transaction Monitoring,Security & Compliance,SC012,SEC,demo-bank-security,P1,Y,Digital_All,TM078+TM081,No,ƒ?? Core,Monitor transactions detect fraud,J21+PY,TM080,50ms,Covered
+TM060,Instant Notifications,CX,SC013,DX,demo-bank-channels,P1,Y,Digital_All,TM060,No,ƒ?? Core,Instant notifications transactions,J21,,99.90%,Covered
+TM097,Blockchain Secure Document Storage,Operations,SC014,OPS,demo-bank-platform,P1,Y,Digital_All,TM097+TM109,No,ƒ?? Core,Blockchain tamper-proof storage,J21,TM109,99.90%,Covered
+TM081,Real-Time Fraud Detection System,Security & Compliance,SC015,SEC,demo-bank-security,P1,Y,Digital_All,TM081,No,ƒ?? Core,ML algorithms prevent fraud,J21+PY,TM080,50ms,Covered
+TM112,Voice Banking,Channels,DX001,DX,demo-bank-channels,P1,Y,"Digital_All,TOC_II",TM112,No,ƒ?? Core,Voice-activated banking services,J21,TM060,99.90%,Covered
+TM094,Educational Content,CX,DX002,CX,demo-bank-channels,P1,Y,Digital_All,TM094,No,ƒ?? Core,Financial literacy resources,J21+React,TM011,99.90%,Covered
+TM106,Community Features,CX,DX003,DX,demo-bank-channels,P2,Y,Digital_All,TM106,Yes,ƒ?? New TM106,Community platform for users,J21+React,TM094,99.90%,Covered
+TM094,Customizable Dashboards,CX,DX004,CX,demo-bank-channels,P1,Y,Digital_All,TM094+TM076,No,ƒ?? Core,Customize user dashboards,J21+React,TM076,99.90%,Covered
+TM085,Product Service Offers,CX,DX005,CX,demo-bank-analytics,P1,Y,Digital_All,TM085+TM080,No,ƒ?? Core,Personalized product recommendations,J21+PY,TM080,99.90%,Covered
+TM112,ARVR Banking Experiences,Channels,DX006,DX,demo-bank-channels,P3,Y,"Digital_All,TOC_II",TM112,No,ƒ?? Core,Immersive ARVR banking,J21+React,TM094,99.90%,Covered
+TM094,Gamification Incentives,CX,DX007,CX,demo-bank-channels,P1,Y,Digital_All,TM094+TM085,No,ƒ?? Core,Gamification financial behavior,J21+React,TM085,99.90%,Covered
+TM104,Open Banking APIs,Open Banking,DX008,AI,demo-bank-platform,P1,Y,Digital_All,TM104+TM013,Yes,ƒ?? New TM104,Open banking APIs third-party,J21,TM065,99.90%,Covered
+TM104,API Marketplace,Open Banking,DX009,AI,demo-bank-platform,P1,Y,"Digital_All,TOC_II",TM104,Yes,ƒ?? New TM104,API marketplace third-party,J21,TM065,99.90%,Covered
+TM112,Metaverse Banking,Channels,DX010,DX,demo-bank-channels,P3,Y,Digital_All,TM112,No,ƒ?? Core,Banking services in metaverse,J21+React,TM094,99.90%,Covered
+TM102,Generative AI Chatbots,AI & ML,DX011,AI,demo-bank-platform,P1,Y,Digital_All,TM102,Yes,ƒ?? New TM102,AI-powered chatbots support,PY+J21,TM080,99.90%,Covered
+TM094,Financial Literacy Programs,CX,DX012,CX,demo-bank-channels,P1,Y,Digital_All,TM094,No,ƒ?? Core,Financial literacy programs,J21+React,TM011,99.90%,Covered
+TM085,Customer Segmentation,CX,DX013,CX,demo-bank-analytics,P1,Y,Digital_All,TM085,No,ƒ?? Core,Segment customers behavior demographics,J21+PY,TM080,99.90%,Covered
+TM085,Targeted Marketing Campaigns,CX,DX014,CX,demo-bank-analytics,P1,Y,Digital_All,TM085,No,ƒ?? Core,Personalized marketing campaigns,J21+PY,TM080,99.90%,Covered
+TM085,Lifestyle-Based Segmentation,CX,DX015,CX,demo-bank-analytics,P1,Y,Digital_All,TM085,No,ƒ?? Core,Segment by lifestyle interests,J21+PY,TM080,99.90%,Covered
+TM085,Behavioral Segmentation,CX,DX016,CX,demo-bank-analytics,P1,Y,Digital_All,TM085,No,ƒ?? Core,Segment by transaction patterns,J21+PY,TM080,99.90%,Covered
+TM095,Virtual Branch Services,CX,DX017,CX,demo-bank-channels,P1,Y,Digital_All,TM095+TM112,No,ƒ?? Core,Virtual banking services support,J21,TM015,99.90%,Covered
+TM088,Real-time Payment Processing,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM088,No,ƒ?? Core,Real-time payment processing,J21+Kafka,TM006,99.99%,Covered
+TM089,Contactless Payments,Payments,,CARD,demo-bank-payments,P1,Y,TOC_II,TM089,No,ƒ?? Core,Contactless tap-to-pay,J21,TM061,99.99%,Covered
+TM091,Digital Wallets,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM091+TM088,No,ƒ?? Core,Digital wallet management,J21,TM033,99.90%,Covered
+TM112,Voice-Activated Payments 2,Channels,PT007,DX,demo-bank-channels,P1,Y,TOC_II,TM112,No,ƒ?? Core,Voice payments NLP,J21,TM060,99.90%,Covered
+TM095,Cardless ATM Withdrawals,CX,,CX,demo-bank-channels,P1,Y,TOC_II,TM095+TM112,No,ƒ?? Core,Cardless ATM withdrawals,J21,TM015,99.90%,Covered
+TM088,QR Code Payments 2,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM088,No,ƒ?? Core,QR code payments,J21,TM006,99.99%,Covered
+TM089,Biometric Payment Cards 2,Payments,SC008,CARD,demo-bank-payments,P1,Y,TOC_II,TM089,No,ƒ?? Core,Biometric payment cards,J21,TM061,99.99%,Covered
+TM111,Social Commerce Payments 2,Open Banking,PT0098,PAY,demo-bank-payments,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,Social commerce payment flows,J21,TM104,99.90%,Covered
+TM080,Predictive Analytics 2,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,Predictive analytics engine,PY,,99.90%,Covered
+TM102,Chatbots Virtual Assistants,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102,Yes,ƒ?? New TM102,Chatbots and virtual assistants,PY+J21,TM080,99.90%,Covered
+TM102,Hyper-Automated Conversational Banking,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102+TM107,Yes,ƒ?? New TM107,Hyper-automated conversational banking,PY+J21,TM102,99.90%,Covered
+TM102,AI-Driven Financial Forecasting,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102+TM080,Yes,ƒ?? New TM102,AI financial forecasting,PY+J21,TM080,99.90%,Covered
+TM107,Agentic AI,Operations & Efficiency,,AI,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,AI agents autonomous actions,PY+J21,,99.90%,Covered
+TM102,Generative AI,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102,Yes,ƒ?? New TM102,Generative AI content code,PY+J21,TM080,99.90%,Covered
+TM109,Secure Transparent Transactions,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Blockchain secure transactions,J21+PY,,99.90%,Covered
+TM109,Smart Contracts,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Smart contracts execution,J21+PY,,99.90%,Covered
+TM109,Blockchain-Based Payment Processing,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Blockchain payment rails,J21+PY,,99.90%,Covered
+TM109,RWA Tokenization,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Real-world asset tokenization,J21+PY,,99.90%,Covered
+TM109,DeFi 2.0,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Decentralized Finance 2.0,J21+PY,,99.90%,Covered
+TM086,Decentralized Identity Management,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM086,No,ƒ?? Core,Decentralized identity DID,J21,TM001,99.90%,Covered
+TM109,Tokenization of Real-World Assets,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,RWA tokenization platform,J21+PY,,99.90%,Covered
+TM109,Cryptocurrency Custody Solutions,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Crypto custody wallet management,J21+PY,,99.90%,Covered
+TM094,Mobile-First Approach,CX,,CX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Mobile-first banking design,J21+React,TM011,99.90%,Covered
+TM091,Digital Wallets 2,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM091,No,ƒ?? Core,Digital wallets 2,J21,TM033,99.90%,Covered
+TM094,Mobile Banking App Biometric,CX,,CX,demo-bank-channels,P1,Y,TOC_II,TM094+TM096,No,ƒ?? Core,Mobile app biometric security,J21+React,TM096,99.90%,Covered
+TM112,Wearable Integration,Channels,,DX,demo-bank-channels,P2,Y,TOC_II,TM112,No,ƒ?? Core,Wearable device integration,J21,TM060,99.90%,Covered
+TM106,Super Apps,CX,,CX,demo-bank-channels,P2,Y,TOC_II,TM106,Yes,ƒ?? New TM106,Super app mini-program framework,J21+React,TM094,99.90%,Covered
+TM112,Voice Banking 2,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM112,No,ƒ?? Core,Voice banking assistant,J21,TM060,99.90%,Covered
+TM061,Enhanced Security Measures,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Enhanced security measures,J21,,99.99%,Covered
+TM061,Zero-Trust Architecture,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Zero-trust architecture ZTA,J21,,99.99%,Covered
+TM096,Advanced MFA,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM096,No,ƒ?? Core,Advanced multi-factor authentication,J21,,99.90%,Covered
+TM061,Quantum-Resistant Cryptography,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Quantum-resistant cryptography QRC,J21,,99.99%,Covered
+TM085,Personalized Banking Experiences,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Personalized banking experiences,J21+PY,TM080,99.90%,Covered
+TM102,GenAI for Smarter Banking,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102,Yes,ƒ?? New TM102,GenAI for smarter banking,PY+J21,TM080,99.90%,Covered
+TM102,Robo-Advisors,AI & ML,FP012,AI,demo-bank-platform,P1,Y,TOC_II,TM102+TM038,Yes,ƒ?? New TM102,Robo-advisory services,PY+J21,TM038,99.90%,Covered
+TM085,Customer Segmentation 2,CX,DX013,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Customer segmentation analytics,J21+PY,TM080,99.90%,Covered
+TM085,Personalized Recommendations,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Personalized recommendations,J21+PY,TM080,99.90%,Covered
+TM080,Predictive Analytics 3,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,Predictive analytics 3,PY,,99.90%,Covered
+TM085,Customer Data Analytics,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Customer data analytics,J21+PY,TM080,99.90%,Covered
+TM086,Digital Identities,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM086,No,ƒ?? Core,Digital identities management,J21,TM001,99.90%,Covered
+TM080,Real-Time Data Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,Real-time data analytics,PY,,99.90%,Covered
+TM076,AI-Augmented Visualization,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,AI-augmented visualization,J21,TM075,99.90%,Covered
+TM076,AI-Powered Data Visualization,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,AI-powered data visualization,J21,TM075,99.90%,Covered
+TM076,Augmented Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,Augmented analytics,J21,TM075,99.90%,Covered
+TM112,Immersive Data Visualization ARVR,Analytics & Insights,,AI,demo-bank-analytics,P3,Y,TOC_II,TM112+TM076,No,ƒ?? Core,ARVR immersive data visualization,J21,TM076,99.90%,Covered
+TM080,Predictive Prescriptive Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,Predictive and prescriptive analytics,PY,,99.90%,Covered
+TM076,Collaborative Data Storytelling,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,Collaborative data storytelling,J21,TM075,99.90%,Covered
+TM076,Multi-Modal Dashboards,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,Multi-modal dashboards,J21,TM075,99.90%,Covered
+TM076,Explainable Ethical Transparent Viz,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,Explainable ethical visualization,J21,TM075,99.90%,Covered
+TM103,Sustainability-Focused Visualizations,Analytics & Insights,,AI,demo-bank-analytics,P2,Y,TOC_II,TM103+TM076,Yes,ƒ?? New TM103,Sustainability visualizations,PY+J21,TM075,99.90%,Covered
+TM076,Hyper-Personalized Dashboards,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076+TM085,No,ƒ?? Core,Hyper-personalized dashboards,J21,TM085,99.90%,Covered
+TM107,Autonomous Analytics Agents,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Autonomous analytics agents,PY+J21,TM080,99.90%,Covered
+TM104,Data Sharing Embedded Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM104+TM076,Yes,ƒ?? New TM104,Data sharing embedded analytics,J21,TM076,99.90%,Covered
+TM086,Account Aggregation,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM086,No,ƒ?? Core,Account aggregation service,J21,TM001,99.90%,Covered
+TM079,Risk Management,Analytics & Insights,,RISK,demo-bank-security,P1,Y,TOC_II,TM079,No,ƒ?? Core,Risk management analytics,J21,TM080,99.90%,Covered
+TM066,Cloud Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Cloud storage infrastructure,J21,,99.99%,Covered
+TM066,Object Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Object storage S3,J21,,99.99%,Covered
+TM066,Solid-State Drives,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,SSD storage,J21,,99.99%,Covered
+TM066,Storage Area Networks,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,SAN storage,J21,,99.99%,Covered
+TM066,Network-Attached Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,NAS storage,J21,,99.99%,Covered
+TM066,Hybrid Cloud Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Hybrid cloud storage,J21,,99.99%,Covered
+TM066,All-Flash Arrays,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,All-flash arrays,J21,,99.99%,Covered
+TM066,Software-Defined Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Software-defined storage,J21,,99.99%,Covered
+TM066,Hyperconverged Infrastructure,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Hyperconverged infrastructure,J21,,99.99%,Covered
+TM066,Data Reduction Technologies,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Data reduction technologies,J21,,99.99%,Covered
+TM066,Object-based Storage Systems,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Object-based storage,J21,,99.99%,Covered
+TM066,NVMe Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,NVMe storage,J21,,99.99%,Covered
+TM066,Storage Virtualization,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Storage virtualization,J21,,99.99%,Covered
+TM097,Data Archiving Compliance,Operations,,OPS,demo-bank-platform,P1,Y,TOC_II,TM097,No,ƒ?? Core,Data archiving compliance,J21,TM062,99.90%,Covered
+TM112,Edge Storage,Platform,,PLAT,demo-bank-platform,P2,Y,TOC_II,TM112,No,ƒ?? Core,Edge storage,J21,,99.90%,Covered
+TM066,In-memory Databases,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,In-memory databases Redis,J21+Redis,,99.99%,Covered
+TM066,Cloud-native Databases,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Cloud-native databases,J21,,99.99%,Covered
+TM109,Blockchain DLT Storage,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM109,No,ƒ?? Core,Blockchain distributed storage,J21+PY,,99.90%,Covered
+TM061,Data Encryption,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Data encryption at rest transit,J21,,99.99%,Covered
+TM065,Access Control Authentication,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM065,No,ƒ?? Core,Access control authentication,J21,,99.99%,Covered
+TM081,Advanced Threat Detection,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM081,No,ƒ?? Core,Advanced threat detection,J21+PY,TM080,50ms,Covered
+TM096,Biometric Authentication 2,Security & Compliance,SC004,SEC,demo-bank-security,P1,Y,TOC_II,TM096,No,ƒ?? Core,Biometric authentication 2,J21,,99.90%,Covered
+TM081,Advanced Threat Detection,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM081,No,ƒ?? Core,Advanced threat detection,J21+PY,TM080,50ms,Covered
+TM096,Biometric Authentication 2,Security & Compliance,SC004,SEC,demo-bank-security,P1,Y,TOC_II,TM096,No,ƒ?? Core,Biometric authentication 2,J21,,99.90%,Covered
+TM078,Real-Time Transaction Monitoring 2,Security & Compliance,SC012,SEC,demo-bank-security,P1,Y,TOC_II,TM078,No,ƒ?? Core,Real-time transaction monitoring 2,J21+PY,TM080,50ms,Covered
+TM081,Cybersecurity Threat Detection,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM081,No,ƒ?? Core,Cybersecurity threat detection,J21+PY,TM080,50ms,Covered
+TM061,Quantum-Safe Security,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Quantum-safe security,J21,,99.99%,Covered
+TM096,Voice-Based Authentication,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM096,No,ƒ?? Core,Voice-based authentication,J21,,99.90%,Covered
+TM074,Compliance Reporting,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM074,No,ƒ?? Core,Compliance reporting,J21,TM108,99.90%,Covered
+TM108,Regulatory Technology RegTech,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM108,No,ƒ?? Core,Regulatory technology solutions,J21,TM043,99.99%,Covered
+TM078,AML KYC Solutions,Security & Compliance,SC002+SC003,SEC,demo-bank-security,P1,Y,TOC_II,TM078+TM096,No,ƒ?? Core,AML KYC solutions,J21+PY,TM080,50ms,Covered
+TM061,Data Privacy Protection,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM061,No,ƒ?? Core,Data privacy and protection,J21,,99.99%,Covered
+TM108,Regulatory Compliance PCI-DSS GDPR,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM108,No,ƒ?? Core,Regulatory compliance PCI-DSS GDPR,J21,TM043,99.99%,Covered
+TM079,Real-Time Risk Assessment,Risk & Compliance,,RISK,demo-bank-security,P1,Y,TOC_II,TM079,No,ƒ?? Core,Real-time risk assessment,J21+PY,TM080,99.90%,Covered
+TM080,Predictive Risk Modeling,Risk & Compliance,,RISK,demo-bank-security,P1,Y,TOC_II,TM080,No,ƒ?? Core,Predictive risk modeling,PY,,99.90%,Covered
+TM068,Risk-Based Authentication,Risk & Compliance,,RISK,demo-bank-security,P1,Y,TOC_II,TM068,No,ƒ?? Core,Risk-based authentication,J21+Redis,TM007,99.99%,Covered
+TM079,Credit Risk Management,Risk & Compliance,,RISK,demo-bank-security,P1,Y,TOC_II,TM079,No,ƒ?? Core,Credit risk management,J21+PY,TM080,99.90%,Covered
+TM050,Market Risk Management,Risk & Compliance,,RISK,demo-bank-security,P1,Y,TOC_II,TM050,No,ƒ?? Core,Market risk management,J21,,99.90%,Covered
+TM069,Operational Risk Management,Operations,,OPS,demo-bank-platform,P1,Y,TOC_II,TM069,No,ƒ?? Core,Operational risk management,J21,TM098,99.90%,Covered
+TM104,API-First Approach,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM104,Yes,ƒ?? New TM104,API-first architecture,J21,TM065,99.90%,Covered
+TM104,Open Banking Platforms,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM104,Yes,ƒ?? New TM104,Open banking platforms,J21,TM065,99.90%,Covered
+TM104,Open Banking APIs,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM104,Yes,ƒ?? New TM104,Open banking APIs,J21,TM065,99.90%,Covered
+TM111,Embedded Finance 2,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,Embedded finance 2,J21,TM104,99.90%,Covered
+TM104,Composable Banking,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM104,Yes,ƒ?? New TM104,Composable banking architecture,J21,TM065,99.90%,Covered
+TM111,API-Driven Insurance Services,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,API-driven insurance services,J21,TM104,99.90%,Covered
+TM109,Cryptocurrencies,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Cryptocurrency support,J21+PY,,99.90%,Covered
+TM109,Central Bank Digital Currencies,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,CBDC support,J21+PY,,99.90%,Covered
+TM109,Stablecoins,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Stablecoin support,J21+PY,,99.90%,Covered
+TM109,Digital Asset Tokenization,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Digital asset tokenization,J21+PY,,99.90%,Covered
+TM066,Cloud-Native Architecture,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Cloud-native architecture,J21,,99.99%,Covered
+TM066,Cloud-Based Core Banking Systems,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Cloud-based core banking,J21,,99.99%,Covered
+TM112,IoT-based Payment Systems,Channels,,DX,demo-bank-channels,P2,Y,TOC_II,TM112,No,ƒ?? Core,IoT payment systems,J21,TM060,99.90%,Covered
+TM112,IoT for Financial Inclusion,Channels,,DX,demo-bank-channels,P2,Y,TOC_II,TM112,No,ƒ?? Core,IoT for financial inclusion,J21,TM060,99.90%,Covered
+TM107,Hyperautomation,Operations & Efficiency,,AI,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Hyperautomation platform,PY+J21,TM098,99.90%,Covered
+TM107,Intelligent Document Processing,Operations & Efficiency,,AI,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Intelligent document processing,PY+J21,TM098,99.90%,Covered
+TM108,Automated Compliance Reporting,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM108,No,ƒ?? Core,Automated compliance reporting,J21,TM043,99.99%,Covered
+TM107,Process Mining Optimization,Operations & Efficiency,,AI,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Process mining and optimization,PY+J21,TM098,99.90%,Covered
+TM105,Rapid Application Development,Operations,,OPS,demo-bank-platform,P2,Y,TOC_II,TM105,Yes,ƒ?? New TM105,Rapid application development,J21,,99.90%,Covered
+TM105,Minimal Coding Requirements,Operations,,OPS,demo-bank-platform,P2,Y,TOC_II,TM105,Yes,ƒ?? New TM105,Minimal coding requirements,J21,,99.90%,Covered
+TM105,Visual Development Interfaces,Operations,,OPS,demo-bank-platform,P2,Y,TOC_II,TM105,Yes,ƒ?? New TM105,Visual development interfaces,J21,,99.90%,Covered
+TM105,Drag-and-Drop Tools,Operations,,OPS,demo-bank-platform,P2,Y,TOC_II,TM105,Yes,ƒ?? New TM105,Drag-and-drop tools,J21,,99.90%,Covered
+TM105,Pre-Built Templates Components,Operations,,OPS,demo-bank-platform,P2,Y,TOC_II,TM105,Yes,ƒ?? New TM105,Pre-built templates and components,J21,,99.90%,Covered
+TM110,Peer-to-Peer Lending,Lending & Credit,,LEND,demo-bank-services,P1,Y,TOC_II,TM110,No,ƒ?? Core,Peer-to-peer lending platform,PY,TM079,99.90%,Covered
+TM110,Crowdfunding,Lending & Credit,,LEND,demo-bank-services,P1,Y,TOC_II,TM110,No,ƒ?? Core,Crowdfunding platform,PY,TM079,99.90%,Covered
+TM110,Digital Credit Scoring,Lending & Credit,FP017,LEND,demo-bank-services,P1,Y,TOC_II,TM110,No,ƒ?? Core,Digital credit scoring,PY,TM079,99.90%,Covered
+TM102,Robo-Advisory Services 2,AI & ML,FP012,AI,demo-bank-platform,P1,Y,TOC_II,TM102,Yes,ƒ?? New TM102,Robo-advisory services 2,PY+J21,TM038,99.90%,Covered
+TM038,Diversified Portfolios,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM038,No,ƒ?? Core,Diversified portfolios,J21,TM102,99.90%,Covered
+TM038,Portfolio Rebalancing,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM038,No,ƒ?? Core,Portfolio rebalancing,J21,TM102,99.90%,Covered
+TM079,Risk Assessment Profiling,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM079,No,ƒ?? Core,Risk assessment and profiling,J21+PY,TM080,99.90%,Covered
+TM075,Investment Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM075,No,ƒ?? Core,Investment analytics,J21,TM066,99.90%,Covered
+TM085,Personalized Investment Plans,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085+TM102,No,ƒ?? Core,Personalized investment plans,J21+PY,TM080,99.90%,Covered
+TM083,Tax Optimization,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM083,No,ƒ?? Core,Tax optimization engine,J21,TM099,99.90%,Covered
+TM103,ESG Investing,Analytics & Insights,,AI,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,ESG investing,J21,TM075,99.90%,Covered
+TM038,Alternative Investments,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM038,No,ƒ?? Core,Alternative investments,J21,TM102,99.90%,Covered
+TM076,Real-time Market Data,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM076,No,ƒ?? Core,Real-time market data,J21,TM075,99.90%,Covered
+TM107,Automated Trading,Operations & Efficiency,,AI,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Automated trading,PY+J21,TM080,99.90%,Covered
+TM108,Compliance Regulatory Reporting,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM108,No,ƒ?? Core,Compliance and regulatory reporting,J21,TM043,99.99%,Covered
+TM099,Client Reporting,Core Banking,,CORE,demo-bank-core,P1,Y,TOC_II,TM099,No,ƒ?? Core,Client reporting,J21,TM035,99.90%,Covered
+TM085,Goal-Based Investing,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085+TM102,No,ƒ?? Core,Goal-based investing,J21+PY,TM080,99.90%,Covered
+TM038,Dynamic Asset Allocation,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM038,No,ƒ?? Core,Dynamic asset allocation,J21,TM102,99.90%,Covered
+TM080,AI ML for Investments,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,AI ML for investment management,PY,,99.90%,Covered
+TM103,Sustainable Investing,Analytics & Insights,,AI,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Sustainable investing,J21,TM075,99.90%,Covered
+TM103,Impact Investing,Analytics & Insights,,AI,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Impact investing,J21,TM075,99.90%,Covered
+TM102,Digital Wealth Management,AI & ML,,AI,demo-bank-platform,P1,Y,TOC_II,TM102+TM038,Yes,ƒ?? New TM102,Digital wealth management,PY+J21,TM038,99.90%,Covered
+TM109,Blockchain-based Investment Management,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Blockchain investment management,J21+PY,,99.90%,Covered
+TM109,Blockchain Trade Finance Platforms,Trade Finance,,TF,demo-bank-services,P1,Y,TOC_II,TM109,No,ƒ?? Core,Blockchain trade finance,J21,TM092,99.90%,Covered
+TM109,Smart Contracts Letters of Credit,Trade Finance,,TF,demo-bank-services,P1,Y,TOC_II,TM109,No,ƒ?? Core,Smart contracts for LC,J21,TM092,99.90%,Covered
+TM096,Digital Identity KYC Trade,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM096,No,ƒ?? Core,Digital identity KYC for trade,J21,TM043,99.90%,Covered
+TM080,AI for Risk Assessment Trade,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,AI for trade risk assessment,PY,,99.90%,Covered
+TM112,IoT Supply Chain Visibility,Channels,,DX,demo-bank-channels,P2,Y,TOC_II,TM112,No,ƒ?? Core,IoT for supply chain visibility,J21,TM060,99.90%,Covered
+TM066,Cloud-based Trade Finance Platforms,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Cloud-based trade finance,J21,,99.99%,Covered
+TM108,RegTech for Compliance Trade,Security & Compliance,,SEC,demo-bank-security,P1,Y,TOC_II,TM108,No,ƒ?? Core,RegTech for trade compliance,J21,TM043,99.99%,Covered
+TM111,Trade Finance as a Service,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,Trade Finance as a Service,J21,TM104,99.90%,Covered
+TM109,DLT for Trade Finance,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,DLT for trade finance,J21+PY,,99.90%,Covered
+TM080,ML for Trade Finance Analytics,Analytics & Insights,,AI,demo-bank-analytics,P1,Y,TOC_II,TM080,No,ƒ?? Core,ML for trade finance analytics,PY,,99.90%,Covered
+TM111,Digital Platforms Trade Finance Marketplaces,Open Banking,,AI,demo-bank-platform,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,Trade finance marketplaces,J21,TM104,99.90%,Covered
+TM109,Tokenization Trade Finance Assets,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Tokenization of trade assets,J21+PY,,99.90%,Covered
+TM088,Real-time Payment Settlement Trade,Payments,,PAY,demo-bank-payments,P1,Y,TOC_II,TM088,No,ƒ?? Core,Real-time payment settlement,J21+Kafka,TM006,99.99%,Covered
+TM090,Supply Chain Finance Solutions,Lending & Credit,,LEND,demo-bank-services,P1,Y,TOC_II,TM090,No,ƒ?? Core,Supply chain finance solutions,J21,TM022,99.90%,Covered
+TM037,Trade Finance Insurance Guarantees,Financial Planning,,FP,demo-bank-services,P1,Y,TOC_II,TM037,No,ƒ?? Core,Trade finance insurance guarantees,J21,,99.90%,Covered
+TM094,Progressive Web Apps,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Progressive web apps PWA,J21+React,TM011,99.90%,Covered
+TM094,Micro Frontends,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Micro frontends architecture,J21+React,TM011,99.90%,Covered
+TM094,SSR SSG,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Server-side rendering static site gen,J21+React,TM011,99.90%,Covered
+TM094,Component-Driven Development,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Component-driven development,J21+React,TM011,99.90%,Covered
+TM102,AI ML Frontend,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM102+TM094,Yes,ƒ?? New TM102,AI ML in frontend,J21+React,TM094,99.90%,Covered
+TM094,WebAssembly,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,WebAssembly support,J21+React,TM011,99.90%,Covered
+TM094,Jamstack,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Jamstack architecture,J21+React,TM011,99.90%,Covered
+TM094,Responsive Design,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Responsive design,J21+React,TM011,99.90%,Covered
+TM066,Serverless Architecture,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Serverless architecture,J21,,99.99%,Covered
+TM066,Microservices Architecture,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Microservices architecture,J21,,99.99%,Covered
+TM080,AI ML Backend Integration,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM080,No,ƒ?? Core,AI ML backend integration,PY,,99.99%,Covered
+TM066,Containerization Orchestration,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,Containerization orchestration,J21,,99.99%,Covered
+TM112,Edge Computing,Platform,,PLAT,demo-bank-platform,P2,Y,TOC_II,TM112,No,ƒ?? Core,Edge computing,J21,,99.90%,Covered
+TM066,New Programming Languages Frameworks,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM066,No,ƒ?? Core,New programming languages,J21,,99.99%,Covered
+TM061,Cybersecurity Backend,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM061,No,ƒ?? Core,Cybersecurity backend,J21,,99.99%,Covered
+TM065,API-Driven Development,Platform,,PLAT,demo-bank-platform,P1,Y,TOC_II,TM065,No,ƒ?? Core,API-driven development,J21,,99.99%,Covered
+TM085,Hyper-Personalization,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Hyper-personalization,J21+PY,TM080,99.90%,Covered
+TM085,Personalized Financial Insights 2,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM085,No,ƒ?? Core,Personalized financial insights 2,J21+PY,TM080,99.90%,Covered
+TM094,Customizable Dashboards 2,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Customizable dashboards 2,J21+React,TM011,99.90%,Covered
+TM036,Reward Programs,CX,,CX,demo-bank-analytics,P1,Y,TOC_II,TM036,No,ƒ?? Core,Reward programs,J21,TM085,99.90%,Covered
+TM094,Gamification Financial Services,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Gamification of financial services,J21+React,TM085,99.90%,Covered
+TM094,Budgeting Expense Tracking,Channels,,DX,demo-bank-channels,P1,Y,TOC_II,TM094,No,ƒ?? Core,Budgeting and expense tracking,J21+React,TM011,99.90%,Covered
+TM103,Green Finance,Sustainable Finance,,SUS,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Green finance,J21,TM075,99.90%,Covered
+TM103,Sustainable Ethical Banking,Sustainable Finance,,SUS,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Sustainable ethical banking,J21,TM075,99.90%,Covered
+TM103,ESG Factors,Sustainable Finance,,SUS,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,ESG factors tracking,J21,TM075,99.90%,Covered
+TM109,Green Cryptocurrencies,Sustainable Finance,,SUS,demo-bank-payments,P2,Y,TOC_II,TM109,No,ƒ?? Core,Green cryptocurrencies,J21+PY,,99.90%,Covered
+TM101,Increased Accessibility,Financial Inclusion,,FIN,demo-bank-services,P1,Y,TOC_II,TM101,Yes,ƒ?? New TM101,Increased accessibility,PY+J21,,99.90%,Covered
+TM103,Sustainable Finance,Financial Inclusion,,FIN,demo-bank-services,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Sustainable finance,J21,TM075,99.90%,Covered
+TM061,Quantum Computing,Emerging Tech,,EMG,demo-bank-platform,P3,Y,TOC_II,TM061,No,ƒ?? Core,Quantum computing research,J21,,99.90%,Covered
+TM112,5G Edge Computing,Emerging Tech,,EMG,demo-bank-platform,P2,Y,TOC_II,TM112,No,ƒ?? Core,5G and edge computing,J21,,99.90%,Covered
+TM107,Autonomous Finance,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Autonomous finance,PY+J21,,99.90%,Covered
+TM102,Generative AI 2,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM102,Yes,ƒ?? New TM102,Generative AI 2,PY+J21,TM080,99.90%,Covered
+TM112,AR for Financial Services,Emerging Tech,,EMG,demo-bank-channels,P3,Y,TOC_II,TM112,No,ƒ?? Core,Augmented reality for financial services,J21,TM094,99.90%,Covered
+TM107,Agentic AI 2,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Agentic AI 2,PY+J21,,99.90%,Covered
+TM107,Multi-Agent Systems,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Multi-agent systems,PY+J21,,99.90%,Covered
+TM107,Physical AI,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM107,Yes,ƒ?? New TM107,Physical AI,PY+J21,,99.90%,Covered
+TM111,Embedded Finance 3,Emerging Tech,,EMG,demo-bank-platform,P1,Y,TOC_II,TM111,Yes,ƒ?? New TM111,Embedded finance 3,J21,TM104,99.90%,Covered
+TM109,Decentralized Finance DeFi,Emerging Tech,,EMG,demo-bank-payments,P1,Y,TOC_II,TM109,No,ƒ?? Core,Decentralized Finance DeFi,J21+PY,,99.90%,Covered
+TM103,Sustainable Finance 2,Emerging Tech,,EMG,demo-bank-platform,P2,Y,TOC_II,TM103,Yes,ƒ?? New TM103,Sustainable finance 2,J21,TM075,99.90%,Covered

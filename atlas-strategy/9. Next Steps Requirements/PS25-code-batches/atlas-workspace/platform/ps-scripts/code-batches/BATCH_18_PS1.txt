@@ -1,0 +1,472 @@
+"""
+ATLAS R01 BATCH 18 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-12-advanced-features\PS84-Add-Error-Budget.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS84-Add-Error-Budget
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Calculates monthly error budget and blocks deploys if burned
+OUTPUT: /api/sre/error-budget returns remaining budget %
+HYPERLINK: https://sre.google/workbook/implementing-slos/
+STACK: Spring Boot + Prometheus API
+COMPLIANCE: PS25 Release gating
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 12
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS84: Adding Error Budget API ===" -ForegroundColor Cyan
+
+$budgetCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\sre\ErrorBudgetController.java"
+@"
+package com.demobank.sre;
+import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/sre")
+public class ErrorBudgetController {
+    @GetMapping("/error-budget")
+    public Map<String, Object> getBudget() {
+        // Query Prometheus: 1 - error_rate over 30d
+        // Budget = 0.1%. If burned > 90%, block deployments
+        return Map.of("remaining", "23%", "blocked", false);
+    }
+}
+"@ | Out-File $budgetCtrl -Encoding utf8
+
+Write-Host "PS84 Done: GET /api/sre/error-budget" -ForegroundColor Green
+
+
+# --- END OF PS84-Add-Error-Budget.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-12-advanced-features\PS85-Add-Postmortem-Template.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS85-Add-Postmortem-Template
+
+.DESCRIPTION
+INPUT: docs/
+PROCESSING: Creates postmortem template + automation to create Jira
+OUTPUT: Standardized incident review within 48h
+HYPERLINK: https://cloud.google.com/sre
+STACK: Markdown + Jira API
+COMPLIANCE: PS25 Blameless culture
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 12
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS85: Adding Postmortem Template ===" -ForegroundColor Cyan
+
+$template = Join-Path $BasePath "docs\postmortem-template.md"
+@"
+# Postmortem: [INCIDENT TITLE]
+**Date**: YYYY-MM-DD
+**Duration**:
+**Impact**: Tenants affected:
+**Root Cause**:
+**Timeline**:
+- T+0: Detection
+- T+5: Mitigation
+**Action Items**:
+- [ ] Prevent recurrence
+**Lessons Learned**:
+"@ | Out-File $template -Encoding utf8
+
+Write-Host "PS85 Done: Copy template for every P1/P2 incident" -ForegroundColor Green
+
+
+# --- END OF PS85-Add-Postmortem-Template.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS86-Add-Usage-Metering.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS86-Add-Usage-Metering
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Tracks per-tenant usage: vouchers, API calls, storage
+OUTPUT: usage_events table + daily rollup to usage_summary
+HYPERLINK: https://stripe.com/billing/metered-billing
+STACK: Spring Boot + Kafka + PostgreSQL
+COMPLIANCE: PS25 Multi-tenant billing
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS86: Adding Usage Metering ===" -ForegroundColor Cyan
+
+$meterSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\billing\UsageMeterService.java"
+@"
+package com.demobank.billing;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+@Service
+public class UsageMeterService {
+    @KafkaListener(topics = "audit.log")
+    public void recordUsage(AuditEvent event) {
+        // Insert into usage_events: tenant_id, metric, quantity, timestamp
+        // Metrics: VOUCHER_CREATED=1, API_CALL=1, STORAGE_MB
+    }
+}
+"@ | Out-File $meterSvc -Encoding utf8
+
+$migration = Join-Path $BasePath "backend\src\main\resources\db\migration\V7__usage_tables.sql"
+@"
+CREATE TABLE usage_events (id UUID, tenant_id UUID, metric VARCHAR, quantity INT, ts TIMESTAMP);
+CREATE TABLE usage_summary (tenant_id UUID, metric VARCHAR, month DATE, total INT, PRIMARY KEY(tenant_id,metric,month));
+"@ | Out-File $migration -Encoding utf8
+
+Write-Host "PS86 Done: Usage tracked per tenant" -ForegroundColor Green
+
+
+# --- END OF PS86-Add-Usage-Metering.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS87-Add-Stripe-Integration.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS87-Add-Stripe-Integration
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates Stripe customer per tenant + subscription + metered billing
+OUTPUT: /api/billing/subscribe creates Stripe subscription
+HYPERLINK: https://stripe.com/docs/billing
+STACK: Spring Boot + Stripe Java SDK
+COMPLIANCE: PS25 SaaS billing
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS87: Adding Stripe Integration ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$stripeDep = @"
+    <dependency><groupId>com.stripe</groupId><artifactId>stripe-java</artifactId><version>24.0.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$stripeDep`n</dependencies>" | Set-Content $pom
+
+$stripeSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\billing\StripeService.java"
+@"
+package com.demobank.billing;
+import com.stripe.Stripe; import com.stripe.model.Subscription;
+@Service
+public class StripeService {
+    public StripeService() { Stripe.apiKey = System.getenv("STRIPE_SECRET"); }
+    public String createSubscription(String tenantId, String priceId) {
+        // Create Customer + Subscription with metered price
+        return "sub_xxx";
+    }
+}
+"@ | Out-File $stripeSvc -Encoding utf8
+
+Write-Host "PS87 Done: Set STRIPE_SECRET env var" -ForegroundColor Green
+
+
+# --- END OF PS87-Add-Stripe-Integration.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS88-Add-Invoice-Generator.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS88-Add-Invoice-Generator
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Monthly invoice PDF per tenant from usage_summary
+OUTPUT: /api/billing/invoice?month=2026-01 returns PDF
+HYPERLINK: https://itextpdf.com
+STACK: Spring Boot + iText + Jasper
+COMPLIANCE: PS25 Tax invoices
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS88: Adding Invoice Generator ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$itextDep = @"
+    <dependency><groupId>com.itextpdf</groupId><artifactId>itext7-core</artifactId><version>8.0.2</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$itextDep`n</dependencies>" | Set-Content $pom
+
+$invoiceSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\billing\InvoiceService.java"
+@"
+package com.demobank.billing;
+@Service
+public class InvoiceService {
+    public byte[] generateInvoice(String tenantId, String month) {
+        // Query usage_summary for month
+        // Generate PDF with line items: Vouchers, API calls, Storage
+        return new byte[0];
+    }
+}
+"@ | Out-File $invoiceSvc -Encoding utf8
+
+Write-Host "PS88 Done: GET /api/billing/invoice?month=2026-01" -ForegroundColor Green
+
+
+# --- END OF PS88-Add-Invoice-Generator.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS89-Add-Dunning-Workflow.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS89-Add-Dunning-Workflow
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Handles failed payments. 3 retries + email + suspension
+OUTPUT: Tenant suspended if unpaid after 14 days
+HYPERLINK: https://stripe.com/docs/billing/payments
+STACK: Spring Scheduler + Stripe Webhooks
+COMPLIANCE: PS25 Revenue protection
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS89: Adding Dunning Workflow ===" -ForegroundColor Cyan
+
+$dunningJob = Join-Path $BasePath "backend\src\main\java\com\demobank\billing\DunningJob.java"
+@"
+package com.demobank.billing;
+import org.springframework.scheduling.annotation.Scheduled;
+@Service
+public class DunningJob {
+    @Scheduled(cron = "0 9 * * *") // 9am daily
+    public void runDunning() {
+        // 1. Get failed invoices from Stripe
+        // 2. Day 1: Email. Day 7: Warning. Day 14: Suspend tenant
+        // 3. Update tenant.status = 'SUSPENDED'
+    }
+}
+"@ | Out-File $dunningJob -Encoding utf8
+
+Write-Host "PS89 Done: Daily dunning job runs" -ForegroundColor Green
+
+
+# --- END OF PS89-Add-Dunning-Workflow.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS90-Add-Billing-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS90-Add-Billing-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds Billing page: usage, plan, invoices, payment method
+OUTPUT: Admin can upgrade plan + download invoices
+HYPERLINK: https://stripe.com/docs/billing/subscriptions/build-subscription
+STACK: React + Stripe Elements
+COMPLIANCE: PS25 Self-service billing
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS90: Adding Billing UI ===" -ForegroundColor Cyan
+
+$billingPage = Join-Path $BasePath "frontend\src\pages\BillingPage.tsx"
+@"
+import { useTenant } from '../context/TenantContext';
+export default function BillingPage() {
+  const {tenantId} = useTenant();
+  return <div>
+    <h1>Billing - Tenant {tenantId}</h1>
+    <button onClick={() => window.open('/api/billing/invoice?month=2026-01')}>Download Invoice</button>
+    <button onClick={() => window.open('/api/billing/portal')}>Manage Payment</button>
+  </div>
+}
+"@ | Out-File $billingPage -Encoding utf8
+
+Write-Host "PS90 Done: Route /billing shows usage + invoices" -ForegroundColor Green
+
+
+# --- END OF PS90-Add-Billing-UI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS91-Add-Tenant-Provisioning.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS91-Add-Tenant-Provisioning
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates /api/admin/tenants POST endpoint for self-service signup
+OUTPUT: New tenant_id, DB schema, default roles, welcome email
+HYPERLINK: https://saas-boilerplate.com
+STACK: Spring Boot + JPA + Mail
+COMPLIANCE: PS25 Automated onboarding < 2min
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS91: Adding Tenant Provisioning ===" -ForegroundColor Cyan
+
+$tenantCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\admin\TenantProvisioningController.java"
+@"
+package com.demobank.admin;
+import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/admin/tenants")
+public class TenantProvisioningController {
+    @PostMapping
+    public Map<String,String> provision(@RequestBody TenantRequest req) {
+        // 1. Create tenant record
+        // 2. Run DB migrations for tenant schema
+        // 3. Create admin user
+        // 4. Send welcome email
+        return Map.of("tenant_id", UUID.randomUUID().toString());
+    }
+    record TenantRequest(String name, String adminEmail) {}
+}
+"@ | Out-File $tenantCtrl -Encoding utf8
+
+Write-Host "PS91 Done: POST /api/admin/tenants to create new tenant" -ForegroundColor Green
+
+
+# --- END OF PS91-Add-Tenant-Provisioning.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS92-Add-Quota-Enforcement.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS92-Add-Quota-Enforcement
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds quota checks: vouchers/month, API calls, storage
+OUTPUT: 429 if tenant exceeds quota. Quotas per plan
+HYPERLINK: https://konghq.com
+STACK: Spring Boot + Redis + AOP
+COMPLIANCE: PS25 Fair usage + plan limits
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS92: Adding Quota Enforcement ===" -ForegroundColor Cyan
+
+$quotaAspect = Join-Path $BasePath "backend\src\main\java\com\demobank\quota\QuotaAspect.java"
+@"
+package com.demobank.quota;
+import org.aspectj.lang.annotation.*;
+@Aspect @Component
+public class QuotaAspect {
+    @Before("@annotation(CheckQuota)")
+    public void check(JoinPoint jp) {
+        // Get tenant_id from context
+        // Redis INCR usage:tenant:{id}:vouchers
+        // If > quota, throw QuotaExceededException 429
+    }
+}
+"@ | Out-File $quotaAspect -Encoding utf8
+
+Write-Host "PS92 Done: Annotate APIs with @CheckQuota" -ForegroundColor Green
+
+
+# --- END OF PS92-Add-Quota-Enforcement.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS93-Add-Admin-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS93-Add-Admin-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds SuperAdmin dashboard: tenant list, suspend, view usage
+OUTPUT: /admin shows all tenants with search + filters
+HYPERLINK: https://mui.com
+STACK: React + TanStack Table + MUI
+COMPLIANCE: PS25 Platform ops
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS93: Adding Admin UI ===" -ForegroundColor Cyan
+
+$adminPage = Join-Path $BasePath "frontend\src\pages\AdminTenantsPage.tsx"
+@"
+import { useQuery } from '@tanstack/react-query';
+export default function AdminTenantsPage() {
+  const {data} = useQuery({queryKey: ['tenants'], queryFn: () => fetch('/api/admin/tenants').then(r=>r.json())});
+  return <div>
+    <h1>All Tenants</h1>
+    <table>{data?.map((t:any) => <tr><td>{t.name}</td><td>{t.status}</td><td><button>Suspend</button></td></tr>)}</table>
+  </div>
+}
+"@ | Out-File $adminPage -Encoding utf8
+
+Write-Host "PS93 Done: Route /admin requires ROLE_ADMIN" -ForegroundColor Green
+
+
+# --- END OF PS93-Add-Admin-UI.ps1 ---
+

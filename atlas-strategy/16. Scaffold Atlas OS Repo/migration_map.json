@@ -1,0 +1,129 @@
+{
+  "version": "1.2",
+  "description": "Atlas R01 to Atlas-OS v2.0 Migration Map - NG FLAT",
+  "rules": {
+    "db_strategy": "Keep 1 DB, use schemas: driver_name.table_name",
+    "batch_strategy": "All cron/quartz jobs -> drivers/{driver}/batches/{name}.py",
+    "naming": "Retain original svcXXX/cmXXX/pmXXX folder names for traceability"
+  },
+  "platform": [
+    {"old": "demo-bank-services/pmf001-Service-Registry", "new": "platform/service-registry"},
+    {"old": "demo-bank-services/pmf002-Config-Service", "new": "platform/config"},
+    {"old": "demo-bank-services/pmf003-Secret-Manager", "new": "platform/secrets/manager"},
+    {"old": "demo-bank-services/pmf004-API-Gateway", "new": "platform/api-gateway/config"},
+    {"old": "demo-bank-services/pmf005-Event-Bus", "new": "platform/event-ledger/kafka"},
+    {"old": "demo-bank-services/pmf006-Cache-Service", "new": "platform/cache/redis"},
+    {"old": "demo-bank-services/pmf007-Keycloak-Auth", "new": "platform/identity/keycloak"},
+    {"old": "demo-bank-services/pmf008-Observability", "new": "platform/observability/grafana"},
+    {"old": "demo-bank-services/pmf009-Logging", "new": "platform/observability/loki"},
+    {"old": "demo-bank-services/pmf010-Tracing", "new": "platform/observability/jaeger"},
+    {"old": "demo-bank-services/pmf013-Batch-Scheduler", "new": "platform/workflow-engine"},
+    {"old": "demo-bank-services/pmf019-Vault-KMS", "new": "platform/secrets/vault"},
+    {"old": "demo-bank-services/pmf020-Policy-Engine", "new": "platform/policy/opa"},
+    {"old": "atlas-workspace/orchestration", "new": "platform/workflow-engine/workflows"}
+  ],
+  "drivers": [
+    {
+      "name": "customer",
+      "old_root": "demo-bank-services/cm",
+      "services": [
+        "cm001-Customer-Profile", "cm002-KYC-Service", "cm003-Address-Management",
+        "cm004-Contact-Preferences", "cm005-Document-Store", "cm006-Relationship-Mgr",
+        "cm007-Segment-Engine", "cm008-Consent-Management", "cm009-Watchlist-Screening",
+        "cm010-Customer-360"
+      ]
+    },
+    {
+      "name": "product",
+      "old_root": "demo-bank-services/pm",
+      "services": [
+        "pm021-Product-Catalog", "pm022-Account-Product", "pm023-Loan-Product",
+        "pm024-Card-Product", "pm025-Pricing-Engine", "pm026-Eligibility-Rules",
+        "pm027-Fee-Structure", "pm028-Product-Bundle", "pm029-Lifecycle-Mgmt", "pm030-Product-Config"
+      ]
+    },
+    {
+      "name": "ng-experience",
+      "old_root": "demo-bank-services/ng",
+      "description": "FLAT: Wave 1-3: Digital, AI, Web3, Agency Banking. All svcXXX live in /api",
+      "services": [
+        "svc101-Digital-Voucher-Service", "svc102-PFM-Budgeting-Service", "svc103-Reward-Loyalty-Service",
+        "svc104-Content-CMS-Service", "svc105-Location-Control-Service", "svc106-Biometric-Auth-Service",
+        "svc107-Developer-Portal-Service", "svc108-Agent-Banking-Platform",
+        "svc201-Personalization-Engine", "svc202-GenAI-Chatbot-Service", "svc203-Wealth-Investment-Service",
+        "svc204-Insurance-Tech-Service", "svc205-ESG-Sustainability-Service", "svc206-Advanced-Analytics-Suite",
+        "svc207-CrossBorder-FX-Service", "svc208-Campaign-Engine-Service",
+        "svc301-Blockchain-Ledger-Service", "svc302-DeFi-Crypto-Service", "svc303-CBDC-Adapter-Service",
+        "svc304-Trade-Finance-Platform", "svc305-Agentic-AI-Service", "svc306-AR-VR-Banking-Service",
+        "svc307-Metaverse-Banking-Service", "svc308-Quantum-Security-Service", "svc309-Virtual-Branch-Service",
+        "svc310-Community-Features-Service", "svc311-Explainable-AI-XAI-Service", "svc312-Collaborative-Storytelling-Service",
+        "svc313-Sustainable-Finance-Tracking", "svc314-5G-Edge-Computing-Service", "svc315-Physical-AI-Robotics-Service"
+      ],
+      "batches": [
+        {"old": "svc103-Reward-Loyalty-Service/batch", "new": "batches/loyalty_points_calc.py"},
+        {"old": "svc208-Campaign-Engine-Service/cron", "new": "batches/campaign_trigger.py"}
+      ]
+    },
+    {
+      "name": "core-banking",
+      "old_root": "demo-bank-services/tm",
+      "services": [
+        "accounts-mgt", "gl-ops-mgt", "transaction-mgt", "core-platform-mgt", "party-mgt"
+      ],
+      "batches": [
+        {"old": "accounts-mgt/batch/interest", "new": "batches/interest_accrual.py"},
+        {"old": "gl-ops-mgt/batch/eod", "new": "batches/eod_close.py"},
+        {"old": "transaction-mgt/batch/recon", "new": "batches/gl_posting.py"}
+      ]
+    },
+    {
+      "name": "lending",
+      "old_root": "demo-bank-services/tm",
+      "services": ["lending-mgt"],
+      "ext_services": ["demo-bank-services/im/im003-Credit-Risk", "demo-bank-services/im/im013-Collateral-Value"]
+    },
+    {
+      "name": "payments",
+      "old_root": "demo-bank-services/tm",
+      "services": ["payments-mgt", "cards-mgt", "international-mgt"],
+      "ext_services": [
+        "demo-bank-services/im/im001-Fraud-Engine",
+        "demo-bank-services/am/am001-SWIFT-Gateway", "demo-bank-services/am002-FedWire-Gateway",
+        "demo-bank-services/am/am003-CHIPS-Gateway", "demo-bank-services/am/am004-SEPA-Gateway", "demo-bank-services/am/am005-ACH-Gateway",
+        "demo-bank-services/am/am006-Visa-DPS", "demo-bank-services/am/am007-Mastercard-MIP"
+      ]
+    },
+    {
+      "name": "compliance",
+      "old_root": "demo-bank-services/tm",
+      "services": ["compliance-risk-mgt"],
+      "ext_services": [
+        "demo-bank-services/im/im002-AML-Engine",
+        "demo-bank-services/am/am010-LexisNexis-Screen", "demo-bank-services/am/am011-WorldCheck-Screen"
+      ]
+    },
+    {
+      "name": "integrations",
+      "old_root": "demo-bank-services/am",
+      "services": ["am008-Experian-Bureau", "am009-Equifax-Bureau", "am012-Twilio-SMS", "am013-SendGrid-Email", "am014-FCM-Push", "am015-DocuSign", "am016-OCR-Tesseract", "am017-Bloomberg-Market", "am018-Reuters-Market", "am019-Chainalysis-Crypto", "am020-S3-Storage"]
+    },
+    {
+      "name": "intelligence",
+      "old_root": "demo-bank-services/dm",
+      "description": "DM: Data/ML/AI. Renamed from mislabeled 'im' in old map",
+      "services": [
+        "im004-Market-Risk", "im005-Pricing-Engine", "im006-NBO-Engine", "im007-Churn-Predict", 
+        "im008-Cash-Forecast", "im009-Doc-Classifier", "im010-NLP-Screening", "im011-Voice-Biometric",
+        "im012-Sentiment-Analysis", "im014-FX-Forecast", "im015-Anomaly-Detect", "im016-ESG-Score",
+        "im017-Robo-Advisor", "im018-LLM-Orchestrator", "im019-Synthetic-Data", "im020-AI-Assistant"
+      ]
+    }
+  ],
+  "apps": [
+    {"old": "demo-bank-channels/demo-bank-fe", "new": "apps/customer-portal"},
+    {"old": "demo-bank-channels/partner-portal-fe", "new": "apps/partner-portal"},
+    {"old": "demo-bank-services/om/em001-Web-Shell", "new": "apps/ops-console"},
+    {"old": "demo-bank-services/om/em002-Mobile-Shell", "new": "apps/customer-portal/src/mfe/mobile"},
+    {"old": "demo-bank-services/om/em004-Agent-Shell", "new": "apps/agent-banking-console"}
+  ]
+}

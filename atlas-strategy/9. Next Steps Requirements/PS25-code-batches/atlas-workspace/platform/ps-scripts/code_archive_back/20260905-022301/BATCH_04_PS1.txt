@@ -1,0 +1,532 @@
+"""
+ATLAS R01 BATCH 04 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS72-Generate-Test-Suite.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS72-Generate-Test-Suite
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates VoucherServiceTest + ControllerIntegrationTest
+OUTPUT: 2 JUnit test files
+HYPERLINK: https://spring.io/guides
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS72-Generate-Test-Suite.ps1
+# PURPOSE: Runs unit/integration tests for tenant isolation
+# FILE: BE-PS72-Generate-Test-Suite.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$testDir = Join-Path $BeRoot "src\test\java\com\demobank\service"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS72: $Msg" -ForegroundColor $color
+}
+
+Write-Host "================================================" -ForegroundColor Magenta
+Write-Host " PS72: Generate JUnit Test Suite" -ForegroundColor Magenta
+Write-Host " Output: $testDir" -ForegroundColor Magenta
+Write-Host "================================================" -ForegroundColor Magenta
+
+if ($DryRun) { Write-Host "[PS72 DRY RUN] Would create 2 test files in $testDir"; exit 0 }
+New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+
+$testPath = Join-Path $testDir "VoucherServiceTest.java"
+@'
+package com.demobank.service;
+
+import com.demobank.domain.Voucher;
+import com.demobank.dto.VoucherDTO;
+import com.demobank.repository.VoucherRepository;
+import com.demobank.util.TenantTestUtil;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+public class VoucherServiceTest {
+
+    @Autowired
+    private VoucherService voucherService;
+
+    @Test
+    void testCreateVoucherWithTenant() {
+        UUID tenantId = TenantTestUtil.createTestTenant();
+        VoucherDTO dto = new VoucherDTO(null, 100.0, tenantId);
+        VoucherDTO saved = voucherService.create(dto, tenantId);
+        assertNotNull(saved.id());
+        assertEquals(tenantId, saved.tenantId());
+    }
+
+    @Test
+    void testFindByTenant() {
+        UUID tenantId = TenantTestUtil.createTestTenant();
+        var vouchers = voucherService.findAllByTenant(tenantId);
+        assertNotNull(vouchers);
+    }
+}
+'@ | Set-Content $testPath -Encoding UTF8
+Write-Log "Created: VoucherServiceTest.java" "SUCCESS"
+
+$intTestPath = Join-Path $testDir "VoucherControllerIntegrationTest.java"
+@'
+package com.demobank.controller;
+
+import com.demobank.util.TenantTestUtil;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class VoucherControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testGetVouchersWithTenant() throws Exception {
+        UUID tenantId = TenantTestUtil.createTestTenant();
+        mockMvc.perform(get("/api/v1/vouchers").header("X-Tenant-ID", tenantId))
+             .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetVouchersWithoutTenant() throws Exception {
+        mockMvc.perform(get("/api/v1/vouchers"))
+             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testCreateVoucherWithTenant() throws Exception {
+        UUID tenantId = TenantTestUtil.createTestTenant();
+        String json = "{\"amount\":200}";
+        mockMvc.perform(post("/api/v1/vouchers")
+             .header("X-Tenant-ID", tenantId)
+             .contentType(MediaType.APPLICATION_JSON)
+             .content(json))
+             .andExpect(status().isCreated());
+    }
+}
+'@ | Set-Content $intTestPath -Encoding UTF8
+Write-Log "Created: VoucherControllerIntegrationTest.java" "SUCCESS"
+
+Write-Log "PS72 Complete! JUnit tests with tenant headers" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS72-Generate-Test-Suite.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS73-Create-Voucher-Service.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS73-Create-Voucher-Service
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates VoucherService with tenant-aware repo calls
+OUTPUT: src/main/java/com/demobank/service/VoucherService.java
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS73-Create-Voucher-Service.ps1
+# PURPOSE: Performs core PS25 automation task
+# FILE: BE-PS73-Create-Voucher-Service.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$servicePath = Join-Path $BeRoot "src\main\java\com\demobank\service\VoucherService.java"
+$serviceDir = Split-Path $servicePath -Parent
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"; $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS73: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Creating VoucherService with tenant-aware repo" "INFO"
+if ($DryRun) { Write-Host "[PS73 DRY RUN] Would create $servicePath"; exit 0 }
+New-Item -ItemType Directory -Path $serviceDir -Force | Out-Null
+
+@'
+package com.demobank.service;
+
+import com.demobank.domain.Voucher;
+import com.demobank.dto.VoucherDTO;
+import com.demobank.repository.VoucherRepository;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class VoucherService {
+    private final VoucherRepository repository;
+
+    public VoucherService(VoucherRepository repository) { this.repository = repository; }
+
+    public List<VoucherDTO> findAllByTenant(UUID tenantId) {
+        return repository.findByTenantId(tenantId).stream()
+             .map(v -> new VoucherDTO(v.getId(), v.getAmount(), v.getTenantId()))
+             .toList();
+    }
+
+    public VoucherDTO create(VoucherDTO dto, UUID tenantId) {
+        Voucher v = new Voucher();
+        v.setAmount(dto.amount());
+        v.setTenantId(tenantId);
+        Voucher saved = repository.save(v);
+        return new VoucherDTO(saved.getId(), saved.getAmount(), saved.getTenantId());
+    }
+
+    public VoucherDTO findById(Long voucherId, UUID tenantId) {
+        return repository.findByIdAndTenantId(voucherId, tenantId)
+             .map(v -> new VoucherDTO(v.getId(), v.getAmount(), v.getTenantId()))
+             .orElse(null);
+    }
+
+    public boolean delete(Long voucherId, UUID tenantId) {
+        return repository.findByIdAndTenantId(voucherId, tenantId)
+             .map(v -> { repository.delete(v); return true; })
+             .orElse(false);
+    }
+}
+'@ | Set-Content -Path $servicePath -Encoding UTF8
+
+Write-Log "PS73 Complete: VoucherService.java created" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS73-Create-Voucher-Service.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS74-Generate-Docker-Assets.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS74-Generate-Docker-Assets
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates Dockerfile for Java 17 +.dockerignore
+OUTPUT: Dockerfile,.dockerignore
+HYPERLINK: https://docs.docker.com
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS74-Generate-Docker-Assets.ps1
+# PURPOSE: Creates docker-compose and builds container
+# FILE: BE-PS74-Generate-Docker-Assets.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [string]$AppName = "demo-bank-be",
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS74: $Msg" -ForegroundColor $color
+}
+
+Write-Host "PS74: Generate Docker Assets" -ForegroundColor Magenta
+
+if ($DryRun) { Write-Host "[PS74 DRY RUN] Would create Dockerfile,.dockerignore in $BeRoot"; exit 0 }
+
+$dockerfile = Join-Path $BeRoot "Dockerfile"
+@"
+FROM eclipse-temurin:17-jdk-alpine AS builder
+WORKDIR /app
+COPY pom.xml.
+COPY src./src
+RUN./mvnw clean package -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 8081
+ENTRYPOINT ["java","-jar","app.jar"]
+"@ | Set-Content $dockerfile -Encoding UTF8
+Write-Log "Created: Dockerfile" "SUCCESS"
+
+$dockerignore = Join-Path $BeRoot ".dockerignore"
+@"
+target/
+.git
+*.md
+"@ | Set-Content $dockerignore -Encoding UTF8
+Write-Log "Created:.dockerignore" "SUCCESS"
+
+Write-Log "PS74 Complete! Docker ready for local + UAT" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS74-Generate-Docker-Assets.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS75-Create-Voucher-Entity.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS75-Create-Voucher-Entity
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates Voucher.java extends TenantBase
+OUTPUT: src/main/java/com/demobank/domain/Voucher.java
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS75-Create-Voucher-Entity.ps1
+# PURPOSE: Performs core PS25 automation task
+# FILE: BE-PS75-Create-Voucher-Entity.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$entityPath = Join-Path $BeRoot "src\main\java\com\demobank\domain\Voucher.java"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"; $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS75: $Msg" -ForegroundColor $color
+}
+
+Write-Log "Creating Voucher entity extending TenantBase" "INFO"
+if ($DryRun) { Write-Host "[PS75 DRY RUN] Would create $entityPath"; exit 0 }
+
+New-Item -ItemType Directory -Path (Split-Path $entityPath) -Force | Out-Null
+
+@'
+package com.demobank.domain;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "vouchers", indexes = @Index(name = "ix_vouchers_tenant_id", columnList = "tenant_id"))
+public class Voucher extends TenantBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Double amount;
+
+    @Column(length = 100)
+    private String code;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    // getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Double getAmount() { return amount; }
+    public void setAmount(Double amount) { this.amount = amount; }
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+}
+'@ | Set-Content -Path $entityPath -Encoding UTF8
+
+Write-Log "PS75 Complete: Voucher.java entity created" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS75-Create-Voucher-Entity.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS76-Generate-Frontend-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS76-Generate-Frontend-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Creates React package.json + App.jsx with axios header
+OUTPUT: package.json, src/App.jsx
+HYPERLINK: https://vitejs.dev
+STACK: React 18 + Vite + TypeScript + Docker
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS76-Generate-Frontend-UI.ps1
+# PURPOSE: Performs core PS25 automation task
+# FILE: BE-PS76-Generate-Frontend-UI.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [string]$Framework = "react",
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$FeRoot = Join-Path $BasePath "frontend"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS76: $Msg" -ForegroundColor $color
+}
+
+Write-Host "PS76: Generate Frontend UI" -ForegroundColor Magenta
+if ($DryRun) { Write-Host "[PS76 DRY RUN] Would create package.json + src/App.jsx in $FeRoot"; exit 0 }
+
+New-Item -ItemType Directory -Path $FeRoot -Force | Out-Null
+
+$pkgPath = Join-Path $FeRoot "package.json"
+@"
+{
+  "name": "demo-bank-fe",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+  }
+}
+"@ | Set-Content $pkgPath -Encoding UTF8
+Write-Log "Created: package.json" "SUCCESS"
+
+$srcDir = Join-Path $FeRoot "src"
+New-Item -ItemType Directory -Path $srcDir -Force | Out-Null
+
+$appPath = Join-Path $srcDir "App.jsx"
+@'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081'
+
+function App() {
+  const [tenant, setTenant] = useState('TENANT001')
+  const [vouchers, setVouchers] = useState([])
+
+  // PS25: Attach X-Tenant-ID to all requests
+  useEffect(() => {
+    axios.defaults.headers.common['X-Tenant-ID'] = tenant
+    axios.defaults.baseURL = API_URL
+
+    axios.get('/api/v1/vouchers')
+ .then(res => setVouchers(res.data))
+ .catch(err => console.error('Tenant header missing:', err))
+  }, [tenant])
+
+  return (
+    <div style={{padding: '20px'}}>
+      <h1>Demo Bank Platform</h1>
+      <input
+        value={tenant}
+        onChange={e => setTenant(e.target.value)}
+        placeholder="Enter Tenant ID"
+      />
+      <p>Current Tenant: {tenant}</p>
+      <p>PS25 Multi-tenancy enabled</p>
+      <ul>
+        {vouchers.map(v => <li key={v.id}>{v.code || v.id} - {v.amount}</li>)}
+      </ul>
+    </div>
+  )
+}
+
+export default App
+'@ | Set-Content $appPath -Encoding UTF8
+Write-Log "Created: src/App.jsx" "SUCCESS"
+
+Write-Log "PS76 Complete! Run 'npm install && npm run dev' in $FeRoot" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS76-Generate-Frontend-UI.ps1 ---
+

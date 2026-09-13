@@ -1,0 +1,146 @@
+"""
+ATLAS R01 BATCH 13 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS217-ATLAS-ServiceMesh.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS217 - ATLAS K8s Platform
+BATCH: 03 - batch-03-k8s-platform
+STATUS: STUB
+PURPOSE: Istio/Linkerd service mesh for tenant traffic
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS217-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS217] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS217 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Label namespace for mesh injection"
+Write-Log "[STUB] TODO: Apply mTLS policy per tenant"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS217. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS217"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS217-ATLAS-ServiceMesh.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS219-ATLAS-Customer-API.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS219 - ATLAS Core Banking API
+BATCH: 04 - batch-04-core-banking-api
+STATUS: STUB
+PURPOSE: Customer CRUD API with tenant isolation
+DEPENDS: PS209 RLS, PS210 JWT
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS219-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS219] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS219 for Tenant $TenantId"
+#endregion
+#region VALIDATE
+Write-Log "Validating JWT and tenant_id=$TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Deploy customer-service: POST /api/v1/$TenantId/customers"
+Write-Log "[STUB] TODO: GET /api/v1/$TenantId/customers/{id}"
+Write-Log "[STUB] TODO: Enforce RLS: WHERE tenant_id = '$TenantId'"
+Write-Log "[STUB] TODO: Publish event to atlas.$TenantId.events on CUD"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS219. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS219"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS219-ATLAS-Customer-API.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS221-ATLAS-Transaction-API.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS221 - ATLAS Core Banking API
+BATCH: 04 - batch-04-core-banking-api
+STATUS: STUB
+PURPOSE: Transaction Engine: Debit, Credit, Transfer
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS221-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS221] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS221 for Tenant $TenantId"
+Write-Log "[STUB] TODO: POST /api/v1/$TenantId/transactions - Idempotent"
+Write-Log "[STUB] TODO: Double-entry validation"
+Write-Log "[STUB] TODO: Publish to atlas.$TenantId.events: TXN_POSTED"
+Write-Log "[STUB] TODO: Call PS211 Audit-Writer"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS221. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS221"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS221-ATLAS-Transaction-API.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS223-ATLAS-Card-API.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS223 - ATLAS Core Banking API
+BATCH: 04 - batch-04-core-banking-api
+STATUS: STUB
+PURPOSE: Card Management: Issue, Block, Pin
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS223-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS223] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS223 for Tenant $TenantId"
+Write-Log "[STUB] TODO: POST /api/v1/$TenantId/cards - Issue card"
+Write-Log "[STUB] TODO: Integration with PS225 Payments Orchestrator"
+Write-Log "[STUB] TODO: Tokenization for PCI compliance"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS223. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS223"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS223-ATLAS-Card-API.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS225-ATLAS-Payments-Orchestrator.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS225 - ATLAS Payments & Channels
+BATCH: 05 - batch-05-payments-channels
+STATUS: STUB
+PURPOSE: Central payment orchestrator. Routes to Cards, MM, POS
+DEPENDS: PS221 Transaction-API, PS208 Kafka
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS225-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS225] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS225 for Tenant $TenantId"
+#endregion
+#region VALIDATE
+Write-Log "Validating JWT and X-Tenant-ID=$TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Consume atlas.$TenantId.commands: PAYMENT_INIT"
+Write-Log "[STUB] TODO: Route logic: Card -> PS226, MM -> PS227, POS -> PS228"
+Write-Log "[STUB] TODO: Idempotency check via Redis"
+Write-Log "[STUB] TODO: Publish result to atlas.$TenantId.events: PAYMENT_STATUS"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS225. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS225"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS225-ATLAS-Payments-Orchestrator.ps1 ---
+

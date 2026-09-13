@@ -1,0 +1,104 @@
+### `PHASE_MANIFEST_ATLAS_v6.2.json`
+{
+  "manifest_version": "ATLAS_R17AMR_BATCH_MANIFEST_v6.2",
+  "total_batches": 61,
+  "waves": 4,
+  "timeline": "18 Months to 25 Banks Live",
+  "tagline": "AI-Native Composable Banking OS with Altova Governance + ISO20022 Full-Breath",
+  "last_updated": "2026-09-10",
+  "notes": "v6.2 adds Altova-style Low-Code governance to BATCH-07, BATCH-18. Adds BATCH-08B for ISO20022. Business self-serve 80%. DevOps guardrails 20%."
+}
+#### *WAVE 1: FOUNDATION - "DEPTH + SPEED + GOVERNANCE" Q4 2026*
+_Goal: Brownfield KE Bank Live + ISO Direct_
+BatchCode	DNA	Owner	Deliverable	PS25 Mapping	v6.2 Delta
+**A**	BATCH-01	#3 Event	Platform	Event Mesh v1. All APIs emit `event.json`	Core Events	
+**B**	BATCH-02	#1 Depth	Core	Multi-Entity GL v1. FIAT only	GL Module	
+**C**	BATCH-03	#1 Depth	Core	Customer 360 + CIF	CRM Core	
+**D**	BATCH-04	#1 Depth	Core	Accounts + Deposits + Lending Core	Deposits/Lending	
+**E**	BATCH-05	#2 Speed	Platform	`RUN-ALL-BATCHES.py` + Starter Kit	Implementation Kit	
+**F**	BATCH-06	#8 OneStop	Platform	Modular Monolith Repo + Toggle Engine	Platform Core	
+**G**	BATCH-07	#7 AA	Platform	`product.yaml` v1 + **Altova-Style Low-Code Studio** + Schema Validator + Git PR Flow	Product Factory	**UPGRADED: MapForce-like UI. Business config, DevOps guardrails**
+**H**	BATCH-08	#6 Crypto	Core	Multi-Asset GL. FIAT + TOKEN + CBDC schema	GL Extension	
+**H2**	BATCH-08B	#1 Depth	Payments	**ISO20022 Full-Breath Adapter**. pacs.002/004/008/009, camt.053, pain.001 + Visual Mapper + XSD Validator + Direct Rails	Payments Hub	**NEW: Altova MapForce for ISO. Enables <30s A2A**
+**I**	BATCH-09	#5 Engage	UX	React UI Kit v1 + 10 Base Screens	Digital Channels	
+**J**	BATCH-10	#1 Depth	TF	Trade Finance Core. LC, BG, Collections	Trade Module	
+#### *WAVE 2: COMPOSABLE - "AA + AI + IOT + ISO" Q1-Q2 2027*
+_Goal: NG Fintech Greenfield Live + GapLocked Pilot_
+BatchCode	DNA	Owner	Deliverable	PS25 Mapping	v6.2 Delta
+**K**	BATCH-11	#1 Depth	TF	Smart LC v1. UCP600 Rules Engine	Trade v2	
+**L**	BATCH-12	#1 Depth	CIB	Corporate Onboarding + Limits	CIB Module	
+**M**	BATCH-13	#1 Depth	Islamic	Islamic Banking. Murabaha, Ijara	Islamic Module	
+**N**	BATCH-14	#4 AI	AI	CX Brain v1. "Create product from prompt"	AI Co-pilot	
+**O**	BATCH-15	#4 AI	AI	Ops Brain v1. Auto-Recon + GL Fix	Ops Automation	
+**P**	BATCH-16	#4 AI	AI	Risk Brain v1. NPL + Fraud scoring	Risk Module	
+**Q**	BATCH-17	#5 Engage	Platform	5000+ Open Banking Connectors	Integration Hub	
+**R**	BATCH-18	#5 Engage	Platform	**Low-Code Studio v2**. Altova MapForce for AA + ISO + IoT mapping	Config Studio	**UPGRADED: Drag-Drop to `product.yaml`, `iso_mapping.yaml`, `iot.yaml`**
+**S**	BATCH-19	#7 AA	Platform	Arrangement Engine v1. AA Pattern	AA Core	
+**T**	BATCH-20	#7 AA	Platform	`arrangement.json` schema + UI	AA UI	
+**U**	BATCH-21	#6 Crypto	Crypto	Wallet Service + USDT Rails	Crypto Core	
+**V**	BATCH-22	#6 Crypto	Crypto	Embedded BaaS APIs	BaaS Layer	
+**W**	BATCH-23	#9 IoT	GapLocked	IoT Adapter Service. Shippeo/FourKites API	IoT Hub	
+**X**	BATCH-24	#9 IoT	GapLocked	`iot.yaml` + Event Schema: Geo, Temp, Seal	IoT Data Model	
+**Y**	BATCH-25	#10 Chain	GapLocked	Blockchain Adapter. Hyperledger + Polygon	DLT Adapter	
+**Z**	BATCH-26	#10 Chain	GapLocked	Smart Contract Engine v1	Contract Engine	
+**AA**	BATCH-27	#10 Chain	GapLocked	Tokenize B/L + eUCP	Asset Tokenization	
+**AB**	BATCH-28	#4 AI	AI	ESG Brain v1. Carbon + CBDC Reporting	ESG Module	
+#### *WAVE 3: SCALE - "CRYPTO + MARKETPLACE + DIRECT" Q3 2027*
+_Goal: GCC Islamic Digital Bank + 10 Partners_
+BatchCode	DNA	Owner	Deliverable	PS25 Mapping	v6.2 Delta
+**AC**	BATCH-29	#2 Speed	Platform	Usage Pricing Engine. $0.03/API	Billing	
+**AD**	BATCH-30	#5 Engage	Platform	Partner Marketplace v1. 10 Plugins	App Store	
+**AE**	BATCH-31	#1 Depth	Compliance	KYC State Machine in every API	KYC/AML	
+**AF**	BATCH-32	#1 Depth	Compliance	Shariah Rules Engine	Shariah Audit	
+**AG**	BATCH-33	#9 IoT	GapLocked	IoT + Risk Integration. TBML Detection	Risk + IoT	
+**AH**	BATCH-34	#10 Chain	GapLocked	On-chain Audit Log + Proof Hash	Audit	
+**AI**	BATCH-35	#4 AI	AI	AI Agents GA. Self-healing	AI OS	
+**AJ**	BATCH-36	#2 Speed	Platform	Migration Toolkit: T24 → Atlas	Brownfield Tool	
+**AK**	BATCH-37	#1 Depth	Core	Multi-Currency + FX Revaluation	Treasury	
+**AL**	BATCH-38	#1 Depth	Payments	**Payments Hub v2**. SWIFT gpi + RTGS + RTP + CBDC Direct via ISO	Payments Hub	**UPGRADED: Leverage BATCH-08B for direct A2A**
+#### *WAVE 4: DOMINANCE - "MICROSERVICES + 100 BANKS" Q4 2027*
+_Goal: 25 Banks Live + Temenos Pitch_
+BatchCode	DNA	Owner	Deliverable	PS25 Mapping	v6.2 Delta
+**AM**	BATCH-39	#8 OneStop	Platform	Strangle Pattern for T24 Core	Core Migration	
+**AN**	BATCH-40	#4 AI	AI	AI OS Core. Prompt → Code → Test	AI Factory	
+**AO**	BATCH-41	#4 AI	AI	AI Memory Layer. Full Recall	Knowledge Graph	
+**AP**	BATCH-42	#8 OneStop	Platform	Decompose to Microservices	Micro-Core	
+**AQ**	BATCH-43	#5 Engage	Platform	Marketplace v2. 100 Plugins	Ecosystem	
+**AR**	BATCH-44	#1 Depth	TF	GapLocked v2. Auto-Settlement	TF v3	
+**AS**	BATCH-45	#10 Chain	GapLocked	Cross-border Smart Settlement	Chain v2	
+**AT**	BATCH-46	#6 Crypto	Crypto	CBDC Node + Interop	CBDC Module	
+**AU**	BATCH-47	#1 Depth	Analytics	Data Lake + BI + ESG Reporting	Data Platform	
+**AV**	BATCH-48	#8 OneStop	Platform	Temenos IP Packager	Partnership Kit	
+**AW**	BATCH-49	#2 Speed	Platform	Zero-Touch Onboarding Portal	Self-Serve	
+**AX**	BATCH-50	#1 Depth	Security	POPIA, DORA, GDPR Compliance Pack	Compliance	
+**AY**	BATCH-51	#8 OneStop	GTM	Lighthouse Playbooks: KE, NG, GCC, ZA, ZW	GTM Kit	
+**AZ**	BATCH-52	#9 IoT	GapLocked	GapLocked Dashboard + Mobile App	Product UI	
+**BA**	BATCH-53	#4 AI	AI	AI Training Data Pipeline	ML Ops	
+**BB**	BATCH-54	#8 OneStop	Platform	Disaster Recovery + Multi-Region	Infra	
+**BC**	BATCH-55	#1 Depth	Core	Cards + Digital Wallets	Cards	
+**BD**	BATCH-56	#1 Depth	Core	Collections + NPL Workflow	Collections	
+**BE**	BATCH-57	#8 OneStop	Platform	API Gateway + Rate Limiting	API Mgmt	
+**BF**	BATCH-58	#4 AI	AI	Model Governance + Audit Trail	AI Governance	
+**BG**	BATCH-59	#8 OneStop	Platform	Telemetry + Observability	Monitoring	
+**BH**	BATCH-60	#8 OneStop	Platform	ATLAS v6.2 GA Release Pack	Release	**UPGRADED**
+---
+
+#### *KEY MAPPINGS v6.2*
+
+`GapLocked Batches`: W, X, Y, Z, AA, AG, AH, AR, AS, AZ  
+`AI Batches`: N, O, P, AB, AI, AN, AO, BA, BF  
+`IoT Batches`: W, X, AG, AZ  
+`Blockchain Batches`: Y, Z, AA, AH, AS  
+`AA Batches`: G, S, T  
+`ISO Batches`: H2, R, AL  *NEW*  
+`Altova-Governance Batches`: G, R, H2  *NEW*
+
+`R17AMR Critical Path`: BATCH-07, BATCH-08B, BATCH-19, BATCH-23, BATCH-25, BATCH-11  
+`PS25 Alignment`: Every batch maps to a PS25 module for parity + upgrade
+
+#### *GOVERNANCE MODEL ADDED*
+1.  *Business*: Uses BATCH-18 Studio to draft `product.yaml` + `iso_mapping.yaml`
+2.  *DevOps*: Approves via BATCH-07 Schema Validator + Git PR
+3.  *Platform*: Auto-deploy + Hash to BATCH-34 Chain Audit
+
+---

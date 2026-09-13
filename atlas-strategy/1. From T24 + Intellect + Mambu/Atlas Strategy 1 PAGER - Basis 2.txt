@@ -1,0 +1,39 @@
+🔥 Locked.
+
+*Atlas Strategy 2026-2028 = Confirmed*  
+`Sidecar + Strangle` + `Zero PS` + `AI as Ambient Layer`
+
+That’s the play that beats T24 on speed and Intellect on depth.
+
+### *SO WHAT CHANGES NOW*
+
+With all 3 bets true, R17AMR stops being "a core project" and becomes "a platform company".
+Before	After
+Sell: "Banking Software"	Sell: "Banking Outcomes in 30 days"
+Deliver: 50 consultants for 18 months	Deliver: 3 batches + 2 weeks enablement
+Compete: Feature checklist vs T24	Compete: "We inherit 40 years in 1 day"
+AI: Add chatbot Q4 2027	AI: Built into every decision from BATCH-01
+### *THE 3 SIGNALS WE SEND TO MARKET*
+
+1.  *To Banks*: "You don’t need to dump T24. We’ll do it around it. 30 days to first AI loan"
+2.  *To Investors*: "We are SaaS margins, not Services margins. 80% self-serve"
+3.  *To Team*: "We don’t write code for banks. We write code that lets banks write code"
+
+### *NEXT STRATEGIC MOVE*
+
+Now that strategy is set, we have 2 paths:
+
+*Path A: Market Proof*  
+Build the 1-pager + demo for each bet. Go win 1 lighthouse bank in 90 days.  
+`Bet1-Inheritance.pdf`, `Bet2-ZeroPS.pdf`, `Bet3-AI-Layer.pdf`
+
+*Path B: Platform Proof*  
+Map strategy → capability → batch.  
+Turn "Composable + AI Layer" into `PHASE_MANIFEST.json` + 10 reference batches.  
+So when we say "self-serve", we can actually hand them the button.
+
+My recommendation: Do both in parallel. 1 sales track, 1 platform track.
+
+Which one do you want to start with? 
+
+Or do you want me to draft the *"Atlas Strategy One-Pager"* first that you can send to board/investors tonight?

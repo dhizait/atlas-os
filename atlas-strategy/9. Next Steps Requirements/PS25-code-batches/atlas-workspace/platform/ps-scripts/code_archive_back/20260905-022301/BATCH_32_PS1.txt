@@ -1,0 +1,232 @@
+"""
+ATLAS R01 BATCH 32 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS69-Add-Risk-Scoring.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS69-Add-Risk-Scoring
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds risk_score column to vouchers + automatic hold logic
+OUTPUT: vouchers with risk_score > 0.8 go to PENDING_REVIEW
+HYPERLINK: https://www.fico.com
+STACK: Spring Boot + JPA
+COMPLIANCE: PS25 Automated risk controls
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS69: Adding Risk Scoring ===" -ForegroundColor Cyan
+
+$migration = Join-Path $BasePath "backend\src\main\resources\db\migration\V4__risk_score.sql"
+@"
+ALTER TABLE vouchers ADD COLUMN risk_score DOUBLE DEFAULT 0.0;
+ALTER TABLE vouchers ADD COLUMN status VARCHAR(50) DEFAULT 'APPROVED';
+CREATE INDEX idx_risk ON vouchers(tenant_id, risk_score);
+"@ | Out-File $migration -Encoding utf8
+
+Write-Host "PS69 Done: Update BE-PS73 to set status=PENDING_REVIEW if risk>0.8" -ForegroundColor Green
+
+
+# --- END OF PS69-Add-Risk-Scoring.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS70-Add-MLflow-Registry.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS70-Add-MLflow-Registry
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds MLflow server for model versioning + experiment tracking
+OUTPUT: http://localhost:5000 to register fraud models
+HYPERLINK: https://mlflow.org
+STACK: MLflow + Minio + PostgreSQL
+COMPLIANCE: PS25 Model governance + audit
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS70: Adding MLflow Registry ===" -ForegroundColor Cyan
+
+$mlflowCompose = Join-Path $BasePath "docker-compose-mlflow.yml"
+@"
+version: '3.8'
+services:
+  mlflow:
+    image: python:3.11
+    command: bash -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5000"
+    ports: ["5000:5000"]
+    volumes: ["./mlruns:/mlruns"]
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://postgres:postgres@postgres:5432/mlflow
+"@ | Out-File $mlflowCompose -Encoding utf8
+
+Write-Host "PS70 Done: MLflow UI at http://localhost:5000" -ForegroundColor Green
+
+
+# --- END OF PS70-Add-MLflow-Registry.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS71-Add-Redis-Cache.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS71-Add-Redis-Cache
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Spring Cache + Redis for tenant voucher queries
+OUTPUT: 10x faster reads. Cache key includes tenant_id
+HYPERLINK: https://redis.io
+STACK: Spring Boot 3.2 + Redis + Lettuce
+COMPLIANCE: PS25 Performance SLA <500ms p95
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS71: Adding Redis Cache ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$redisDep = @"
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$redisDep`n</dependencies>" | Set-Content $pom
+
+$cacheConfig = Join-Path $BasePath "backend\src\main\java\com\demobank\config\CacheConfig.java"
+@"
+package com.demobank.config;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Configuration;
+@Configuration @EnableCaching
+public class CacheConfig {}
+"@ | Out-File $cacheConfig -Encoding utf8
+
+$yml = Join-Path $BasePath "backend\src\main\resources\application.yml"
+@"
+spring:
+  redis:
+    host: redis
+    port: 6379
+  cache:
+    type: redis
+"@ | Add-Content $yml
+
+Write-Host "PS71 Done: Annotate service methods with @Cacheable(key='#tenantId')" -ForegroundColor Green
+
+
+# --- END OF PS71-Add-Redis-Cache.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS72-Add-DB-Query-Tuning.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS72-Add-DB-Query-Tuning
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds HikariCP tuning + tenant indexes + query hints
+OUTPUT: DB connection pool optimized for 1000 tenants
+HYPERLINK: https://github.com/brettwooldridge/HikariCP
+STACK: Spring Boot + HikariCP + PostgreSQL
+COMPLIANCE: PS25 Support 10k TPS
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS72: Adding DB Query Tuning ===" -ForegroundColor Cyan
+
+$yml = Join-Path $BasePath "backend\src\main\resources\application.yml"
+@"
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 30000
+"@ | Add-Content $yml
+
+$indexes = Join-Path $BasePath "backend\src\main\resources\db\migration\V5__perf_indexes.sql"
+@"
+CREATE INDEX CONCURRENTLY idx_vouchers_tenant_date ON vouchers(tenant_id, created_at DESC);
+CREATE INDEX CONCURRENTLY idx_vouchers_status ON vouchers(tenant_id, status);
+ANALYZE vouchers;
+"@ | Out-File $indexes -Encoding utf8
+
+Write-Host "PS72 Done: Hikari 50 connections + tenant indexes" -ForegroundColor Green
+
+
+# --- END OF PS72-Add-DB-Query-Tuning.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS73-Add-CDN-Asset-Cache.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS73-Add-CDN-Asset-Cache
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Configures Vite for CDN + cache busting + tenant assets
+OUTPUT: Static assets served from cdn.demo-bank.com
+HYPERLINK: https://vitejs.dev
+STACK: Vite + Cloudflare CDN
+COMPLIANCE: PS25 <2s FE load time
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS73: Adding CDN Asset Cache ===" -ForegroundColor Cyan
+
+$viteConfig = Join-Path $BasePath "frontend\vite.config.ts"
+@"
+import { defineConfig } from 'vite';
+export default defineConfig({
+  base: 'https://cdn.demo-bank.com/',
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: { output: { assetFileNames: 'assets/[name].[hash].[ext]' } }
+  }
+});
+"@ | Out-File $viteConfig -Encoding utf8
+
+Write-Host "PS73 Done: Build assets with 'npm run build'. Upload to CDN" -ForegroundColor Green
+
+
+# --- END OF PS73-Add-CDN-Asset-Cache.ps1 ---
+

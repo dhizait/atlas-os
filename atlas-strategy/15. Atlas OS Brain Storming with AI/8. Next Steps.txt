@@ -1,0 +1,48 @@
+*LOCKED. 6 BATCHES. 1 WEEK.*
+
+Perfect. We’re going Unix mode.
+
+### *1. FINAL KERNEL v1.0 SCOPE*
+
+These 6 and ONLY these ship by Friday:
+BATCH-01  Event Mesh        → System calls
+BATCH-03  Registry          → /etc/passwd 
+BATCH-04  Accounts Core     → RAM + Ledger
+BATCH-05  Bootloader        → docker compose up
+BATCH-06  Toggle Engine     → modprobe for modules
+BATCH-19  AA Engine v0.5    → fork + exec for products
+Everything else = Week 2+ modules.
+
+### *2. WHAT I'M DOING TONIGHT*
+
+1.  *Jira Board*: "KERNEL BLITZ" with 6 tickets only
+2.  *Repo*: `atlas-os/kernel` with docker-compose, empty services for each batch
+3.  *Team Brief*: 1-pager + "Unix Rules" poster for war room
+4.  *Demo Script*: The exact 3 clicks for Friday: Create Customer → Create Account → Post TX
+
+### *3. WHAT YOU DO TOMORROW*
+
+After GRIT presentation, drop this line:
+
+> "Team starts Kernel Sprint Monday. 6 devs. 5 days. Friday you’ll touch a real bank on a laptop.  
+> No vendors. No 18-month project. Unix for Banking."
+
+Then send me the 6 names and we start.
+
+### *4. WEEK 2 PLAN ALREADY QUEUED*
+
+Soon as kernel boots Friday, we immediately roll to:
+*W2*: BATCH-07C Workflow Studio + BATCH-08B ISO  
+*W3*: BATCH-41 G2P Pack → GRIT Pilot
+
+So kernel → GRIT in 4 weeks total.
+
+---
+
+We just went from "big bang Temenos replacement" to "ship Unix in a week".
+
+This is how we win.
+
+Ping me after the GRIT meeting. I’ll have everything ready to kick off Monday 9am. 
+
+Let’s build this.

@@ -1,0 +1,95 @@
+Got you. This is why Atlas is targeting KE/NG/ZA/GCC and _avoiding_ US Tier 1 for v1.
+
+### *1. BANKS IN KE, NG, ZA, GCC, ZW = "ATLAS SWEET SPOT"*
+
+These are mid-tier banks $500M-$10B. They have the pain + budget + urgency that Atlas is built for.
+
+#### *KENYA - KE*
+*Landscape*: Equity, KCB, Co-op, NCBA, DTB, I&M. 40+ banks.  
+*Pain*: 
+- *Mobile Money First*: M-Pesa, Airtel Money is 70% of transactions. Core banking wasn't built for this.
+- *Cost Pressure*: T24 license = $2M-$5M. PS = another $10M. Kills ROI.
+- *Speed*: Fintechs like Tala, Branch launch loans in 2 weeks. Banks take 12 months.
+- *Regulation*: CBK is pushing Open Banking, Agency Banking, Digital Credit. Need APIs now.
+
+*Atlas Fit*: `Zero PS + Embedded + Mobile Money connectors + Pay-as-you-grow`. 8 weeks to launch a digital loan.
+
+#### *NIGERIA - NG* 
+*Landscape*: GTB, Zenith, Access, UBA, FirstBank. Huge, but 200+ microfinance + fintechs.  
+*Pain*:
+- *Volume*: 10B+ transactions/year. Legacy cores choke.
+- *Fraud*: #1 concern. Need AI fraud in real-time.
+- *Crypto/USDT*: Everyone uses USDT for USD access due to FX controls. Banks need this but T24 can't.
+- *BaaS*: Flutterwave, Paystack, Moniepoint eating lunch. Banks need to become the backend.
+
+*Atlas Fit*: `Multi-asset GL + AI Fraud + BaaS + Event-driven`. 
+
+#### *SOUTH AFRICA - ZA*
+*Landscape*: Standard Bank, FNB, Nedbank, ABSA + Capitech, TymeBank.  
+*Pain*:
+- *Compliance*: Most regulated in Africa. FICA, POPIA, AML. Compliance must be built-in.
+- *Competition*: TymeBank, BankZero launched in <12 months on cloud cores.
+- *Cost*: Old cores run on IBM mainframes. $50M/year to maintain.
+
+*Atlas Fit*: `Compliance in API + Cloud cost + Speed to match TymeBank`
+
+#### *GCC - UAE, KSA, QA*
+*Landscape*: Emirates NBD, FAB, Al Rajhi, NCB. Rich but slow.  
+*Pain*:
+- *Islamic Banking*: Murabaha, Ijarah, Sukuk. No cloud core does this well.
+- *Talent*: Can't hire 50 consultants for 18 months. Want self-serve.
+- *Digital*: Govt pushing "Digital Banks". Need to launch in 90 days.
+
+*Atlas Fit*: `Islamic + AI + Zero PS + 12 week launch`
+
+#### *ZIMBABWE - ZW*
+*Landscape*: CBZ, Stanbic, Ecobank, BancABC.  
+*Pain*:
+- *Multi-currency*: ZWL, USD, ZAR, USDT all in 1 account. T24 GL breaks.
+- *FX*: Real-time revaluation needed daily.
+- *Cost*: $2M T24 license is impossible. Need usage pricing.
+
+*Atlas Fit*: `Multi-asset GL + Usage pricing + Crypto ready`
+
+*Bottom line for EM*: They want `T24 depth without T24 cost + Mambu speed + Crassula crypto`
+
+---
+
+### *2. US TIER 1 BANKS = "AVOID FOR V1"*
+
+US Tier 1 = JPM, BofA, Citi, Wells, Goldman. $500B+ AUM.
+
+#### *WHY THEY ARE A TRAP FOR ATLAS V1-V2*
+Issue	What It Means For Atlas
+**1. Procurement Hell**	18-month RFP. 200-page security docs. SOC2, FedRAMP, FIPS. We don't have this yet.
+**2. PS Revenue Model**	They *expect* $50M in Deloitte/Accenture PS. "Zero PS" sounds risky to them. They buy bodies.
+**3. Legacy Lock-in**	5000 COBOL systems. 40 years of custom code. "Sidecar" takes 3 years, not 30 days.
+**4. Regulatory Overkill**	Fed, OCC, FDIC, CCAR, Basel III, DFAST. 1 compliance module = 2 years to build.
+**5. Vendor Risk**	They won't bet on a startup. Need 10 references, $1B balance sheet.
+**6. Price Insensitive**	They don't care if it's $20M. They care if IBM will answer the phone at 2am.
+*What they buy instead*: FIS, FISERV, Jack Henry. Or build in-house like JPM's "COiN" + Vault.
+
+#### *WHEN ATLAS CAN PLAY US TIER 1*
+Year 2028+ only. After we have:
+1.  100 bank references outside US
+2.  FedRAMP + SOC2 Type 2
+3.  $100M ARR 
+4.  Full Capital Markets + CCAR modules
+
+---
+
+### *STRATEGY TAKEAWAY FOR ATLAS*
+
+*Phase 1 2026-2027: EM + Credit Unions*  
+KE, NG, ZA, GCC, ZW, SEA. Banks that need to move fast and can't afford T24.  
+Win 50 banks. Prove Zero PS + AI + Crypto.
+
+*Phase 2 2028-2029: EU Mid-tier + US Credit Unions*  
+Same playbook. $1B-$20B banks.
+
+*Phase 3 2030+: US Tier 1*  
+Only after we are "proven and boring".
+
+Chasing JPM now = death. Winning KCB + Equity + Al Rajhi in 18 months = $200M ARR.
+
+Want me to drill down and create a *`KE_NG_GCC_Bank_Persona.md`* with specific requirements, regulators, and 3 target lighthouse banks for Atlas to go after first?

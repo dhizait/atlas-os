@@ -1,0 +1,546 @@
+"""
+ATLAS R01 BATCH 12 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS307-ATLAS-Data-Encryption.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS307 - ATLAS Security / Zero-Trust
+BATCH: 18 - batch-18-security-zerotrust
+STATUS: STUB
+PURPOSE: Data encryption at rest and in transit per tenant
+DEPENDS: PS305 Secret-Management
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS307-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS307] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS307 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Tenant-specific KMS key for dw_$TenantId"
+Write-Log "[STUB] TODO: Encrypt PII in PS219 and PS221"
+Write-Log "[STUB] TODO: TLS 1.3 enforcement for all $TenantId APIs"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS307. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS307"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS307-ATLAS-Data-Encryption.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS309-ATLAS-Partner-API-Gateway.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS309 - ATLAS Partner / Ecosystem
+BATCH: 19 - batch-19-partner-ecosystem
+STATUS: STUB
+PURPOSE: Expose tenant APIs to 3rd parties with rate limits
+DEPENDS: PS210 Auth, PS303 IAM
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS309-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS309] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS309 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: API Gateway per tenant with key management"
+Write-Log "[STUB] TODO: OAuth2 scopes: accounts, payments, loans"
+Write-Log "[STUB] TODO: Rate limit + quota per partner for $TenantId"
+Write-Log "[STUB] TODO: Audit all calls via PS211"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS309. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS309"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS309-ATLAS-Partner-API-Gateway.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS31-Add-JWT-Security.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS31-Add-JWT-Security
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Spring Security + JJWT. Creates JwtUtil + JwtTenantFilter to set TenantContext from JWT claim
+OUTPUT: All APIs now require Bearer token with tenant_id claim
+HYPERLINK: https://jwt.io
+STACK: Spring Boot 3.2 + Spring Security + JJWT 0.11.5
+COMPLIANCE: PS25 Multi-Tenancy enforced at Gateway layer
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS31: Adding JWT Security with tenant_id claim ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$jwtDeps = @"
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+    <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-api</artifactId><version>0.11.5</version></dependency>
+    <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-impl</artifactId><version>0.11.5</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$jwtDeps`n</dependencies>" | Set-Content $pom
+
+$jwtUtil = Join-Path $BasePath "backend\src\main\java\com\demobank\security\JwtUtil.java"
+@"
+package com.demobank.security;
+import io.jsonwebtoken.Jwts; import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.stereotype.Component;
+import java.util.Date; import java.util.UUID;
+@Component
+public class JwtUtil {
+    private String SECRET = "demo-bank-secret-key-change-in-prod";
+    public String generateToken(String username, UUID tenantId) {
+        return Jwts.builder().setSubject(username).claim("tenant_id", tenantId.toString())
+          .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+          .signWith(SignatureAlgorithm.HS512, SECRET).compact();
+    }
+    public UUID getTenantId(String token) {
+        String tid = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody().get("tenant_id").toString();
+        return UUID.fromString(tid);
+    }
+}
+"@ | Out-File -FilePath $jwtUtil -Encoding utf8
+
+$filter = Join-Path $BasePath "backend\src\main\java\com\demobank\security\JwtTenantFilter.java"
+@"
+package com.demobank.security;
+import jakarta.servlet.*; import jakarta.servlet.http.*;
+import org.springframework.stereotype.Component;
+@Component
+public class JwtTenantFilter implements Filter {
+    private final JwtUtil jwtUtil;
+    public JwtTenantFilter(JwtUtil ju) { this.jwtUtil = ju; }
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws java.io.IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        String token = request.getHeader("Authorization");
+        if(token!= null && token.startsWith("Bearer ")) {
+            UUID tenantId = jwtUtil.getTenantId(token.substring(7));
+            com.demobank.context.TenantContext.setTenantId(tenantId);
+        }
+        try { chain.doFilter(req, res); }
+        finally { com.demobank.context.TenantContext.clear(); }
+    }
+}
+"@ | Out-File -FilePath $filter -Encoding utf8
+
+Write-Host "PS31 Done: JWT now sets TenantContext automatically" -ForegroundColor Green
+
+
+# --- END OF PS31-Add-JWT-Security.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS311-ATLAS-Marketplace.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS311 - ATLAS Partner / Ecosystem
+BATCH: 19 - batch-19-partner-ecosystem
+STATUS: STUB
+PURPOSE: Tenant app marketplace for fintech partners
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS311-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS311] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS311 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Partner onboarding + vetting"
+Write-Log "[STUB] TODO: App catalog: Insurance, Investments, Billers"
+Write-Log "[STUB] TODO: Revenue share + settlement via PS224"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS311. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS311"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS311-ATLAS-Marketplace.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS313-ATLAS-Biller-Integration.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS313 - ATLAS Partner / Ecosystem
+BATCH: 19 - batch-19-partner-ecosystem
+STATUS: STUB
+PURPOSE: Utility, Telco, Government biller integrations
+DEPENDS: PS225 Payments
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS313-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS313] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS313 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Biller catalog per tenant country"
+Write-Log "[STUB] TODO: Bill payment via PS225"
+Write-Log "[STUB] TODO: Reconciliation + settlement"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS313. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS313"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS313-ATLAS-Biller-Integration.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS315-ATLAS-ESG-Reporting.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS315 - ATLAS Platform Extensions
+BATCH: 20 - batch-20-platform-extensions
+STATUS: STUB
+PURPOSE: ESG, Climate, and Sustainability reporting per tenant
+DEPENDS: PS242 DW, PS239 BI
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS315-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS315] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS315 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Collect ESG metrics: Carbon, Lending to Green sectors"
+Write-Log "[STUB] TODO: GRI/SASB reporting templates for $TenantId"
+Write-Log "[STUB] TODO: Publish to dw_${TenantId}.esg_metrics"
+Write-Log "[STUB] TODO: Dashboard in PS239 for board reporting"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS315. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS315"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS315-ATLAS-ESG-Reporting.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS317-ATLAS-Branch-Operations.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS317 - ATLAS Platform Extensions
+BATCH: 20 - batch-20-platform-extensions
+STATUS: STUB
+PURPOSE: Branch teller, cash management, queue management
+DEPENDS: PS219 Customer-API, PS221 Transaction-API
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS317-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS317] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS317 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Teller cash drawer reconciliation"
+Write-Log "[STUB] TODO: Branch queue + appointment booking"
+Write-Log "[STUB] TODO: Cash forecasting per branch"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS317. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS317"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS317-ATLAS-Branch-Operations.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS319-ATLAS-Workflow-Engine.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS319 - ATLAS Platform Extensions
+BATCH: 20 - batch-20-platform-extensions
+STATUS: STUB
+PURPOSE: BPMN workflow orchestration across modules
+DEPENDS: PS291 Master-Orchestrator, PS264 Case
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS319-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS319] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS319 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Visual workflow designer for $TenantId"
+Write-Log "[STUB] TODO: Orchestrate: KYC->Onboarding->Account->Card"
+Write-Log "[STUB] TODO: Human tasks to PS265 Contact-Center"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS319. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS319"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS319-ATLAS-Workflow-Engine.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS32-Add-Audit-Log.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS32-Add-Audit-Log
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates Flyway migration for audit_log table + Kafka AuditService
+OUTPUT: Every voucher action written to DB and Kafka topic audit.log
+HYPERLINK: https://kafka.apache.org
+STACK: PostgreSQL + Flyway + Spring Kafka
+COMPLIANCE: PS25 Audit Trail per tenant_id for SOC2
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS32: Adding Audit Log for all voucher actions ===" -ForegroundColor Cyan
+
+$flyway = Join-Path $BasePath "backend\src\main\resources\db\migration\V2__audit_log.sql"
+@"
+CREATE TABLE audit_log (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    user_id VARCHAR(255),
+    action VARCHAR(100),
+    entity_id VARCHAR(255),
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_audit_tenant ON audit_log(tenant_id, timestamp);
+"@ | Out-File -FilePath $flyway -Encoding utf8
+
+$auditService = Join-Path $BasePath "backend\src\main\java\com\demobank\service\AuditService.java"
+@"
+package com.demobank.service;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+@Service
+public class AuditService {
+    private final KafkaTemplate<String,Object> kafka;
+    public AuditService(KafkaTemplate<String,Object> k) { this.kafka = k; }
+    public void log(String action, String entityId) {
+        kafka.send("audit.log", new AuditEvent(
+            com.demobank.context.TenantContext.getTenantId(),
+            "system", action, entityId));
+    }
+    public record AuditEvent(java.util.UUID tenantId, String userId, String action, String entityId) {}
+}
+"@ | Out-File -FilePath $auditService -Encoding utf8
+
+Write-Host "PS32 Done: Call AuditService.log() in BE-PS73 after voucher post" -ForegroundColor Green
+
+
+# --- END OF PS32-Add-Audit-Log.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-02-security\PS33-Add-Apache-Solr.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS33-Add-Apache-Solr.ps1 - Adds Apache Solr 9.6 for tenant-aware voucher search
+.DESCRIPTION
+Creates Solr docker service, schema with tenant_id, Spring Boot Solr client, and Kafka consumer
+REQUIRES: PS25 complete. Kafka + TenantContext + docker-compose.yml must exist
+USAGE:
+.\PS33-Add-Apache-Solr.ps1 -BasePath "C:\Atlas\releases\R01\demo-bank" [-Force]
+#>
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$BasePath,
+    [switch]$Force
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$ComposeFile = Join-Path $BasePath "docker-compose.yml"
+$SolrConfigDir = Join-Path $BasePath "solr-config\voucher_conf"
+
+Write-Host "=== PS33: Adding Apache Solr ===" -ForegroundColor Cyan
+
+# 0. Pre-checks
+if (!(Test-Path $ComposeFile)) { throw "docker-compose.yml not found at $ComposeFile" }
+if (!(Test-Path $BeRoot)) { throw "backend folder not found at $BeRoot. Run PS01-PS25 first" }
+
+# 1. Add Solr service to docker-compose.yml - Idempotent
+Write-Host "Step 1/4: Updating docker-compose.yml"
+$composeContent = Get-Content $ComposeFile -Raw
+if ($composeContent -notlike "*solr:*") {
+    $solrService = @"
+
+  solr:
+    image: solr:9.6
+    container_name: demo-bank-solr
+    ports:
+      - "8983:8983"
+    volumes:
+      -./solr-data:/var/solr/data
+      -./solr-config:/opt/solr/server/solr/configsets
+    command: solr-precreate vouchers /opt/solr/server/solr/configsets/voucher_conf
+    environment:
+      - SOLR_HEAP=512m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+"@
+    Add-Content -Path $ComposeFile -Value $solrService
+    Write-Host " Added solr service" -ForegroundColor Green
+} else {
+    Write-Host " Solr service already exists. Skipping." -ForegroundColor Yellow
+}
+
+# 2. Create Solr Schema with tenant_id
+Write-Host "Step 2/4: Creating Solr schema"
+New-Item -ItemType Directory -Force $SolrConfigDir | Out-Null
+$schema = @'
+<?xml version="1.0" encoding="UTF-8"?>
+<schema name="vouchers" version="1.6">
+  <field name="id" type="string" indexed="true" stored="true" required="true" />
+  <field name="tenant_id" type="string" indexed="true" stored="true" required="true" />
+  <field name="voucher_no" type="string" indexed="true" stored="true" />
+  <field name="narration" type="text_en" indexed="true" stored="true" />
+  <field name="amount" type="pdouble" indexed="true" stored="true" />
+  <field name="status" type="string" indexed="true" stored="true" />
+  <field name="posted_date" type="pdate" indexed="true" stored="true" />
+  <field name="posted_by" type="string" indexed="true" stored="true" />
+  <uniqueKey>id</uniqueKey>
+</schema>
+'@
+$schema | Out-File (Join-Path $SolrConfigDir "schema.xml") -Encoding utf8 -Force
+
+$solrConfig = @'
+<config>
+  <luceneMatchVersion>9.6</luceneMatchVersion>
+  <dataDir>${solr.data.dir:}</dataDir>
+</config>
+'@
+$solrConfig | Out-File (Join-Path $SolrConfigDir "solrconfig.xml") -Encoding utf8 -Force
+
+# 3. Add Solr Dependency to pom.xml
+Write-Host "Step 3/4: Adding Solr dependency"
+$pom = Join-Path $BeRoot "pom.xml"
+$solrDep = @"
+    <!-- PS33: Apache Solr -->
+    <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
+        <version>9.6.0</version>
+    </dependency>
+"@
+$content = Get-Content $pom -Raw
+if ($content -notlike "*solr-solrj*") {
+    $content -replace '</dependencies>', "$solrDep`n</dependencies>" | Set-Content $pom -Encoding utf8
+    Write-Host " Added solr-solrj dependency" -ForegroundColor Green
+} else {
+    Write-Host " Solr dependency already exists. Skipping." -ForegroundColor Yellow
+}
+
+# 4. Create Solr Service + Kafka Consumer
+Write-Host "Step 4/4: Creating Solr Services"
+$searchPkg = Join-Path $BeRoot "src\main\java\com\demobank\search"
+$eventPkg = Join-Path $BeRoot "src\main\java\com\demobank\event"
+New-Item -ItemType Directory -Force $searchPkg | Out-Null
+New-Item -ItemType Directory -Force $eventPkg | Out-Null
+
+# Solr Document Entity
+@'
+package com.demobank.search;
+import org.apache.solr.client.solrj.beans.Field;
+public class VoucherDoc {
+    @Field private String id;
+    @Field("tenant_id") private String tenantId;
+    @Field("voucher_no") private String voucherNo;
+    @Field private String narration;
+    @Field private Double amount;
+    @Field private String status;
+    @Field("posted_date") private java.time.LocalDateTime postedDate;
+    @Field("posted_by") private String postedBy;
+    // Getters and Setters omitted for brevity
+    public String getId() { return id; } public void setId(String id) { this.id = id; }
+    public String getTenantId() { return tenantId; } public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+    public String getVoucherNo() { return voucherNo; } public void setVoucherNo(String voucherNo) { this.voucherNo = voucherNo; }
+    public String getNarration() { return narration; } public void setNarration(String narration) { this.narration = narration; }
+    public Double getAmount() { return amount; } public void setAmount(Double amount) { this.amount = amount; }
+    public String getStatus() { return status; } public void setStatus(String status) { this.status = status; }
+}
+'@ | Out-File (Join-Path $searchPkg "VoucherDoc.java") -Encoding utf8 -Force
+
+# Solr Service with Tenant Filter
+@'
+package com.demobank.search;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.springframework.stereotype.Service;
+import java.util.List;
+@Service
+public class VoucherSearchService {
+    private final SolrClient solrClient;
+    public VoucherSearchService(SolrClient solrClient) { this.solrClient = solrClient; }
+
+    public void indexVoucher(VoucherDoc doc) throws Exception {
+        solrClient.addBean("vouchers", doc);
+        solrClient.commit("vouchers");
+    }
+
+    public QueryResponse search(String q) throws Exception {
+        String tenantId = com.demobank.context.TenantContext.getTenantId();
+        SolrQuery query = new SolrQuery();
+        query.setQuery("narration:" + q + " AND tenant_id:" + tenantId);
+        return solrClient.query("vouchers", query);
+    }
+}
+'@ | Out-File (Join-Path $searchPkg "VoucherSearchService.java") -Encoding utf8 -Force
+
+# Solr Config Bean
+@'
+package com.demobank.config;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+public class SolrConfig {
+    @Bean
+    public SolrClient solrClient() {
+        return new HttpSolrClient.Builder("http://solr:8983/solr").build();
+    }
+}
+'@ | Out-File (Join-Path $searchPkg "SolrConfig.java") -Encoding utf8 -Force
+
+# Kafka Consumer
+@'
+package com.demobank.event;
+import com.demobank.search.VoucherDoc;
+import com.demobank.search.VoucherSearchService;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+@Service
+public class SolrIndexConsumer {
+    private final VoucherSearchService searchService;
+    public SolrIndexConsumer(VoucherSearchService ss) { this.searchService = ss; }
+
+    @KafkaListener(topics = "voucher.posted", groupId = "solr-indexer")
+    public void handleVoucherPosted(VoucherPostedEvent event) throws Exception {
+        VoucherDoc doc = new VoucherDoc();
+        doc.setId(event.getId());
+        doc.setTenantId(event.getTenantId());
+        doc.setVoucherNo(event.getVoucherNo());
+        doc.setNarration(event.getNarration());
+        doc.setAmount(event.getAmount());
+        doc.setStatus(event.getStatus());
+        searchService.indexVoucher(doc);
+    }
+}
+'@ | Out-File (Join-Path $eventPkg "SolrIndexConsumer.java") -Encoding utf8 -Force
+
+Write-Host "PS33 COMPLETE: Solr added." -ForegroundColor Green
+Write-Host "Next: docker compose up -d solr" -ForegroundColor Cyan
+Write-Host "Then: mvn clean install in $BeRoot" -ForegroundColor Cyan
+
+# --- END OF PS33-Add-Apache-Solr.ps1 ---
+

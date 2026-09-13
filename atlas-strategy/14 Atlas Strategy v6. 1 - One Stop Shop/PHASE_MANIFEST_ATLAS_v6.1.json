@@ -1,0 +1,87 @@
+### *ATLAS R17AMR BATCH MANIFEST v6.1*  
+*Total: 60 Batches | 4 Waves | 18 Months to 25 Banks Live*
+
+#### *WAVE 1: FOUNDATION - "DEPTH + SPEED" Q4 2026*
+Goal: Brownfield KE Bank Live
+BatchCodeDNAOwnerDeliverablePS25 Mapping
+**A**BATCH-01#3 EventPlatformEvent Mesh v1. All APIs emit `event.json`Core Events
+**B**BATCH-02#1 DepthCoreMulti-Entity GL v1. FIAT onlyGL Module
+**C**BATCH-03#1 DepthCoreCustomer 360 + CIFCRM Core
+**D**BATCH-04#1 DepthCoreAccounts + Deposits + Lending CoreDeposits/Lending
+**E**BATCH-05#2 SpeedPlatform`RUN-ALL-BATCHES.py` + Starter KitImplementation Kit
+**F**BATCH-06#8 OneStopPlatformModular Monolith Repo + Toggle EnginePlatform Core
+**G**BATCH-07#7 AAPlatform`product.yaml` v1 + ParserProduct Factory
+**H**BATCH-08#6 CryptoCoreMulti-Asset GL. FIAT + TOKEN + CBDC schemaGL Extension
+**I**BATCH-09#5 EngageUXReact UI Kit v1 + 10 Base ScreensDigital Channels
+**J**BATCH-10#1 DepthTFTrade Finance Core. LC, BG, CollectionsTrade Module
+#### *WAVE 2: COMPOSABLE - "AA + AI + IOT" Q1-Q2 2027*
+Goal: NG Fintech Greenfield Live + GapLocked Pilot
+BatchCodeDNAOwnerDeliverablePS25 Mapping
+**K**BATCH-11#1 DepthTFSmart LC v1. UCP600 Rules EngineTrade v2
+**L**BATCH-12#1 DepthCIBCorporate Onboarding + LimitsCIB Module
+**M**BATCH-13#1 DepthIslamicIslamic Banking. Murabaha, IjaraIslamic Module
+**N**BATCH-14#4 AIAICX Brain v1. "Create product from prompt"AI Co-pilot
+**O**BATCH-15#4 AIAIOps Brain v1. Auto-Recon + GL FixOps Automation
+**P**BATCH-16#4 AIAIRisk Brain v1. NPL + Fraud scoringRisk Module
+**Q**BATCH-17#5 EngagePlatform5000+ Open Banking ConnectorsIntegration Hub
+**R**BATCH-18#5 EngagePlatformLow-Code Studio v1Config Studio
+**S**BATCH-19#7 AAPlatformArrangement Engine v1. AA PatternAA Core
+**T**BATCH-20#7 AAPlatform`arrangement.json` schema + UIAA UI
+**U**BATCH-21#6 CryptoCryptoWallet Service + USDT RailsCrypto Core
+**V**BATCH-22#6 CryptoCryptoEmbedded BaaS APIsBaaS Layer
+**W**BATCH-23#9 IoTGapLockedIoT Adapter Service. Shippeo/FourKites APIIoT Hub
+**X**BATCH-24#9 IoTGapLocked`iot.yaml` + Event Schema: Geo, Temp, SealIoT Data Model
+**Y**BATCH-25#10 ChainGapLockedBlockchain Adapter. Hyperledger + PolygonDLT Adapter
+**Z**BATCH-26#10 ChainGapLockedSmart Contract Engine v1Contract Engine
+**AA**BATCH-27#10 ChainGapLockedTokenize B/L + eUCPAsset Tokenization
+**AB**BATCH-28#4 AIAIESG Brain v1. Carbon + CBDC ReportingESG Module
+#### *WAVE 3: SCALE - "CRYPTO + MARKETPLACE" Q3 2027*
+Goal: GCC Islamic Digital Bank + 10 Partners
+BatchCodeDNAOwnerDeliverablePS25 Mapping
+**AC**BATCH-29#2 SpeedPlatformUsage Pricing Engine. $0.03/APIBilling
+**AD**BATCH-30#5 EngagePlatformPartner Marketplace v1. 10 PluginsApp Store
+**AE**BATCH-31#1 DepthComplianceKYC State Machine in every APIKYC/AML
+**AF**BATCH-32#1 DepthComplianceShariah Rules EngineShariah Audit
+**AG**BATCH-33#9 IoTGapLockedIoT + Risk Integration. TBML DetectionRisk + IoT
+**AH**BATCH-34#10 ChainGapLockedOn-chain Audit Log + Proof HashAudit
+**AI**BATCH-35#4 AIAIAI Agents GA. Self-healingAI OS
+**AJ**BATCH-36#2 SpeedPlatformMigration Toolkit: T24 → AtlasBrownfield Tool
+**AK**BATCH-37#1 DepthCoreMulti-Currency + FX RevaluationTreasury
+**AL**BATCH-38#1 DepthPaymentsSWIFT gpi + RTGS + Mobile MoneyPayments Hub
+#### *WAVE 4: DOMINANCE - "MICROSERVICES + 100 BANKS" Q4 2027*
+Goal: 25 Banks Live + Temenos Pitch
+BatchCodeDNAOwnerDeliverablePS25 Mapping
+**AM**BATCH-39#8 OneStopPlatformStrangle Pattern for T24 CoreCore Migration
+**AN**BATCH-40#4 AIAIAI OS Core. Prompt → Code → TestAI Factory
+**AO**BATCH-41#4 AIAIAI Memory Layer. Full RecallKnowledge Graph
+**AP**BATCH-42#8 OneStopPlatformDecompose to MicroservicesMicro-Core
+**AQ**BATCH-43#5 EngagePlatformMarketplace v2. 100 PluginsEcosystem
+**AR**BATCH-44#1 DepthTFGapLocked v2. Auto-SettlementTF v3
+**AS**BATCH-45#10 ChainGapLockedCross-border Smart SettlementChain v2
+**AT**BATCH-46#6 CryptoCryptoCBDC Node + InteropCBDC Module
+**AU**BATCH-47#1 DepthAnalyticsData Lake + BI + ESG ReportingData Platform
+**AV**BATCH-48#8 OneStopPlatformTemenos IP PackagerPartnership Kit
+**AW**BATCH-49#2 SpeedPlatformZero-Touch Onboarding PortalSelf-Serve
+**AX**BATCH-50#1 DepthSecurityPOPIA, DORA, GDPR Compliance PackCompliance
+**AY**BATCH-51#8 OneStopGTMLighthouse Playbooks: KE, NG, GCC, ZA, ZWGTM Kit
+**AZ**BATCH-52#9 IoTGapLockedGapLocked Dashboard + Mobile AppProduct UI
+**BA**BATCH-53#4 AIAIAI Training Data PipelineML Ops
+**BB**BATCH-54#8 OneStopPlatformDisaster Recovery + Multi-RegionInfra
+**BC**BATCH-55#1 DepthCoreCards + Digital WalletsCards
+**BD**BATCH-56#1 DepthCoreCollections + NPL WorkflowCollections
+**BE**BATCH-57#8 OneStopPlatformAPI Gateway + Rate LimitingAPI Mgmt
+**BF**BATCH-58#4 AIAIModel Governance + Audit TrailAI Governance
+**BG**BATCH-59#8 OneStopPlatformTelemetry + ObservabilityMonitoring
+**BH**BATCH-60#8 OneStopPlatformATLAS v6.1 GA Release PackRelease
+---
+
+#### *KEY MAPPINGS*
+
+*GapLocked Batches*: W, X, Y, Z, AA, AG, AH, AR, AS, AZ  
+*AI Batches*: N, O, P, AB, AI, AN, AO, BA, BF  
+*IoT Batches*: W, X, AG, AZ  
+*Blockchain Batches*: Y, Z, AA, AH, AS  
+*AA Batches*: G, S, T  
+
+*R17AMR Critical Path*: BATCH-07, BATCH-19, BATCH-23, BATCH-25, BATCH-11  
+*PS25 Alignment*: Every batch maps to a PS25 module for parity + upgrade

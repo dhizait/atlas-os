@@ -1,0 +1,245 @@
+"""
+ATLAS R01 BATCH 09 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-18-testing\PS111-Add-i18n.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS111-Add-i18n
+
+.DESCRIPTION
+INPUT: backend/ + frontend/
+PROCESSING: Adds Spring MessageSource + React i18next. Supports en, fr, ar, es
+OUTPUT: API and UI translate based on Accept-Language header
+HYPERLINK: https://www.i18next.com
+STACK: Spring Boot + React i18next
+COMPLIANCE: PS25 Multi-language support
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 18
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS111: Adding i18n ===" -ForegroundColor Cyan
+
+$i18nDir = Join-Path $BasePath "backend\src\main\resources\i18n"
+New-Item -ItemType Directory -Force $i18nDir | Out-Null
+
+@"
+voucher.created=Voucher created successfully
+voucher.amount=Amount: {0}
+"@ | Out-File (Join-Path $i18nDir "messages_en.properties") -Encoding utf8
+
+@"
+voucher.created=Bon créé avec succès
+voucher.amount=Montant: {0}
+"@ | Out-File (Join-Path $i18nDir "messages_fr.properties") -Encoding utf8
+
+@"
+voucher.created=تم إنشاء القسيمة بنجاح
+voucher.amount=المبلغ: {0}
+"@ | Out-File (Join-Path $i18nDir "messages_ar.properties") -Encoding utf8
+
+$localeCfg = Join-Path $BasePath "backend\src\main\java\com\demobank\config\LocaleConfig.java"
+@"
+package com.demobank.config;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
+@Configuration
+public class LocaleConfig {
+    @Bean
+    public LocaleResolver localeResolver() {
+        return new AcceptHeaderLocaleResolver(); // reads Accept-Language
+    }
+}
+"@ | Out-File $localeCfg -Encoding utf8
+
+Write-Host "PS111 Done: Send Accept-Language: fr to get French" -ForegroundColor Green
+
+
+# --- END OF PS111-Add-i18n.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-18-testing\PS112-Add-Timezone-Support.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS112-Add-Timezone-Support
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Stores all times in UTC. Converts to tenant timezone on read
+OUTPUT: X-Timezone header respected. Default Africa/Harare
+HYPERLINK: https://www.iana.org/time-zones
+STACK: Spring Boot + Java Time
+COMPLIANCE: PS25 Multi-region tenants
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 18
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS112: Adding Timezone Support ===" -ForegroundColor Cyan
+
+$tzFilter = Join-Path $BasePath "backend\src\main\java\com\demobank\config\TimezoneFilter.java"
+@"
+package com.demobank.config;
+import jakarta.servlet.*;
+@Component
+public class TimezoneFilter implements Filter {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+        String tz = ((HttpServletRequest)req).getHeader("X-Timezone");
+        TimeZone.setDefault(TimeZone.getTimeZone(tz!= null? tz : "Africa/Harare"));
+        chain.doFilter(req, res);
+    }
+}
+"@ | Out-File $tzFilter -Encoding utf8
+
+Write-Host "PS112 Done: Send X-Timezone: America/New_York" -ForegroundColor Green
+
+
+# --- END OF PS112-Add-Timezone-Support.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-18-testing\PS113-Add-Multi-Currency.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS113-Add-Multi-Currency
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds currency field to vouchers. ISO 4217 support
+OUTPUT: /api/vouchers supports USD, EUR, ZWL, GBP
+HYPERLINK: https://www.iso.org/iso-4217-currency-codes.html
+STACK: Spring Boot + JPA
+COMPLIANCE: PS25 Multi-currency ledger
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 18
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS113: Adding Multi-Currency ===" -ForegroundColor Cyan
+
+$migration = Join-Path $BasePath "backend\src\main\resources\db\migration\V9__currency.sql"
+@"
+ALTER TABLE vouchers ADD COLUMN currency VARCHAR(3) DEFAULT 'USD';
+ALTER TABLE usage_events ADD COLUMN currency VARCHAR(3) DEFAULT 'USD';
+"@ | Out-File $migration -Encoding utf8
+
+Write-Host "PS113 Done: Vouchers now have currency field" -ForegroundColor Green
+
+
+# --- END OF PS113-Add-Multi-Currency.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-18-testing\PS114-Add-Currency-Conversion.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS114-Add-Currency-Conversion
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Integrates ExchangeRate API. Converts amounts for reporting
+OUTPUT: /api/analytics/convert?from=USD&to=ZWL&amount=100
+HYPERLINK: https://exchangerate-api.com
+STACK: Spring Boot + WebClient
+COMPLIANCE: PS25 FX reporting
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 18
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS114: Adding Currency Conversion ===" -ForegroundColor Cyan
+
+$fxSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\fx\FxService.java"
+@"
+package com.demobank.fx;
+import org.springframework.web.client.RestTemplate;
+@Service
+public class FxService {
+    private final RestTemplate rest = new RestTemplate();
+    public BigDecimal convert(String from, String to, BigDecimal amount) {
+        String url = "https://api.exchangerate-api.com/v4/latest/" + from;
+        Map rates = rest.getForObject(url, Map.class);
+        BigDecimal rate = new BigDecimal(rates.get("rates").get(to).toString());
+        return amount.multiply(rate);
+    }
+}
+"@ | Out-File $fxSvc -Encoding utf8
+
+Write-Host "PS114 Done: GET /api/analytics/convert" -ForegroundColor Green
+
+
+# --- END OF PS114-Add-Currency-Conversion.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-18-testing\PS115-Add-RTL-Support.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS115-Add-RTL-Support
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds RTL support for Arabic. Flips layout based on locale
+OUTPUT: dir="rtl" when locale=ar
+HYPERLINK: https://mui.com/material-ui/guides/right-to-left/
+STACK: React + MUI + i18next
+COMPLIANCE: PS25 Arabic support
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 18
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS115: Adding RTL Support ===" -ForegroundColor Cyan
+
+$rtlWrapper = Join-Path $BasePath "frontend\src\components\RtlWrapper.tsx"
+@"
+import { ThemeProvider, createTheme } from '@mui/material';
+import rtlPlugin from 'stylis-plugin-rtl';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+
+export default function RtlWrapper({children, locale}) {
+  const isRtl = locale === 'ar';
+  const theme = createTheme({direction: isRtl? 'rtl' : 'ltr'});
+  const cacheRtl = createCache({key: 'muirtl', stylisPlugins: [rtlPlugin]});
+
+  return <CacheProvider value={isRtl? cacheRtl : undefined}>
+    <ThemeProvider theme={theme}><div dir={isRtl? 'rtl' : 'ltr'}>{children}</div></ThemeProvider>
+  </CacheProvider>
+}
+"@ | Out-File $rtlWrapper -Encoding utf8
+
+Write-Host "PS115 Done: Wrap App with <RtlWrapper locale={i18n.language}>" -ForegroundColor Green
+
+
+# --- END OF PS115-Add-RTL-Support.ps1 ---
+

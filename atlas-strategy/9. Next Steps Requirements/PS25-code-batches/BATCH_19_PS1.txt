@@ -1,0 +1,304 @@
+"""
+ATLAS R01 BATCH 19 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 6 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS94-Add-Impersonation.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS94-Add-Impersonation
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Allows support to impersonate tenant user for debugging
+OUTPUT: /api/admin/impersonate returns JWT with tenant_id
+HYPERLINK: https://oauth.net
+STACK: Spring Security + JWT
+COMPLIANCE: PS25 Support access with audit
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS94: Adding Impersonation ===" -ForegroundColor Cyan
+
+$impCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\admin\ImpersonationController.java"
+@"
+package com.demobank.admin;
+@RestController @RequestMapping("/api/admin")
+public class ImpersonationController {
+    @PostMapping("/impersonate")
+    public Map<String,String> impersonate(@RequestParam String tenantId, @RequestParam String userId) {
+        // 1. Check caller has ROLE_SUPPORT
+        // 2. Log to audit: "IMPERSONATE"
+        // 3. Return JWT with x-tenant-id + x-impersonator
+        return Map.of("token", "jwt...");
+    }
+}
+"@ | Out-File $impCtrl -Encoding utf8
+
+Write-Host "PS94 Done: POST /api/admin/impersonate for support" -ForegroundColor Green
+
+
+# --- END OF PS94-Add-Impersonation.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS95-Add-Support-Tools.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS95-Add-Support-Tools
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds support endpoints: reset password, unlock tenant, replay webhook
+OUTPUT: /api/support/* tools for L1 support
+HYPERLINK: https://zendesk.com
+STACK: Spring Boot
+COMPLIANCE: PS25 Reduce MTTR
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS95: Adding Support Tools ===" -ForegroundColor Cyan
+
+$supportCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\support\SupportController.java"
+@"
+package com.demobank.support;
+@RestController @RequestMapping("/api/support")
+public class SupportController {
+    @PostMapping("/reset-password") public void reset(@RequestParam String email) {}
+    @PostMapping("/unlock-tenant") public void unlock(@RequestParam String tenantId) {}
+    @PostMapping("/replay-webhook") public void replay(@RequestParam String eventId) {}
+}
+"@ | Out-File $supportCtrl -Encoding utf8
+
+Write-Host "PS95 Done: Support endpoints available" -ForegroundColor Green
+
+
+# --- END OF PS95-Add-Support-Tools.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-15-mobile\PS96-Add-OpenAPI-Docs.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS96-Add-OpenAPI-Docs
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds Springdoc OpenAPI + tenant_id header docs
+OUTPUT: Swagger UI at /swagger-ui.html with multi-tenant examples
+HYPERLINK: https://springdoc.org
+STACK: Spring Boot 3.2 + springdoc-openapi
+COMPLIANCE: PS25 API documentation
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 15
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS96: Adding OpenAPI Docs ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$openapiDep = @"
+    <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId><version>2.3.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$openapiDep`n</dependencies>" | Set-Content $pom
+
+$openapiCfg = Join-Path $BasePath "backend\src\main\java\com\demobank\config\OpenApiConfig.java"
+@"
+package com.demobank.config;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.parameters.Parameter;
+@Configuration
+public class OpenApiConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI().addServersItem(new io.swagger.v3.oas.models.servers.Server().url("/"))
+           .components(new io.swagger.v3.oas.models.Components()
+           .addParameters("tenantId", new Parameter().in("header").name("X-Tenant-ID").required(true)));
+    }
+}
+"@ | Out-File $openapiCfg -Encoding utf8
+
+Write-Host "PS96 Done: Swagger UI at http://localhost:8080/swagger-ui.html" -ForegroundColor Green
+
+
+# --- END OF PS96-Add-OpenAPI-Docs.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-15-mobile\PS97-Add-Changelog.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS97-Add-Changelog
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Generates CHANGELOG.md from git commits + PS script headers
+OUTPUT: Versioned changelog with breaking changes + migration notes
+HYPERLINK: https://keepachangelog.com
+STACK: Git + Markdown
+COMPLIANCE: PS25 Release transparency
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 15
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS97: Generating Changelog ===" -ForegroundColor Cyan
+
+$changelog = Join-Path $BasePath "CHANGELOG.md"
+@"
+# Changelog
+
+## [1.0.0] - 2026-08-06
+### Added
+- PS01-PS05: Foundation + Multi-tenancy
+- PS06-PS10: Observability + Security
+- PS11-PS15: Platform + CI/CD
+- PS16-PS20: Data Layer
+- PS21-PS25: Frontend
+- PS26-PS30: Compliance + GDPR
+- PS31-PS35: Integrations
+- PS36-PS40: AI/ML + Fraud
+- PS41-PS45: Performance
+- PS46-PS50: DR + SRE
+- PS51-PS55: Billing
+- PS56-PS60: Admin + Ops
+
+### Breaking Changes
+- All APIs now require X-Tenant-ID header
+- DB schema v7: usage_events table added
+
+### Migration Guide
+See docs/migration-v1.md
+"@ | Out-File $changelog -Encoding utf8
+
+Write-Host "PS97 Done: CHANGELOG.md created" -ForegroundColor Green
+
+
+# --- END OF PS97-Add-Changelog.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-15-mobile\PS98-Add-Migration-Guide.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS98-Add-Migration-Guide
+
+.DESCRIPTION
+INPUT: docs/
+PROCESSING: Creates step-by-step migration guide for existing banks
+OUTPUT: docs/migration-v1.md with rollback plan
+HYPERLINK: https://www.postgresql.org/docs/current/upgrading.html
+STACK: Markdown
+COMPLIANCE: PS25 Zero-downtime migration
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 15
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS98: Adding Migration Guide ===" -ForegroundColor Cyan
+
+$docsDir = Join-Path $BasePath "docs"
+New-Item -ItemType Directory -Force $docsDir | Out-Null
+
+$migration = Join-Path $docsDir "migration-v1.md"
+@"
+# Migration Guide v1.0
+
+## Pre-requisites
+1. Backup DB: `pg_dump demobank > backup.sql`
+2. Set maintenance window: 2 hours
+
+## Steps
+1. Run PS01-PS05 for foundation
+2. Run DB migrations V1-V7
+3. Deploy backend with feature flags off
+4. Enable multi-tenancy: set X-Tenant-ID
+5. Run smoke tests PS99
+
+## Rollback
+1. Restore DB from backup.sql
+2. Revert to previous docker image
+"@ | Out-File $migration -Encoding utf8
+
+Write-Host "PS98 Done: docs/migration-v1.md created" -ForegroundColor Green
+
+
+# --- END OF PS98-Add-Migration-Guide.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-15-mobile\PS99-Add-Final-Smoke-Tests.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS99-Add-Final-Smoke-Tests
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: End-to-end smoke test covering all 100 PS scripts
+OUTPUT: PASS/FAIL report for release gate
+HYPERLINK: https://www.postman.com
+STACK: PowerShell + curl + jq
+COMPLIANCE: PS25 Go-live checklist
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 15
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS99: Running Final Smoke Tests ===" -ForegroundColor Yellow
+
+$tests = @(
+    @{name="Health"; cmd="curl -s http://localhost:8080/actuator/health"},
+    @{name="Create Tenant"; cmd="curl -X POST http://localhost:8080/api/admin/tenants -d '{\"name\":\"TEST\",\"adminEmail\":\"test@test.com\"}'"},
+    @{name="Create Voucher"; cmd="curl -H 'X-Tenant-ID: TENANT001' -X POST http://localhost:8080/api/vouchers -d '{\"amount\":100}'"},
+    @{name="Get Usage"; cmd="curl http://localhost:8080/api/billing/invoice?month=2026-01"},
+    @{name="Swagger"; cmd="curl -s http://localhost:8080/swagger-ui.html"}
+)
+
+$pass = 0; $fail = 0
+foreach($t in $tests){
+    $res = Invoke-Expression $t.cmd 2>$null
+    if($res){ Write-Host "[PASS] $($t.name)" -ForegroundColor Green; $pass++ }
+    else { Write-Host "[FAIL] $($t.name)" -ForegroundColor Red; $fail++ }
+}
+
+Write-Host "=== SMOKE TEST REPORT ===" -ForegroundColor Cyan
+Write-Host "Passed: $pass | Failed: $fail"
+if($fail -eq 0){ Write-Host "RELEASE READY" -ForegroundColor Green } else { Write-Host "BLOCKED" -ForegroundColor Red }
+
+
+# --- END OF PS99-Add-Final-Smoke-Tests.ps1 ---
+

@@ -1,0 +1,268 @@
+"""
+ATLAS R01 BATCH 10 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS273-ATLAS-Trade-Finance.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS273 - ATLAS Trade / Treasury
+BATCH: 13 - batch-13-trade-treasury
+STATUS: STUB
+PURPOSE: Trade Finance: LC, BG, Invoice Financing
+MAPS TO: Old PS37
+DEPENDS: PS219 Customer-API, PS221 Transaction-API
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS273-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS273] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS273 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Issue LC for tenant_id=$TenantId"
+Write-Log "[STUB] TODO: SWIFT MT700/MT710 messaging via PS229"
+Write-Log "[STUB] TODO: Collateral lien via PS270"
+Write-Log "[STUB] TODO: Fee posting to PS221"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS273. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS273"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS273-ATLAS-Trade-Finance.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS275-ATLAS-Liquidity-Mgt.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS275 - ATLAS Trade / Treasury
+BATCH: 13 - batch-13-trade-treasury
+STATUS: STUB
+PURPOSE: Liquidity management and cash forecasting
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS275-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS275] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS275 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Aggregate balances from PS219 per tenant"
+Write-Log "[STUB] TODO: Cash forecast from PS221 + PS268"
+Write-Log "[STUB] TODO: Interbank placement via PS274"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS275. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS275"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS275-ATLAS-Liquidity-Mgt.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS277-ATLAS-ALM.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS277 - ATLAS Trade / Treasury
+BATCH: 13 - batch-13-trade-treasury
+STATUS: STUB
+PURPOSE: Asset Liability Management and interest rate risk
+DEPENDS: PS242 DW-Schema
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS277-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS277] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS277 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Gap analysis from dw_$TenantId assets/liabilities"
+Write-Log "[STUB] TODO: Duration, VaR calculations per tenant"
+Write-Log "[STUB] TODO: Dashboard in PS239"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS277. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS277"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS277-ATLAS-ALM.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS279-ATLAS-Mobile-Banking.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS279 - ATLAS Channels / Digital
+BATCH: 14 - batch-14-channels-digital
+STATUS: STUB
+PURPOSE: Mobile Banking App backend API
+MAPS TO: Old PS38
+DEPENDS: PS221 Transaction-API, PS225 Payments
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS279-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS279] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS279 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Auth via PS210 JWT with tenant_id=$TenantId"
+Write-Log "[STUB] TODO: Endpoints: Balance, Statement, Transfer, Airtime"
+Write-Log "[STUB] TODO: NBO integration via PS250"
+Write-Log "[STUB] TODO: Push notifications via PS262"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS279. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS279"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS279-ATLAS-Mobile-Banking.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-01-observability\PS28-Add-JsonLogging.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS PS25 Script: PS28-Add-JsonLogging
+.DESCRIPTION INPUT: pom.xml PROCESSING: Adds logstash encoder + logback-spring.xml OUTPUT: JSON logs with tenant_id
+.NOTES Generated: 2026-08-06 | BATCH 1
+#>
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+Write-Host "=== PS28: Adding JSON Logging ===" -ForegroundColor Cyan
+... [rest of your PS28 code]...
+Write-Host "PS28 Done" -ForegroundColor Green
+
+
+# --- END OF PS28-Add-JsonLogging.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS281-ATLAS-USSD-Gateway.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS281 - ATLAS Channels / Digital
+BATCH: 14 - batch-14-channels-digital
+STATUS: STUB
+PURPOSE: USSD menu for feature phones
+MAPS TO: Old PS38
+DEPENDS: PS227 Mobile-Money
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS281-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS281] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS281 for Tenant $TenantId"
+Write-Log "[STUB] TODO: USSD menu tree per tenant"
+Write-Log "[STUB] TODO: Route *123# to PS225 for payments"
+Write-Log "[STUB] TODO: Language support per tenant"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS281. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS281"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS281-ATLAS-USSD-Gateway.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS283-ATLAS-Agents-Portal.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS283 - ATLAS Channels / Digital
+BATCH: 14 - batch-14-channels-digital
+STATUS: STUB
+PURPOSE: Agent Banking portal for field agents
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS283-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS283] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS283 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Agent onboarding + commission via PS266"
+Write-Log "[STUB] TODO: Cash-in, Cash-out via PS225"
+Write-Log "[STUB] TODO: Float management and reconciliation"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS283. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS283"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS283-ATLAS-Agents-Portal.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS285-ATLAS-Health-Monitor.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS285 - ATLAS Ops / DevOps
+BATCH: 15 - batch-15-ops-devops
+STATUS: STUB
+PURPOSE: Health checks for all ATLAS services per tenant
+MAPS TO: Old PS39
+DEPENDS: All Batches
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS285-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS285] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS285 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Probe APIs: PS219, PS221, PS224 for tenant_id=$TenantId"
+Write-Log "[STUB] TODO: Check Kafka lag on atlas.$TenantId.*"
+Write-Log "[STUB] TODO: DB connectivity + RLS test for $TenantId"
+Write-Log "[STUB] TODO: Publish health metrics to PS287"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS285. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS285"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS285-ATLAS-Health-Monitor.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS287-ATLAS-Metrics-Collector.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS287 - ATLAS Ops / DevOps
+BATCH: 15 - batch-15-ops-devops
+STATUS: STUB
+PURPOSE: Prometheus metrics collection per tenant
+MAPS TO: Old PS39
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS287-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS287] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS287 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Scrape metrics with label tenant=$TenantId"
+Write-Log "[STUB] TODO: KPIs: latency, error_rate, txn_count"
+Write-Log "[STUB] TODO: Push to Grafana dashboard"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS287. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS287"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS287-ATLAS-Metrics-Collector.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS289-ATLAS-Backup-Restore.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS289 - ATLAS Ops / DevOps
+BATCH: 15 - batch-15-ops-devops
+STATUS: STUB
+PURPOSE: Backup and restore for tenant data
+MAPS TO: Old PS39
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS289-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS289] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS289 for Tenant $TenantId"
+Write-Log "[STUB] TODO: PG backup with WHERE tenant_id='$TenantId'"
+Write-Log "[STUB] TODO: Backup to s3://atlas-backups/$TenantId"
+Write-Log "[STUB] TODO: Restore procedure with RLS validation"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS289. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS289"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS289-ATLAS-Backup-Restore.ps1 ---
+

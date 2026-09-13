@@ -1,0 +1,278 @@
+"""
+ATLAS R01 BATCH 08 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS237-ATLAS-Data-Lake.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS237 - ATLAS Data Platform
+BATCH: 07 - batch-07-data-platform
+STATUS: STUB
+PURPOSE: Provision S3/MinIO Data Lake with tenant prefixes
+MAPS TO: Old PS31
+DEPENDS: PS208 Kafka
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS237-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS237] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS237 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Create S3 bucket/prefix: s3://atlas-datalake/$TenantId/raw"
+Write-Log "[STUB] TODO: Create prefix: s3://atlas-datalake/$TenantId/curated"
+Write-Log "[STUB] TODO: Apply IAM policy: Only atlas-$TenantId can access prefix"
+Write-Log "[STUB] TODO: Enable encryption + lifecycle rules"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS237. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS237"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS237-ATLAS-Data-Lake.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS239-ATLAS-BI-Platform.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS239 - ATLAS Data Platform
+BATCH: 07 - batch-07-data-platform
+STATUS: STUB
+PURPOSE: Provision Metabase/Superset workspace per tenant
+MAPS TO: Old PS31
+DEPENDS: PS294 Metabase
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS239-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS239] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS239 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Create Metabase group: atlas-$TenantId"
+Write-Log "[STUB] TODO: Create DB connection with RLS: SET app.tenant_id='$TenantId'"
+Write-Log "[STUB] TODO: Provision default dashboards folder for $TenantId"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS239. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS239"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS239-ATLAS-BI-Platform.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS241-ATLAS-S3-Connector.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS241 - ATLAS Data Platform
+BATCH: 07 - batch-07-data-platform
+STATUS: STUB
+PURPOSE: Kafka Connect S3 Sink connector per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS241-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS241] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS241 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Deploy Kafka Connect S3 Sink for topics: atlas.$TenantId.*"
+Write-Log "[STUB] TODO: Format: Parquet, Partition: tenant=$TenantId"
+Write-Log "[STUB] TODO: Healthcheck connector status"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS241. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS241"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS241-ATLAS-S3-Connector.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS243-ATLAS-Fraud-Engine.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS243 - ATLAS AI / Fraud / Risk
+BATCH: 08 - batch-08-ai-fraud-risk
+STATUS: STUB
+PURPOSE: Real-time fraud scoring engine
+MAPS TO: Old PS32
+DEPENDS: PS225 Payments, PS208 Kafka
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS243-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS243] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS243 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Consume atlas.$TenantId.events: TXN_POSTED"
+Write-Log "[STUB] TODO: Run fraud rules + ML model per tenant"
+Write-Log "[STUB] TODO: Score 0-100. If >80 publish to atlas.$TenantId.commands: BLOCK_TXN"
+Write-Log "[STUB] TODO: Tenant-specific rules stored in Redis"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS243. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS243"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS243-ATLAS-Fraud-Engine.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS245-ATLAS-Risk-Scoring.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS245 - ATLAS AI / Fraud / Risk
+BATCH: 08 - batch-08-ai-fraud-risk
+STATUS: STUB
+PURPOSE: Customer risk scoring: Credit, AML, Behavioral
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS245-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS245] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS245 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Pull customer data from PS219 with tenant_id=$TenantId"
+Write-Log "[STUB] TODO: Calculate risk score: Credit + AML + Fraud history"
+Write-Log "[STUB] TODO: Store in dw_$TenantId.fct_risk_score"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS245. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS245"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS245-ATLAS-Risk-Scoring.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS247-ATLAS-Model-Training.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS247 - ATLAS AI / Fraud / Risk
+BATCH: 08 - batch-08-ai-fraud-risk
+STATUS: STUB
+PURPOSE: Scheduled model training + deployment per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS247-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS247] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS247 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Pull 90 days data from dw_$TenantId"
+Write-Log "[STUB] TODO: Train fraud/anomaly model in K8s job"
+Write-Log "[STUB] TODO: Push model to s3://atlas-datalake/$TenantId/models"
+Write-Log "[STUB] TODO: Canary deploy to PS246"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS247. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS247"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS247-ATLAS-Model-Training.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS249-ATLAS-NBO-Engine.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS249 - ATLAS ML / NBO
+BATCH: 09 - batch-09-ml-nbo
+STATUS: STUB
+PURPOSE: Next Best Offer recommendation engine per tenant
+DEPENDS: PS245 Risk-Scoring, PS208 Kafka
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS249-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS249] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS249 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Consume atlas.$TenantId.events: CUSTOMER_LOGIN, TXN_POSTED"
+Write-Log "[STUB] TODO: Score products: Loan, Card, Insurance for customer"
+Write-Log "[STUB] TODO: Respect risk score from PS245 and compliance rules"
+Write-Log "[STUB] TODO: Publish NBO to atlas.$TenantId.commands: SHOW_OFFER"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS249. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS249"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS249-ATLAS-NBO-Engine.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS251-ATLAS-Customer-Segmentation.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS251 - ATLAS ML / NBO
+BATCH: 09 - batch-09-ml-nbo
+STATUS: STUB
+PURPOSE: ML clustering for customer segments per tenant
+DEPENDS: PS242 DW-Schema
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS251-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS251] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS251 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Pull features from dw_$TenantId: txn, balance, product"
+Write-Log "[STUB] TODO: Run KMeans: High-Value, Transactor, Risky, Dormant"
+Write-Log "[STUB] TODO: Write segments back to dw_$TenantId.dim_customer"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS251. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS251"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS251-ATLAS-Customer-Segmentation.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS253-ATLAS-ML-Feature-Store.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS253 - ATLAS ML / NBO
+BATCH: 09 - batch-09-ml-nbo
+STATUS: STUB
+PURPOSE: Central feature store for ML models per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS253-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS253] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS253 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Define features: avg_balance_30d, txn_count_7d"
+Write-Log "[STUB] TODO: Materialize to Redis + S3: s3://atlas-datalake/$TenantId/features"
+Write-Log "[STUB] TODO: Online + Offline serving"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS253. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS253"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS253-ATLAS-ML-Feature-Store.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS255-ATLAS-Compliance-Mgt.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS255 - ATLAS Compliance
+BATCH: 10 - batch-10-compliance-regulatory
+STATUS: STUB
+PURPOSE: Central compliance rules and policy management per tenant
+MAPS TO: Old PS34
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS255-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS255] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS255 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Load compliance policies for jurisdiction of $TenantId"
+Write-Log "[STUB] TODO: KYC, AML, FATCA, CRS rule sets"
+Write-Log "[STUB] TODO: Policy versioning + audit trail via PS211"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS255. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS255"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS255-ATLAS-Compliance-Mgt.ps1 ---
+

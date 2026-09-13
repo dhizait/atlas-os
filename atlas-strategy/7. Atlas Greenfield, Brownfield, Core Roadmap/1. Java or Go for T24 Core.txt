@@ -1,0 +1,156 @@
+
+Short answer
+: *One language for the core. Mix only at the edges.*
+
+For a bank core you can’t have 9 drivers each in a different language. Debugging, hiring, CI/CD, and audit will all blow up.
+
+### *1. THE REAL TRADEOFF: JAVA vs GO FOR T24 CORE*
+	**Java**	**Go**
+**Verbosity**	Verbose. 200 T24 functionalities = 200k+ LOC. Lots of boilerplate	Concise. Same 200 = ~60k LOC.
+**Ecosystem**	King for banking. JPA, Spring Batch, Kafka clients, all PCI/HSM libs exist	Young. Need to build/wrap more libs
+**Talent**	Easy to hire. Every bank dev knows Java	Harder to hire, but devs learn in 3 months
+**Performance**	Good. GC pauses can bite in low-latency payments	Great. Low memory, goroutines = perfect for 200 micro-services
+**Maintainability**	Strong typing, IDEs, static analysis. Good for 10yr life	Strong typing too, but fewer guardrails. Easy to shoot yourself
+**Audit/Regulatory**	Auditors/regulators love Java. "Nobody got fired for Java"	Auditors will ask 20 more questions
+### *2. MY RECOMMENDATION FOR ATLAS-OS: GO FOR THE CORE*
+
+Reason: You’re re-engineering T24 to be 200 small, stateless functions, not 1 monolith.
+
+T24 functionalities break down to: 
+`validateAccount()`, `postGL()`, `calcInterest()`, `checkLimit()` etc
+
+That’s exactly what Go is good at: 200 small, fast, independent binaries that talk via Kafka.
+
+*The rule: "Go for Core, Java for Ecosystem"*
+drivers/core-banking/api/       -> GO
+drivers/lending/api/            -> GO  
+drivers/payments/api/           -> GO
+drivers/compliance/api/         -> GO
+
+apps/customer-portal/           -> Java/Spring or React/Node
+platform/api-gateway/           -> Java/Spring Cloud Gateway
+platform/identity/keycloak/     -> Java
+Why: Core needs speed + simplicity + deploy 200 times a day.  
+Edge needs integrations, libraries, and enterprise tooling = Java
+
+### *3. WHAT HAPPENS IF WE MIX EVERYWHERE*
+
+Bad:
+customer: Java
+product: Go  
+ng-experience: Python
+core-banking: Rust
+Result: 4 build pipelines, 4 docker base images, 4 monitoring libs, 4 ways to handle errors. Audit nightmare.
+
+### *4. THE MIGRATION PATH FOR 200 T24 FUNCs*
+
+1.  *Extract*: List all 200 funcs in `docs/t24_function_catalog.csv`
+    `func_id, name, driver, inputs, outputs, ps1_location`
+2.  *Decide per driver*: 
+    `core-banking, lending, payments` = GO
+    `intelligence` = Python 
+    `integrations` = Go or Java depending on vendor SDK
+3.  *Rewrite Template in Go*:
+    // drivers/core_banking/batches/interest_accrual.go
+    package batches
+    
+    func Run(runDate string) error {
+        // 1. Read from core_banking.accounts
+        // 2. Call 5 T24 extracted funcs: ValidateAccount, CalcRate, PostGL
+        // 3. Publish InterestAccrued event
+        return nil
+    }
+4.  *One Build*: `go build ./drivers/...` produces 9 binaries
+
+### *THE DECISION MATRIX*
+
+Choose Java if: You need to ship in 6 months, have 20 Java devs, and auditors are strict. Accept the verbosity.  
+Choose Go if: You want a 10yr platform, 200 micro-services, low infra cost, and can train the team for 3 months.
+
+For Atlas-OS with NG + 31 svcXXX + flat drivers, Go fits the "lightweight core" goal better. Java will make it heavy again like T24.
+
+Question for you: Do we have a hiring constraint? If your team is 80% Java, we do Java core + Go only for high-throughput stuff like payments. 
+
+If we can hire/train, we go all-in Go for drivers 1-7.
+
+What’s your team makeup right now?
+
+=====
+
+No we do not
+
+Then we don’t mix.
+
+*Decision: Go for all 7 drivers in the core. One language.*
+
+Reason: No hiring constraint = we pick for the next 10 years, not the next 3 months.
+
+### *WHY GO FOR ATLAS-OS CORE*
+
+1.  *200 T24 funcs = 200 small services*. Go compiles to 1 static binary per driver. No JVM, no 300MB docker image. You can deploy all 9 drivers on 1 node.
+2.  *Concurrency*. Payments, FX, Campaigns, Fraud all need goroutines. Java threads get expensive.
+3.  *Less Verbosity*. A T24 `AA.ACCOUNT.DETAILS` wrapper in Java = 80 lines. In Go = 20 lines.
+4.  *Simpler Ops*. 1 build tool, 1 linter, 1 dependency manager. Audit is easier.
+
+Java stays only for things we can’t avoid: Keycloak, Spring Gateway, maybe customer-portal if you want.
+
+### *THE NEW LANGUAGE MAP*
+core_drivers: # GO
+    - customer
+    - product  
+    - core-banking
+    - lending
+    - payments
+    - compliance
+    - ng-experience
+    - integrations
+    - intelligence # GO for orchestration, Python libs called as subprocess if needed for ML
+
+platform: # MIXED OK
+    - api-gateway: Java/Spring
+    - identity: Java/Keycloak
+    - workflow-engine: Go
+    - observability: Go/Python
+
+apps: # FREE CHOICE
+    - customer-portal: React/TS
+    - ops-console: React/TS
+### *HOW WE REWRITE THE 200 T24 FUNCS IN GO*
+
+We don’t do 200 repos. We do 9 drivers, each with a `/domain` package.
+
+Example: `calcInterest` from T24
+
+*Old T24/PS1*
+Invoke-Sqlcmd "EXEC SP_CALC_INTEREST @DATE"
+*New Go*
+// drivers/core-banking/domain/interest.go
+package domain
+
+func CalcInterest(ctx context.Context, runDate time.Time, db *sql.DB) error {
+    // 1. Get all accounts with interest product
+    // 2. For each: rate = product.RateEngine.Calculate()
+    // 3. gl.Post("INT_EXP", "CUST_ACCT", amount)
+    // 4. event.Publish("InterestAccrued", payload)
+    return nil
+}
+
+// drivers/core-banking/batches/interest_accrual.go
+package batches
+func Run(runDate string) error {
+    return domain.CalcInterest(context.Background(), parse(runDate), db)
+}
+Pattern: `domain` = pure T24 logic. `batches` = cron. `api` = http/gRPC
+
+### *NEXT STEPS*
+
+1.  *Lock the stack*: `GO 1.22 + Gin/Echo + GORM + Kafka + Postgres`
+2.  *Create template repo*: `drivers/_template-go-service` with Dockerfile, tests, logging
+3.  *Start with 3 drivers*: `core-banking`, `payments`, `customer`. Extract 20 funcs each first.
+4.  *Gap your ps1*: Use the `gap_analyze_ps1.py` from before. Tag each ps1 with target Go package
+
+This keeps Atlas-OS from becoming "mini-T24 with Java bloat". 
+
+We get: 9 drivers, 1 language, 200 funcs, flat folders.
+
+Want me to generate the `_template-go-service` folder with Dockerfile, main.go, and the `run()` batch interface so your team can start copying it for each of the 200 funcs?

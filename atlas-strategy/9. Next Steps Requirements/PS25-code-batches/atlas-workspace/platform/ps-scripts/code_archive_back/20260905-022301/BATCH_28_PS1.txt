@@ -1,0 +1,261 @@
+"""
+ATLAS R01 BATCH 28 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-05-devtools\PS49-Add-Materialized-Views.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS49-Add-Materialized-Views
+
+.DESCRIPTION
+INPUT: Postgres DB
+PROCESSING: Creates Flyway migration for tenant materialized views
+OUTPUT: Fast tenant dashboards without scanning full table
+HYPERLINK: https://www.postgresql.org/docs/current/rules-materializedviews.html
+STACK: PostgreSQL + Flyway
+COMPLIANCE: PS25 Performance per tenant
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 5
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS49: Adding Materialized Views ===" -ForegroundColor Cyan
+
+$mvSql = Join-Path $BasePath "backend\src\main\resources\db\migration\V3__materialized_views.sql"
+@"
+CREATE MATERIALIZED VIEW mv_tenant_voucher_summary AS
+SELECT tenant_id, DATE(created_at) as day, COUNT(*) as total, SUM(amount) as sum_amount
+FROM vouchers GROUP BY 1,2;
+
+CREATE INDEX ON mv_tenant_voucher_summary(tenant_id, day);
+
+-- Refresh job every 15 min
+SELECT cron.schedule('refresh-mv', '*/15 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY mv_tenant_voucher_summary');
+"@ | Out-File $mvSql -Encoding utf8
+
+Write-Host "PS49 Done: MV created. Query with WHERE tenant_id =?" -ForegroundColor Green
+
+
+# --- END OF PS49-Add-Materialized-Views.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-05-devtools\PS50-Add-Data-Retention.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS50-Add-Data-Retention
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates CronJob to archive old tenant data > 7 years
+OUTPUT: Automated GDPR-compliant data archiving
+HYPERLINK: https://gdpr.eu
+STACK: Kubernetes CronJob + pg_dump
+COMPLIANCE: PS25 GDPR Data Retention Policy
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 5
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS50: Adding Data Retention CronJob ===" -ForegroundColor Cyan
+
+$retention = Join-Path $BasePath "atlas-workspace\platform\k8s\data-retention-cronjob.yaml"
+@"
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: data-retention}
+spec:
+  schedule: "0 3 1 * *" # 3am on 1st of month
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: retainer
+            image: postgres:16
+            command: ["/bin/sh","-c","psql -c \"DELETE FROM vouchers WHERE created_at < now() - interval '7 years' AND tenant_id = '\"$TENANT_ID\"'\""]
+            envFrom: [{secretRef: {name: demo-bank-secrets}}]
+          restartPolicy: OnFailure
+"@ | Out-File $retention -Encoding utf8
+
+Write-Host "PS50 Done: Monthly data purge for >7 year old records" -ForegroundColor Green
+
+
+# --- END OF PS50-Add-Data-Retention.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-06-database\PS51-Add-Tenant-Switcher-RBAC.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS51-Add-Tenant-Switcher-RBAC
+
+.DESCRIPTION
+INPUT: frontend/src
+PROCESSING: Adds TenantContext React + Role-based route guards
+OUTPUT: User can switch tenant. UI hides actions by role
+HYPERLINK: https://react.dev
+STACK: React 18 + Vite + TypeScript + TanStack Query
+COMPLIANCE: PS25 Multi-Tenancy enforced in FE
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS51: Adding Tenant Switcher + RBAC ===" -ForegroundColor Cyan
+
+$tenantCtx = Join-Path $BasePath "frontend\src\context\TenantContext.tsx"
+@"
+import { createContext, useContext, useState } from 'react';
+interface TenantContextType { tenantId: string; setTenantId: (id: string) => void; role: string; }
+export const TenantContext = createContext<TenantContextType>({tenantId: '', setTenantId: () => {}, role: 'VIEWER'});
+export const useTenant = () => useContext(TenantContext);
+export const TenantProvider = ({children}: {children: React.ReactNode}) => {
+  const [tenantId, setTenantId] = useState(localStorage.getItem('tenant_id') || '');
+  const [role] = useState(localStorage.getItem('role') || 'VIEWER');
+  return <TenantContext.Provider value={{tenantId, setTenantId, role}}>{children}</TenantContext.Provider>
+}
+"@ | Out-File $tenantCtx -Encoding utf8
+
+$guard = Join-Path $BasePath "frontend\src\components\RequireRole.tsx"
+@"
+import { useTenant } from '../context/TenantContext';
+export const RequireRole = ({role, children}: {role: string[], children: React.ReactNode}) => {
+  const {role: userRole} = useTenant();
+  return role.includes(userRole)? <>{children}</> : <div>Access Denied</div>
+}
+"@ | Out-File $guard -Encoding utf8
+
+Write-Host "PS51 Done: Wrap App with TenantProvider. Use RequireRole for buttons" -ForegroundColor Green
+
+
+# --- END OF PS51-Add-Tenant-Switcher-RBAC.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-06-database\PS52-Add-TanStack-Query-Realtime.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS52-Add-TanStack-Query-Realtime
+
+.DESCRIPTION
+INPUT: frontend/src
+PROCESSING: Adds TanStack Query + WebSocket for live voucher updates
+OUTPUT: Voucher list auto-refreshes on Kafka event
+HYPERLINK: https://tanstack.com/query
+STACK: React Query + WebSocket + Spring WebSocket
+COMPLIANCE: PS25 Real-time UX per tenant
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS52: Adding TanStack Query + Realtime ===" -ForegroundColor Cyan
+
+$deps = "npm install @tanstack/react-query"
+Invoke-Expression "cd $(Join-Path $BasePath 'frontend') && $deps"
+
+$queryClient = Join-Path $BasePath "frontend\src\lib\queryClient.ts"
+@"
+import { QueryClient } from '@tanstack/react-query';
+export const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 1000 * 30, refetchOnWindowFocus: false } }
+});
+"@ | Out-File $queryClient -Encoding utf8
+
+$wsHook = Join-Path $BasePath "frontend\src\hooks\useVoucherSocket.ts"
+@"
+import { useEffect } from 'react';
+import { queryClient } from '../lib/queryClient';
+import { useTenant } from '../context/TenantContext';
+export const useVoucherSocket = () => {
+  const {tenantId} = useTenant();
+  useEffect(() => {
+    const ws = new WebSocket(`ws://localhost:8080/ws/vouchers?tenant_id=${tenantId}`);
+    ws.onmessage = () => queryClient.invalidateQueries({queryKey: ['vouchers', tenantId]});
+    return () => ws.close();
+  }, [tenantId]);
+}
+"@ | Out-File $wsHook -Encoding utf8
+
+Write-Host "PS52 Done: Call useVoucherSocket() in VoucherList component" -ForegroundColor Green
+
+
+# --- END OF PS52-Add-TanStack-Query-Realtime.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-06-database\PS53-Add-PWA-Offline.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS53-Add-PWA-Offline
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds Vite PWA plugin + service worker + IndexedDB cache
+OUTPUT: App works offline. Syncs when online
+HYPERLINK: https://vite-pwa-org.netlify.app
+STACK: Vite + Workbox + Dexie.js
+COMPLIANCE: PS25 Offline-first for field agents
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS53: Adding PWA + Offline Support ===" -ForegroundColor Cyan
+
+$deps = "npm install vite-plugin-pwa dexie"
+Invoke-Expression "cd $(Join-Path $BasePath 'frontend') && $deps"
+
+$viteConfig = Join-Path $BasePath "frontend\vite.config.ts"
+@"
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+export default defineConfig({
+  plugins: [VitePWA({registerType: 'autoUpdate', manifest: {
+    name: 'Demo Bank', short_name: 'Atlas', start_url: '/', display: 'standalone'
+  }})]
+});
+"@ | Out-File $viteConfig -Encoding utf8
+
+$db = Join-Path $BasePath "frontend\src\lib\offlineDB.ts"
+@"
+import Dexie from 'dexie';
+export class OfflineDB extends Dexie {
+  vouchers!: Dexie.Table<any, string>;
+  constructor() { super('AtlasDB'); this.version(1).store({vouchers: 'id,tenantId,createdAt'}); }
+}
+export const db = new OfflineDB();
+"@ | Out-File $db -Encoding utf8
+
+Write-Host "PS53 Done: App installable. Data cached in IndexedDB" -ForegroundColor Green
+
+
+# --- END OF PS53-Add-PWA-Offline.ps1 ---
+

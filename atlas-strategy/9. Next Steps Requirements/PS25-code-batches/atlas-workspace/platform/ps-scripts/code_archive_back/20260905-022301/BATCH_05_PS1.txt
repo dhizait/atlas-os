@@ -1,0 +1,418 @@
+"""
+ATLAS R01 BATCH 05 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS77-Create-Tenant-Context.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS77-Create-Tenant-Context
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Verifies TenantContext.java exists
+OUTPUT: TenantContext.java
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS77-Create-Tenant-Context.ps1
+# PURPOSE: Implements multi-tenancy context and isolation
+# FILE: BE-PS77-Create-Tenant-Context.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$contextPath = Join-Path $BeRoot "src\main\java\com\demobank\config\TenantContext.java"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"; $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS77: $Msg" -ForegroundColor $color
+}
+
+Write-Log "PS77: Verifying TenantContext exists" "INFO"
+if ($DryRun) { Write-Host "[PS77 DRY RUN] Would verify $contextPath"; exit 0 }
+
+# PS77 is alias check for PS68. Ensure file exists
+if (-not (Test-Path $contextPath)) {
+    New-Item -ItemType Directory -Path (Split-Path $contextPath) -Force | Out-Null
+    @'
+package com.demobank.config;
+
+import java.util.UUID;
+
+public class TenantContext {
+    private static final ThreadLocal<UUID> CURRENT_TENANT = new ThreadLocal<>();
+
+    public static void setTenantId(UUID tenantId) { CURRENT_TENANT.set(tenantId); }
+    public static UUID getTenantId() { return CURRENT_TENANT.get(); }
+    public static void clear() { CURRENT_TENANT.remove(); }
+}
+'@ | Set-Content -Path $contextPath -Encoding UTF8
+    Write-Log "Created: TenantContext.java" "SUCCESS"
+} else {
+    Write-Log "TenantContext.java already exists from PS68" "SUCCESS"
+}
+Write-Log "PS77 Complete: TenantContext verified" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS77-Create-Tenant-Context.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS78-Generate-Controller-Layer.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS78-Generate-Controller-Layer
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates DemoBankApplication.java + VoucherRepository
+OUTPUT: Application entry + JPA Repo
+HYPERLINK: https://spring.io
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS78-Generate-Controller-Layer.ps1
+# PURPOSE: Performs core PS25 automation task
+# FILE: BE-PS78-Generate-Controller-Layer.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$appDir = Join-Path $BeRoot "src\main\java\com\demobank"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS78: $Msg" -ForegroundColor $color
+}
+
+Write-Host "PS78: Generate Spring Boot Application entry point" -ForegroundColor Magenta
+if ($DryRun) { Write-Host "[PS78 DRY RUN] Would create DemoBankApplication.java"; exit 0 }
+
+New-Item -ItemType Directory -Path "$appDir\controller", "$appDir\service", "$appDir\repository", "$appDir\dto" -Force | Out-Null
+
+# Create main SpringBootApplication
+$mainPath = Join-Path $appDir "DemoBankApplication.java"
+@'
+package com.demobank;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoBankApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoBankApplication.class, args);
+    }
+}
+'@ | Set-Content $mainPath -Encoding UTF8
+
+# Create Repository
+$repoPath = Join-Path $appDir "repository\VoucherRepository.java"
+@'
+package com.demobank.repository;
+
+import com.demobank.domain.Voucher;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface VoucherRepository extends JpaRepository<Voucher, Long> {
+    List<Voucher> findByTenantId(UUID tenantId);
+    Optional<Voucher> findByIdAndTenantId(Long id, UUID tenantId);
+}
+'@ | Set-Content $repoPath -Encoding UTF8
+
+Write-Log "PS78 Complete! Application + Repository initialized" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS78-Generate-Controller-Layer.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS79-Create-Voucher-Tests.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS79-Create-Voucher-Tests
+
+.DESCRIPTION
+INPUT: N/A
+PROCESSING: Creates VoucherControllerTest.java with MockMvc
+OUTPUT: Controller integration test
+HYPERLINK:
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS79-Create-Voucher-Tests.ps1
+# PURPOSE: Runs unit/integration tests for tenant isolation
+# FILE: BE-PS79-Create-Voucher-Tests.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$testPath = Join-Path $BeRoot "src\test\java\com\demobank\controller\VoucherControllerTest.java"
+$testDir = Split-Path $testPath -Parent
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"; $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS79: $Msg" -ForegroundColor $color
+}
+
+Write-Log "PS79: Creating VoucherController integration test" "INFO"
+if ($DryRun) { Write-Host "[PS79 DRY RUN] Would create $testPath"; exit 0 }
+New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+
+@'
+package com.demobank.controller;
+
+import com.demobank.util.TenantTestUtil;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class VoucherControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testGetAllVouchersRequiresTenantHeader() throws Exception {
+        mockMvc.perform(get("/api/v1/vouchers"))
+           .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testCreateVoucherWithTenantHeader() throws Exception {
+        UUID tenantId = TenantTestUtil.createTestTenant();
+        String json = "{\"amount\":100.0}";
+        mockMvc.perform(post("/api/v1/vouchers")
+           .header("X-Tenant-ID", tenantId)
+           .contentType(MediaType.APPLICATION_JSON)
+           .content(json))
+           .andExpect(status().isCreated());
+    }
+
+    @Test
+    void testGetVoucherCrossTenant403() throws Exception {
+        UUID tenantA = TenantTestUtil.createTestTenant();
+        String res = mockMvc.perform(post("/api/v1/vouchers")
+           .header("X-Tenant-ID", tenantA)
+           .content("{\"amount\":50}").contentType(MediaType.APPLICATION_JSON))
+           .andReturn().getResponse().getContentAsString();
+
+        UUID tenantB = TenantTestUtil.createTestTenant();
+        mockMvc.perform(get("/api/v1/vouchers/1")
+           .header("X-Tenant-ID", tenantB))
+           .andExpect(status().isNotFound()); // 404 because not found for tenantB
+    }
+}
+'@ | Set-Content -Path $testPath -Encoding UTF8
+
+Write-Log "PS79 Complete: VoucherControllerTest.java created" "SUCCESS"; exit 0
+
+
+# --- END OF BE-PS79-Create-Voucher-Tests.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\backend\BE-PS80-Update-Docker-Env.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: BE-PS80-Update-Docker-Env
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds SPRING_DATASOURCE_URL, PS25_TENANT_MODE env
+OUTPUT: Updated docker-compose.yml
+HYPERLINK: https://docs.docker.com/compose
+STACK: Spring Boot 3 + JPA + Flyway + JUnit 5 + Docker Compose
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\backend\BE-PS80-Update-Docker-Env.ps1
+# PURPOSE: Creates docker-compose and builds container
+# FILE: BE-PS80-Update-Docker-Env.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [string]$DefaultTenantId = "TENANT001",
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$BeRoot = Join-Path $BasePath "backend"
+$composeFile = Join-Path $BeRoot "docker-compose.yml"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; WARN="Yellow"; ERROR="Red"}[$Level]
+  Write-Host "[$time] [$Level] PS80: $Msg" -ForegroundColor $color
+}
+
+Write-Log "PS80: Adding PS25 env vars to docker-compose" "INFO"
+if (-not (Test-Path $composeFile)) {
+  Write-Log "docker-compose.yml not found. Run PS74 first" "ERROR"
+  exit 1
+}
+
+if ($DryRun) { Write-Host "[PS80 DRY RUN] Would update app service env in $composeFile"; exit 0 }
+
+$content = Get-Content $composeFile -Raw
+
+# Add environment block for Spring Boot
+if ($content -match "environment:") {
+    $newEnv = @"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/corebank
+      PS25_TENANT_MODE: enabled
+      DEFAULT_TENANT_ID: $DefaultTenantId
+"@
+    $content = $content -replace '(?ms)(environment:)(.*?)(?=\n [a-z]|$)', $newEnv
+} else {
+    $content = $content -replace "(app:\s*\n)", "`$1 environment:`n SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/corebank`n PS25_TENANT_MODE: enabled`n DEFAULT_TENANT_ID: $DefaultTenantId`n"
+}
+
+$content | Set-Content $composeFile -Encoding UTF8
+
+Write-Log "PS80 Complete: Docker env updated for tenant enforcement" "SUCCESS"
+Write-Log "PS25_TENANT_MODE=enabled, DEFAULT_TENANT_ID=$DefaultTenantId" "INFO"; exit 0
+
+
+# --- END OF BE-PS80-Update-Docker-Env.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\frontend\FE-PS48-Run-Typecheck.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: FE-PS48-Run-Typecheck
+
+.DESCRIPTION
+INPUT: package.json
+PROCESSING: Ensures `typecheck` script, runs `tsc --noEmit`
+OUTPUT: 0 TS errors
+HYPERLINK: https://www.typescriptlang.org
+STACK: React 18 + Vite + TypeScript + Docker
+COMPLIANCE: PS25 Multi-Tenancy via X-Tenant-ID
+
+.NOTES
+Generated: 2026-08-05
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 2
+#>
+
+# FilePath: C:\Atlas\releases\R01\demo-bank\atlas-workspace\platform\ps-scripts\frontend\FE-PS48-Run-Typecheck.ps1
+# PURPOSE: Runs tsc --noEmit for FE
+# FILE: FE-PS48-Run-Typecheck.ps1
+# AUDIT: 2026-08-02
+
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$BasePath,
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$feRoot = Join-Path $BasePath "frontend"
+$pkgPath = Join-Path $feRoot "package.json"
+
+function Write-Log {
+  param([string]$Msg, [string]$Level="INFO")
+  $time = Get-Date -Format "HH:mm:ss"
+  $color = @{INFO="Cyan"; SUCCESS="Green"; ERROR="Red"; WARN="Yellow"}[$Level]
+  Write-Host "[$time] [$Level] PS48: $Msg" -ForegroundColor $color
+}
+
+if (-not (Test-Path $feRoot)) { throw "FE folder not found at $feRoot" }
+Set-Location $feRoot
+
+if ($DryRun) { Write-Host "[PS48 DRY RUN] Would run typecheck in $feRoot"; exit 0 }
+
+if (Test-Path $pkgPath) {
+  $pkg = Get-Content $pkgPath -Raw | ConvertFrom-Json
+  if (-not $pkg.scripts) { $pkg | Add-Member -NotePropertyName "scripts" -NotePropertyValue @{} -Force }
+  if (-not $pkg.scripts.typecheck) {
+    $pkg.scripts | Add-Member -NotePropertyName "typecheck" -NotePropertyValue "tsc --noEmit" -Force
+    $pkg | ConvertTo-Json -Depth 100 | Set-Content $pkgPath -Encoding UTF8
+    Write-Log "Ensured 'typecheck' script in package.json" "SUCCESS"
+  }
+} else { throw "package.json not found." }
+
+if (-not (Test-Path "node_modules")) {
+  Write-Log "node_modules missing. Running npm install..." "WARN"
+  npm install; if ($LASTEXITCODE -ne 0) { exit 1 }
+}
+
+Write-Log "Running tsc --noEmit..." "INFO"
+npm run typecheck
+if ($LASTEXITCODE -ne 0) { Write-Log "TypeScript errors found." "ERROR"; exit 1 }
+
+Write-Log "TypeScript check passed: 0 errors" "SUCCESS"; exit 0
+
+
+# --- END OF FE-PS48-Run-Typecheck.ps1 ---
+

@@ -1,0 +1,491 @@
+Let's look at migration from current to new os repo. I suppose all the following will find a new home
+
+Atlas
+   releases
+     R01
+        work_desk
+            atlas-workspace
+               orchestration
+               platform
+        demo-bank
+           atlas-workspace
+           demo-bank-business
+           demo-bank-channels
+               demo-bank-fe
+               partner-portal-fe
+           demo-bank-platform
+           demo-bank-services
+               cm
+               dm
+               im
+               ng
+               om
+               pm
+               pmf
+               tm
+
+========
+
+PHASE-MAP.md
+
+# Demo Bank BE - Module Map
+_Last updated: _
+
+## Naming Convention
+- cm/dm/im/ng/om/pm/pmf: Retain xx001-Service-Name for traceability in matrices
+- m: Dropped phase-tm- prefix. Use ccounts-mgt, nalytics-mgt etc
+## CM
+
+- `cm001-Customer-Profile` 
+- `cm002-KYC-Service` 
+- `cm003-Address-Management` 
+- `cm004-Contact-Preferences` 
+- `cm005-Document-Store` 
+- `cm006-Relationship-Mgr` 
+- `cm007-Segment-Engine` 
+- `cm008-Consent-Management` 
+- `cm009-Watchlist-Screening` 
+- `cm010-Customer-360` 
+
+## DM
+
+- `im001-Fraud-Engine` 
+- `im002-AML-Engine` 
+- `im003-Credit-Risk` 
+- `im004-Market-Risk` 
+- `im005-Pricing-Engine` 
+- `im006-NBO-Engine` 
+- `im007-Churn-Predict` 
+- `im008-Cash-Forecast` 
+- `im009-Doc-Classifier` 
+- `im010-NLP-Screening` 
+- `im011-Voice-Biometric` 
+- `im012-Sentiment-Analysis` 
+- `im013-Collateral-Value` 
+- `im014-FX-Forecast` 
+- `im015-Anomaly-Detect` 
+- `im016-ESG-Score` 
+- `im017-Robo-Advisor` 
+- `im018-LLM-Orchestrator` 
+- `im019-Synthetic-Data` 
+- `im020-AI-Assistant` 
+
+## IM
+
+- `am001-SWIFT-Gateway` 
+- `am002-FedWire-Gateway` 
+- `am003-CHIPS-Gateway` 
+- `am004-SEPA-Gateway` 
+- `am005-ACH-Gateway` 
+- `am006-Visa-DPS` 
+- `am007-Mastercard-MIP` 
+- `am008-Experian-Bureau` 
+- `am009-Equifax-Bureau` 
+- `am010-LexisNexis-Screen` 
+- `am011-WorldCheck-Screen` 
+- `am012-Twilio-SMS` 
+- `am013-SendGrid-Email` 
+- `am014-FCM-Push` 
+- `am015-DocuSign` 
+- `am016-OCR-Tesseract` 
+- `am017-Bloomberg-Market` 
+- `am018-Reuters-Market` 
+- `am019-Chainalysis-Crypto` 
+- `am020-S3-Storage` 
+
+## NG
+
+- `wave-2.1` 
+- `wave-2.2` 
+- `wave-2.3` 
+
+## OM
+
+- `em001-Web-Shell` 
+- `em002-Mobile-Shell` 
+- `em003-Teller-Shell` 
+- `em004-Agent-Shell` 
+- `em005-Chat-Shell` 
+- `em006-Voice-Shell` 
+- `em007-Social-Shell` 
+- `em008-Watch-Shell` 
+- `em009-Kiosk-Shell` 
+- `em010-MFE-Auth` 
+- `em011-MFE-Accounts` 
+- `em012-MFE-Payments` 
+- `em013-MFE-Cards` 
+- `em014-MFE-Onboarding` 
+- `em015-MFE-Chat-UI` 
+- `em016-MFE-Offers` 
+- `em017-MFE-Admin` 
+- `em018-MFE-Profile` 
+- `em019-MFE-Alerts` 
+- `em020-BFF-Web` 
+- `em021-BFF-Mobile` 
+- `em022-BFF-Teller` 
+- `em023-BFF-Chat` 
+- `em024-BFF-Voice` 
+- `em025-BFF-Social` 
+- `em026-BFF-Watch` 
+- `em027-BFF-OpenBanking` 
+- `em028-BFF-Kiosk` 
+- `em029-BFF-Partner` 
+- `em030-MX-Pay-Contact _--` 
+- `em031-MX-Block-Card` 
+- `em032-MX-Check-Balance` 
+- `em033-MX-Dispute-Txn` 
+- `em034-MX-Raise-Limit` 
+- `em035-MX-Open-Account` 
+- `em036-MX-Book-Appointment` 
+- `em037-MX-Report-Fraud` 
+- `em038-MX-FX-Quote` 
+- `em039-MX-Offer-Accept` 
+
+## PM
+
+- `pm021-Product-Catalog` 
+- `pm022-Account-Product` 
+- `pm023-Loan-Product` 
+- `pm024-Card-Product` 
+- `pm025-Pricing-Engine` 
+- `pm026-Eligibility-Rules` 
+- `pm027-Fee-Structure` 
+- `pm028-Product-Bundle` 
+- `pm029-Lifecycle-Mgmt` 
+- `pm030-Product-Config` 
+
+## PMF
+
+- `pm001-Service-Registry` 
+- `pm002-Config-Service` 
+- `pm003-Secret-Manager` 
+- `pm004-API-Gateway` 
+- `pm005-Event-Bus` 
+- `pm006-Cache-Service` 
+- `pm007-Keycloak-Auth` 
+- `pm008-Observability` 
+- `pm009-Logging` 
+- `pm010-Tracing` 
+- `pm011-Chaos-Engine` 
+- `pm012-Canary-Deploy` 
+- `pm013-Batch-Scheduler` 
+- `pm014-File-Transfer` 
+- `pm015-DNS-Internal` 
+- `pm016-Cert-Manager` 
+- `pm017-Rate-Limiter` 
+- `pm018-WAF` 
+- `pm019-Vault-KMS` 
+- `pm020-Policy-Engine` 
+
+## TM
+
+- `accounts-mgt` 
+- `analytics-mgt` 
+- `capital-markets-mgt` 
+- `cards-mgt` 
+- `channels-mgt` 
+- `compliance-risk-mgt` 
+- `core-platform-mgt` 
+- `data-platform-mgt` 
+- `devops-mgt` 
+- `digital-mgt` 
+- `ecosystem-mgt` 
+- `gl-ops-mgt` 
+- `infrastructure-mgt` 
+- `integration-mgt` 
+- `international-mgt` 
+- `lending-mgt` 
+- `operations-mgt` 
+- `orchestration-mgt` 
+- `party-mgt` 
+- `payments-mgt` 
+- `product-extensions-mgt` 
+- `tm122-derivatives` 
+- `tm123-derivatives` 
+- `trade-mgt` 
+- `transaction-mgt` 
+- `treasury-mgt` 
+- `workflow-mgt`
+
+============
+
+Yes — everything you listed has a home. Right now it’s scattered. In the new OS it becomes clean drivers + platform.
+
+This is basically a "Monolith → OS" migration map.
+
+### *MIGRATION MAP: Old Atlas R01 → New `atlas-os`*
+
+Think of it as: `xx001-Service-Name` → `drivers/xx-name/api` + `drivers/xx-name/batches`
+
+#### *1. PLATFORM LAYER: `demo-bank-platform` + `pmf*` + `orchestration`*
+This becomes our new `platform/` folder. The "kernel"
+Old Location	New Home	Why
+`pmf001-Service-Registry`	`platform/api-gateway/`	Kong/APISIX config
+`pmf004-API-Gateway`	`platform/api-gateway/`	Routing rules
+`pmf005-Event-Bus`	`platform/event-ledger/`	Kafka topics
+`pmf006-Cache-Service`	`platform/`	Redis config
+`pmf007-Keycloak-Auth`	`platform/identity/`	SSO config
+`pmf008-Observability` to `pmf010-Tracing`	`platform/observability/`	Grafana, Loki, Sentry
+`pmf013-Batch-Scheduler`	`platform/workflow-engine/`	Temporal/Celery workers
+`pmf019-Vault-KMS`	`platform/secrets/`	HashiCorp Vault
+`orchestration/`	`platform/workflow-engine/`	Your EOD orchestrators
+#### *2. DOMAIN DRIVERS: `demo-bank-services`*
+Each `xx` group becomes 1 Driver. This is the big win.
+Old Group	New Driver	What Moves Where
+**CM - Customer Mgmt**	`drivers/customer/`	`cm001-Customer-Profile` → `api/`
+`cm002-KYC-Service` → `api/`
+`cm009-Watchlist-Screening` → `batches/aml_watchlist.py`
+**PM - Product Mgmt**	`drivers/product/`	`pm021-Product-Catalog` → `api/`
+`pm023-Loan-Product` → `api/`
+`pm026-Eligibility-Rules` → `rules-engine/`
+**Core/Accounts/GL**	`drivers/core-banking/`	`accounts-mgt` → `api/`
+`gl-ops-mgt` → `batches/gl_posting.py`
+`transaction-mgt` → `api/`
+**Lending**	`drivers/lending/`	`lending-mgt` → `api/`
+`im003-Credit-Risk` → `api/`
+`batches/npl_provision.py`
+**Payments**	`drivers/payments/`	`payments-mgt` → `api/`
+`im001-Fraud-Engine` → `api/`
+`am001-SWIFT-Gateway` → `integrations/swift.py`
+`batches/settlement_recon.py`
+**Channels/OM**	`apps/` + `drivers/channels/`	`em001-Web-Shell` → `apps/ops-console/`
+`em010-MFE-Accounts` → `apps/customer-portal/`
+`BFF-*` → `drivers/channels/api/`
+**Integrations/IM**	`drivers/integrations/`	All `am00x-*` gateways → `integrations/` folder
+Not a business driver, just adapters
+**Intelligence/IM**	`drivers/intelligence/`	`im003-Credit-Risk` to `im020-AI-Assistant` → `ai-agents/`
+Feature store hooks
+#### *3. BATCHES: Scattered → `drivers/*/batches/`*
+Right now batches live inside services. We extract them.
+Old Batch Logic	New Home
+Interest calc in `accounts-mgt`	`drivers/core-banking/batches/interest_accrual.py`
+Delinquency in `lending-mgt`	`drivers/lending/batches/delinquency_check.py`
+EOD in `orchestration`	`platform/workflow-engine/eod_workflow.py`
+KYC expiry in `cm002`	`drivers/customer/batches/kyc_expiry.py`
+AML screening in `cm009`	`drivers/compliance/batches/aml_screen.py`
+#### *4. FRONTENDS: `demo-bank-channels`*
+Old	New
+`demo-bank-fe`	`apps/customer-portal/`
+`partner-portal-fe`	`apps/partner-portal/`
+`em00x-MFE-*` + `BFF-*`	`apps/ops-console/` + `drivers/channels/api/`
+### *3-STEP MIGRATION PLAN*
+
+#### *STEP 1: SCAFFOLD + PLATFORM - Day 1*
+1. Run the scaffold script
+2. Move `pmf_` services into `platform/`
+3. Get `docker-compose` running with Postgres + Kafka + Keycloak
+
+#### *STEP 2: MIGRATE 1 DRIVER END-TO-END - Week 1*
+Pick `customer` driver first. Lowest risk.
+1.  Copy `cm001` to `cm010` code → `drivers/customer/api/`
+2.  Extract any batch jobs → `drivers/customer/batches/`
+3.  Point API Gateway to new driver
+4.  Test: Old FE → New Driver. Keep DB the same for now
+
+#### *STEP 3: DRIVER BY DRIVER CUTOVER - Week 2-6*
+Priority order:
+1.  `customer` → `product` → `core-banking` → `lending` → `payments` → `compliance`
+2.  Last: move `integrations` and `intelligence`
+3.  Once all drivers moved, switch DB from 1 big schema to `driver_name` schemas
+
+### *KEY RULES DURING MIGRATION*
+1.  *Strangler Pattern*: Old `svc101` and New OS run in parallel. API Gateway routes 10% traffic to new
+2.  *DB First*: Don't split DB on day 1. Keep 1 DB, but use schemas: `core.accounts`, `customer.profiles`
+3.  *Batches First*: Easiest win. Pull batches out first because they have no UI dependency
+
+### *WHAT GETS DELETED*
+`NG/wave-2.x`, `TM/_-mgt` folders with no code. Those were just placeholders. 
+If `workflow-mgt` had real code it goes to `platform/workflow-engine`
+
+---
+
+*Summary:*  
+Your 50+ microservices collapse into ∼8 Drivers + 1 Platform. 
+Your 100+ FE shells collapse into 3 Apps.
+
+This map lets us migrate without a big-bang. We can ship `customer-driver` next week while `core-banking` is still on old code.
+
+Want me to write the actual `migration_map.json` file for the scaffold script? 
+It would list `old_path → new_path` so we can automate `cp` commands for each service.
+
+======
+
+Done. Here’s the `migration_map.json` + auto-migration script.
+
+This will let us `cp` everything from old `R01` into the new `atlas-os` structure in 1 command.
+
+### *1. `migration_map.json`* 
+Put this in root of new `atlas-os` repo
+{
+  "version": "1.0",
+  "description": "Atlas R01 to Atlas-OS v2.0 Migration Map",
+  "rules": {
+    "db_strategy": "Keep 1 DB, use schemas: driver_name.table_name",
+    "batch_strategy": "All cron/quartz jobs -> drivers/{driver}/batches/{name}.py"
+  },
+  "platform": [
+    {"old": "demo-bank-services/pmf001-Service-Registry", "new": "platform/service-registry"},
+    {"old": "demo-bank-services/pmf004-API-Gateway", "new": "platform/api-gateway/config"},
+    {"old": "demo-bank-services/pmf005-Event-Bus", "new": "platform/event-ledger/kafka"},
+    {"old": "demo-bank-services/pmf007-Keycloak-Auth", "new": "platform/identity/keycloak"},
+    {"old": "demo-bank-services/pmf008-Observability", "new": "platform/observability/grafana"},
+    {"old": "demo-bank-services/pmf013-Batch-Scheduler", "new": "platform/workflow-engine"},
+    {"old": "demo-bank-services/pmf019-Vault-KMS", "new": "platform/secrets/vault"},
+    {"old": "releases/R01/work_desk/atlas-workspace/orchestration", "new": "platform/workflow-engine/workflows"}
+  ],
+  "drivers": [
+    {
+      "name": "customer",
+      "old_root": "demo-bank-services/cm",
+      "services": [
+        "cm001-Customer-Profile", "cm002-KYC-Service", "cm003-Address-Management",
+        "cm004-Contact-Preferences", "cm005-Document-Store", "cm006-Relationship-Mgr",
+        "cm007-Segment-Engine", "cm008-Consent-Management", "cm009-Watchlist-Screening",
+        "cm010-Customer-360"
+      ],
+      "batches": [
+        {"old": "cm009-Watchlist-Screening/cron", "new": "batches/watchlist_screen.py"}
+      ]
+    },
+    {
+      "name": "product",
+      "old_root": "demo-bank-services/pm",
+      "services": [
+        "pm021-Product-Catalog", "pm022-Account-Product", "pm023-Loan-Product",
+        "pm024-Card-Product", "pm025-Pricing-Engine", "pm026-Eligibility-Rules",
+        "pm027-Fee-Structure", "pm028-Product-Bundle", "pm029-Lifecycle-Mgmt", "pm030-Product-Config"
+      ]
+    },
+    {
+      "name": "core-banking",
+      "old_root": "demo-bank-services/tm",
+      "services": [
+        "accounts-mgt", "gl-ops-mgt", "transaction-mgt", "core-platform-mgt"
+      ],
+      "batches": [
+        {"old": "accounts-mgt/batch/interest", "new": "batches/interest_accrual.py"},
+        {"old": "gl-ops-mgt/batch/eod", "new": "batches/eod_close.py"},
+        {"old": "transaction-mgt/batch/recon", "new": "batches/gl_posting.py"}
+      ]
+    },
+    {
+      "name": "lending",
+      "old_root": "demo-bank-services/tm",
+      "services": ["lending-mgt"],
+      "ext_services": ["demo-bank-services/im/im003-Credit-Risk"],
+      "batches": [
+        {"old": "lending-mgt/batch/delinquency", "new": "batches/delinquency_check.py"},
+        {"old": "lending-mgt/batch/npl", "new": "batches/npl_provision.py"}
+      ]
+    },
+    {
+      "name": "payments",
+      "old_root": "demo-bank-services/tm",
+      "services": ["payments-mgt", "cards-mgt"],
+      "ext_services": [
+        "demo-bank-services/im/im001-Fraud-Engine",
+        "demo-bank-services/am/am001-SWIFT-Gateway", "demo-bank-services/am/am002-FedWire-Gateway"
+      ],
+      "batches": [
+        {"old": "payments-mgt/batch/settlement", "new": "batches/settlement_recon.py"},
+        {"old": "payments-mgt/batch/disburse", "new": "batches/batch_disbursement.py"}
+      ]
+    },
+    {
+      "name": "compliance",
+      "old_root": "demo-bank-services/tm",
+      "services": ["compliance-risk-mgt"],
+      "ext_services": [
+        "demo-bank-services/im/im002-AML-Engine",
+        "demo-bank-services/am/am010-LexisNexis-Screen", "demo-bank-services/am/am011-WorldCheck-Screen"
+      ],
+      "batches": [
+        {"old": "compliance-risk-mgt/batch/aml", "new": "batches/aml_screen.py"},
+        {"old": "customer/cm002-KYC-Service/cron", "new": "batches/kyc_expiry.py"}
+      ]
+    },
+    {
+      "name": "integrations",
+      "old_root": "demo-bank-services/am",
+      "services": ["am003-CHIPS-Gateway", "am004-SEPA-Gateway", "am005-ACH-Gateway", "am012-Twilio-SMS", "am013-SendGrid-Email", "am015-DocuSign", "am020-S3-Storage"]
+    },
+    {
+      "name": "intelligence",
+      "old_root": "demo-bank-services/im",
+      "services": ["im004-Market-Risk", "im005-Pricing-Engine", "im006-NBO-Engine", "im020-AI-Assistant"]
+    }
+  ],
+  "apps": [
+    {"old": "demo-bank-channels/demo-bank-fe", "new": "apps/customer-portal"},
+    {"old": "demo-bank-channels/partner-portal-fe", "new": "apps/partner-portal"},
+    {"old": "demo-bank-services/om/em001-Web-Shell", "new": "apps/ops-console"},
+    {"old": "demo-bank-services/om/em010-MFE-Auth", "new": "apps/ops-console/src/mfe/auth"}
+  ]
+}
+### *2. `scripts/migrate_from_r01.py`* 
+Auto-copies everything based on the map
+import json, shutil, os, sys
+
+OLD_ROOT = "../Atlas/releases/R01/work_desk" # Change this to your old repo path
+NEW_ROOT = "."
+MAP_FILE = "migration_map.json"
+
+def copy_dir(src, dst):
+    if not os.path.exists(src):
+        print(f"SKIP: {src} not found")
+        return
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    if os.path.exists(dst): shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+    print(f"COPIED: {src} -> {dst}")
+
+def main():
+    with open(MAP_FILE) as f:
+        migration_map = json.load(f)
+
+    print("=== MIGRATING PLATFORM ===")
+    for item in migration_map["platform"]:
+        copy_dir(os.path.join(OLD_ROOT, item["old"]), os.path.join(NEW_ROOT, item["new"]))
+
+    print("\n=== MIGRATING DRIVERS ===")
+    for driver in migration_map["drivers"]:
+        driver_path = f"drivers/{driver['name']}"
+        # Copy main services
+        for svc in driver.get("services", []):
+            copy_dir(os.path.join(OLD_ROOT, driver["old_root"], svc), os.path.join(NEW_ROOT, driver_path, "api", svc))
+        # Copy external services
+        for svc in driver.get("ext_services", []):
+            svc_name = svc.split("/")[-1]
+            copy_dir(os.path.join(OLD_ROOT, svc), os.path.join(NEW_ROOT, driver_path, "api", svc_name))
+        # TODO: Manually move batch logic from services to batches/ folder
+
+    print("\n=== MIGRATING APPS ===")
+    for item in migration_map["apps"]:
+        copy_dir(os.path.join(OLD_ROOT, item["old"]), os.path.join(NEW_ROOT, item["new"]))
+
+    print("\nDONE. Review drivers/*/api/ and move batch logic to drivers/*/batches/")
+    print("Next: docker-compose up -d && python scripts/run_driver_batch.py core.interest_accrual")
+
+if __name__ == "__main__":
+    main()
+### *HOW TO RUN MIGRATION TOMORROW*
+# 1. Create new OS
+python scaffold_atlas_os.py
+
+# 2. Place migration_map.json and migrate_from_r01.py inside atlas-os/
+
+# 3. Run migration. Point OLD_ROOT to your current R01 folder
+cd atlas-os
+python scripts/migrate_from_r01.py
+
+# 4. Result: All old code now lives in new driver folders
+### *WHAT HAPPENS AFTER COPY*
+1.  *Code is copied, not refactored* - We just change folder location first
+2.  *Batches still need manual extraction* - I flagged them in `batches[]`. We pull that logic out of the service into `batches/_.py` 
+3.  *DB stays same* - We add `SET search_path TO customer` in each driver API
+
+This gets us to "new folders" in 1 hour instead of 1 week of manual moving.
+
+*Critical:* `NG/wave-_` and `TM/tm122-derivatives` with no code are ignored. Only copy what exists.
+
+Want me to also add a `docker-compose.override.yml` that runs both old `svc101` and new drivers side by side for the strangler pattern?

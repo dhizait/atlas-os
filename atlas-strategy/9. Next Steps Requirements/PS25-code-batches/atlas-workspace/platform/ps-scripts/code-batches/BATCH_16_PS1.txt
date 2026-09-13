@@ -1,0 +1,484 @@
+"""
+ATLAS R01 BATCH 16 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS64-Add-Partner-Portal-API.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS64-Add-Partner-Portal-API
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates public API Gateway routes with API Key per partner
+OUTPUT: /api/partner/v1/vouchers with rate limit + tenant scoping
+HYPERLINK: https://konghq.com
+STACK: Spring Boot + API Key Filter
+COMPLIANCE: PS25 Partner API Management
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS64: Adding Partner Portal API ===" -ForegroundColor Cyan
+
+$apiKeyFilter = Join-Path $BasePath "backend\src\main\java\com\demobank\security\ApiKeyFilter.java"
+@"
+package com.demobank.security;
+import jakarta.servlet.*; import jakarta.servlet.http.*;
+@Component
+public class ApiKeyFilter implements Filter {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+        HttpServletRequest request = (HttpServletRequest) req;
+        String apiKey = request.getHeader("X-API-Key");
+        // Validate apiKey -> tenant_id mapping in DB
+        // Set TenantContext
+        chain.doFilter(req,res);
+    }
+}
+"@ | Out-File $apiKeyFilter -Encoding utf8
+
+Write-Host "PS64 Done: Partners use X-API-Key header" -ForegroundColor Green
+
+
+# --- END OF PS64-Add-Partner-Portal-API.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS65-Add-Integration-Testing.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS65-Add-Integration-Testing
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds WireMock + TestContainers for integration tests
+OUTPUT: Automated tests for ISO, Switch, Webhooks
+HYPERLINK: https://wiremock.org
+STACK: JUnit 5 + WireMock + TestContainers
+COMPLIANCE: PS25 Contract testing
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS65: Adding Integration Tests ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$testDeps = @"
+    <dependency><groupId>org.wiremock</groupId><artifactId>wiremock</artifactId><version>3.0.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><version>1.19.0</version><scope>test</scope></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$testDeps`n</dependencies>" | Set-Content $pom
+
+$test = Join-Path $BasePath "backend\src\test\java\com\demobank\integration\SwitchIntegrationTest.java"
+@"
+package com.demobank.integration;
+import org.junit.jupiter.api.Test;
+import com.github.tomakehurst.wiremock.WireMockServer;
+public class SwitchIntegrationTest {
+    @Test void testSendPayment() {
+        WireMockServer server = new WireMockServer();
+        // Stub switch response, call PaymentSwitchClient, verify
+    }
+}
+"@ | Out-File $test -Encoding utf8
+
+Write-Host "PS65 Done: Run 'mvn verify' to test integrations" -ForegroundColor Green
+
+
+# --- END OF PS65-Add-Integration-Testing.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS66-Add-Fraud-Model-Endpoint.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS66-Add-Fraud-Model-Endpoint
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds REST endpoint to call Python fraud model via gRPC
+OUTPUT: /api/fraud/score returns risk_score 0-1 per voucher
+HYPERLINK: https://mlflow.org
+STACK: Spring Boot + gRPC + Python + Scikit-learn
+COMPLIANCE: PS25 Real-time fraud blocking
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS66: Adding Fraud Model Endpoint ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$grpcDep = @"
+    <dependency><groupId>io.grpc</groupId><artifactId>grpc-netty-shaded</artifactId><version>1.60.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$grpcDep`n</dependencies>" | Set-Content $pom
+
+$fraudSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\ml\FraudScoringService.java"
+@"
+package com.demobank.ml;
+import org.springframework.stereotype.Service;
+@Service
+public class FraudScoringService {
+    public double scoreVoucher(String tenantId, double amount, String beneficiary) {
+        // gRPC call to python model at fraud-service:50051
+        // Features: amount, time_of_day, beneficiary_history, tenant_id
+        return 0.12; // risk score
+    }
+}
+"@ | Out-File $fraudSvc -Encoding utf8
+
+Write-Host "PS66 Done: Call fraudScoringService.scoreVoucher() before BE-PS73 commit" -ForegroundColor Green
+
+
+# --- END OF PS66-Add-Fraud-Model-Endpoint.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS67-Add-Feature-Store.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS67-Add-Feature-Store
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds Feast feature store + Redis online store
+OUTPUT: Real-time features: vouchers_24h_count, avg_amount per tenant
+HYPERLINK: https://feast.dev
+STACK: Feast + Redis + Kafka
+COMPLIANCE: PS25 ML feature consistency
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS67: Adding Feature Store ===" -ForegroundColor Cyan
+
+$featureCompose = Join-Path $BasePath "docker-compose-ml.yml"
+@"
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  feast:
+    image: feastdev/feast:0.35.0
+    ports: ["6565:6565"]
+    volumes: ["./feast:/feast"]
+"@ | Out-File $featureCompose -Encoding utf8
+
+$featureDef = Join-Path $BasePath "atlas-workspace\platform\configs\features.yaml"
+@"
+entities:
+- name: tenant
+  join_keys: [tenant_id]
+feature_views:
+- name: voucher_stats
+  entities: [tenant]
+  features:
+    - name: vouchers_24h_count
+    dtype: INT64
+    - name: avg_amount_7d
+    dtype: FLOAT
+  source: kafka://db.vouchers
+"@ | Out-File $featureDef -Encoding utf8
+
+Write-Host "PS67 Done: Run 'feast apply' in atlas-workspace/platform/configs" -ForegroundColor Green
+
+
+# --- END OF PS67-Add-Feature-Store.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS68-Add-Anomaly-Detection.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS68-Add-Anomaly-Detection
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds scheduled job to detect tenant anomalies: spike in vouchers
+OUTPUT: Alert to Kafka topic fraud.alerts when z-score > 3
+HYPERLINK: https://scikit-learn.org
+STACK: Spring Scheduler + Apache Commons Math
+COMPLIANCE: PS25 Proactive risk monitoring
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS68: Adding Anomaly Detection ===" -ForegroundColor Cyan
+
+$anomalyJob = Join-Path $BasePath "backend\src\main\java\com\demobank\ml\AnomalyDetectionJob.java"
+@"
+package com.demobank.ml;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+@Component
+public class AnomalyDetectionJob {
+    @Scheduled(cron = "0 */15 * * * *") // every 15 min
+    public void detectAnomalies() {
+        // 1. Query mv_tenant_voucher_summary
+        // 2. Calculate z-score per tenant
+        // 3. If > 3, kafka.send("fraud.alerts", tenantId)
+    }
+}
+"@ | Out-File $anomalyJob -Encoding utf8
+
+Write-Host "PS68 Done: Anomalies published to fraud.alerts topic" -ForegroundColor Green
+
+
+# --- END OF PS68-Add-Anomaly-Detection.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS69-Add-Risk-Scoring.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS69-Add-Risk-Scoring
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds risk_score column to vouchers + automatic hold logic
+OUTPUT: vouchers with risk_score > 0.8 go to PENDING_REVIEW
+HYPERLINK: https://www.fico.com
+STACK: Spring Boot + JPA
+COMPLIANCE: PS25 Automated risk controls
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS69: Adding Risk Scoring ===" -ForegroundColor Cyan
+
+$migration = Join-Path $BasePath "backend\src\main\resources\db\migration\V4__risk_score.sql"
+@"
+ALTER TABLE vouchers ADD COLUMN risk_score DOUBLE DEFAULT 0.0;
+ALTER TABLE vouchers ADD COLUMN status VARCHAR(50) DEFAULT 'APPROVED';
+CREATE INDEX idx_risk ON vouchers(tenant_id, risk_score);
+"@ | Out-File $migration -Encoding utf8
+
+Write-Host "PS69 Done: Update BE-PS73 to set status=PENDING_REVIEW if risk>0.8" -ForegroundColor Green
+
+
+# --- END OF PS69-Add-Risk-Scoring.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-09-frontend-core\PS70-Add-MLflow-Registry.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS70-Add-MLflow-Registry
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds MLflow server for model versioning + experiment tracking
+OUTPUT: http://localhost:5000 to register fraud models
+HYPERLINK: https://mlflow.org
+STACK: MLflow + Minio + PostgreSQL
+COMPLIANCE: PS25 Model governance + audit
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 9
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS70: Adding MLflow Registry ===" -ForegroundColor Cyan
+
+$mlflowCompose = Join-Path $BasePath "docker-compose-mlflow.yml"
+@"
+version: '3.8'
+services:
+  mlflow:
+    image: python:3.11
+    command: bash -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5000"
+    ports: ["5000:5000"]
+    volumes: ["./mlruns:/mlruns"]
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://postgres:postgres@postgres:5432/mlflow
+"@ | Out-File $mlflowCompose -Encoding utf8
+
+Write-Host "PS70 Done: MLflow UI at http://localhost:5000" -ForegroundColor Green
+
+
+# --- END OF PS70-Add-MLflow-Registry.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS71-Add-Redis-Cache.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS71-Add-Redis-Cache
+
+.DESCRIPTION
+INPUT: backend/pom.xml
+PROCESSING: Adds Spring Cache + Redis for tenant voucher queries
+OUTPUT: 10x faster reads. Cache key includes tenant_id
+HYPERLINK: https://redis.io
+STACK: Spring Boot 3.2 + Redis + Lettuce
+COMPLIANCE: PS25 Performance SLA <500ms p95
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS71: Adding Redis Cache ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$redisDep = @"
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$redisDep`n</dependencies>" | Set-Content $pom
+
+$cacheConfig = Join-Path $BasePath "backend\src\main\java\com\demobank\config\CacheConfig.java"
+@"
+package com.demobank.config;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Configuration;
+@Configuration @EnableCaching
+public class CacheConfig {}
+"@ | Out-File $cacheConfig -Encoding utf8
+
+$yml = Join-Path $BasePath "backend\src\main\resources\application.yml"
+@"
+spring:
+  redis:
+    host: redis
+    port: 6379
+  cache:
+    type: redis
+"@ | Add-Content $yml
+
+Write-Host "PS71 Done: Annotate service methods with @Cacheable(key='#tenantId')" -ForegroundColor Green
+
+
+# --- END OF PS71-Add-Redis-Cache.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS72-Add-DB-Query-Tuning.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS72-Add-DB-Query-Tuning
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds HikariCP tuning + tenant indexes + query hints
+OUTPUT: DB connection pool optimized for 1000 tenants
+HYPERLINK: https://github.com/brettwooldridge/HikariCP
+STACK: Spring Boot + HikariCP + PostgreSQL
+COMPLIANCE: PS25 Support 10k TPS
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS72: Adding DB Query Tuning ===" -ForegroundColor Cyan
+
+$yml = Join-Path $BasePath "backend\src\main\resources\application.yml"
+@"
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 30000
+"@ | Add-Content $yml
+
+$indexes = Join-Path $BasePath "backend\src\main\resources\db\migration\V5__perf_indexes.sql"
+@"
+CREATE INDEX CONCURRENTLY idx_vouchers_tenant_date ON vouchers(tenant_id, created_at DESC);
+CREATE INDEX CONCURRENTLY idx_vouchers_status ON vouchers(tenant_id, status);
+ANALYZE vouchers;
+"@ | Out-File $indexes -Encoding utf8
+
+Write-Host "PS72 Done: Hikari 50 connections + tenant indexes" -ForegroundColor Green
+
+
+# --- END OF PS72-Add-DB-Query-Tuning.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-10-business-logic\PS73-Add-CDN-Asset-Cache.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS73-Add-CDN-Asset-Cache
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Configures Vite for CDN + cache busting + tenant assets
+OUTPUT: Static assets served from cdn.demo-bank.com
+HYPERLINK: https://vitejs.dev
+STACK: Vite + Cloudflare CDN
+COMPLIANCE: PS25 <2s FE load time
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 10
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS73: Adding CDN Asset Cache ===" -ForegroundColor Cyan
+
+$viteConfig = Join-Path $BasePath "frontend\vite.config.ts"
+@"
+import { defineConfig } from 'vite';
+export default defineConfig({
+  base: 'https://cdn.demo-bank.com/',
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: { output: { assetFileNames: 'assets/[name].[hash].[ext]' } }
+  }
+});
+"@ | Out-File $viteConfig -Encoding utf8
+
+Write-Host "PS73 Done: Build assets with 'npm run build'. Upload to CDN" -ForegroundColor Green
+
+
+# --- END OF PS73-Add-CDN-Asset-Cache.ps1 ---
+

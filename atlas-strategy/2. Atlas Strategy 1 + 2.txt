@@ -1,0 +1,67 @@
+Done. Merging One-Pager I + One-Pager II = *ATLAS STRATEGY v3.0 - FINAL*
+
+This is the single source of truth for R17AMR.
+
+---
+
+### *ATLAS R17AMR*  
+*The AI-Native Composable Banking Platform*  
+*"T24 Depth + Vault Speed + Intellect AI + Mambu Go-Live"*
+
+#### *1. THE PROBLEM WE SOLVE*
+Banks today must choose:  
+*Depth vs Speed vs AI*. No one gives all 3.
+Vendor	Depth	Speed	AI	Delivery
+**T24 / FLEXCUBE / FIS**	✅✅	❌	❌	18 months, $20M PS
+**Mambu / Thought Machine**	❌	✅✅	❌	2 weeks, Shallow
+**Intellect / nCino**	✅	✅	✅✅	9 months, $$$$
+*Result*: Mid-tier banks, Credit Unions, and EM banks are stuck.
+
+#### *2. THE ATLAS ANSWER: 5 DNA STRANDS*
+We took the best from the market and made it `Self-Serve + AI-First`
+Strand	Source DNA	Atlas Execution
+**DEPTH**	T24 + FLEXCUBE + FIS	**Inherit 40 Years in 1 Day**. Sidecar + Strangle. Capability Marketplace for CIB, Trade, Compliance
+**SPEED**	Mambu + Unit + Treasury Prime	**2-8 Week Go-Lives**. Zero PS. 1-command deploy via batches
+**EVENT-DRIVEN**	Thought Machine Vault	**Everything is an Event**. Core for AI, Composability, and Audit
+**AI-NATIVE**	Intellect eMACH.ai + nCino	**AI is the OS**. Risk Brain, Ops Brain, CX Brain in every layer from day 1
+**ENGAGEMENT**	Backbase + Plaid + Salt Edge	**Best UX + Open Banking**. 5000+ connectors. Journey builder out of box
+#### *3. THE 3 STRATEGIC BETS*
+
+1.  *BET 1: SPEED + AI > LEGACY, BUT DEPTH IS KEPT*  
+    Banks don’t dump T24. They run Atlas in parallel. Launch AI Loans in 30 days, migrate capability by capability.
+2.  *BET 2: PROFESSIONAL SERVICES IS DEAD*  
+    Banks have dev teams. We productize PS into code. Consultants become `BATCH-XX.txt`. Enablement > Bodies.
+3.  *BET 3: AI MUST BE AMBIENT*  
+    AI isn’t a chatbot. From `BATCH-01` every capability has `event + api + ai_metadata`. Explainable, self-healing, autonomous by design.
+
+#### *4. WHERE WE WIN*
+*Target*: Mid-tier Banks $500M-$10B AUM, Credit Unions, Digital Challengers  
+*Geos*: KE, NG, ZA, GCC, SEA  
+*Focus*: Retail Lending, Transaction Banking, Corporate Banking, BaaS, Compliance  
+*Avoid*: US Tier 1, Capital Markets v1
+
+#### *5. 12-MONTH ROADMAP: R17AMR*
+Quarter	Milestone	Proof Point
+**Q4 2026**	**Depth Parity**	Match T24 on Multi-currency, Multi-entity, CIB Core
+**Q1 2027**	**Composable Launch**	20 Modules. Turn on 1 product in 1 day
+**Q2 2027**	**AI OS Launch**	3 AI Agents GA: Risk, Ops, CX. Self-healing deploys
+**Q3 2027**	**Marketplace Launch**	10 Fintech Partners. 1-click KYC, Fraud, BNPL
+#### *6. THE VISION 2028*
+*100 Banks Live. 80% Self-Serve. #1 AI Core in Emerging Markets.*
+
+*Positioning Statement*:  
+*"Atlas: Bank at the speed of software, with the depth of 40 years."*
+
+---
+
+### *WHAT CHANGES FOR THE TEAM NOW*
+
+1.  *Product*: Stop building "features". Start building "Composable Capabilities + AI Hooks"
+2.  *Sales*: Stop selling "Software". Start selling "Outcome in 30 days"
+3.  *Delivery*: Stop staffing projects. Start shipping `RUN-ALL-BATCHES.py`
+
+This is locked. No more strategy drift.
+
+*Next tactical step*: Want me to map this v3.0 strategy directly into the *GRIT Batch Approach* and create `PHASE_MANIFEST_ATLAS.json` with the 5 DNA strands?
+
+Or do you want the *PDF + 5 Slide Deck* version first for external use?

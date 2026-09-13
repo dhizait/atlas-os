@@ -1,0 +1,552 @@
+"""
+ATLAS R01 BATCH 04 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-16-analytics\PS101-Add-Data-Warehouse.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS101-Add-Data-Warehouse
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds ClickHouse + nightly ETL from Postgres
+OUTPUT: OLAP DB for BI queries. 100x faster aggregations
+HYPERLINK: https://clickhouse.com
+STACK: ClickHouse + Postgres CDC
+COMPLIANCE: PS25 Analytics at scale
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 16
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS101: Adding ClickHouse Data Warehouse ===" -ForegroundColor Cyan
+
+$dwCompose = Join-Path $BasePath "docker-compose-dw.yml"
+@"
+version: '3.8'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: atlas-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      -./clickhouse/data:/var/lib/clickhouse
+      -./clickhouse/config:/etc/clickhouse-server
+    environment:
+      CLICKHOUSE_DB: analytics
+      CLICKHOUSE_USER: atlas
+      CLICKHOUSE_PASSWORD: atlas123
+"@ | Out-File $dwCompose -Encoding utf8
+
+$chSchema = Join-Path $BasePath "clickhouse\init.sql"
+New-Item -ItemType Directory -Force (Split-Path $chSchema) | Out-Null
+@"
+CREATE TABLE analytics.vouchers
+(
+    tenant_id UUID,
+    voucher_id UUID,
+    amount Decimal(18,2),
+    created_at DateTime,
+    status String
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(created_at)
+ORDER BY (tenant_id, created_at);
+"@ | Out-File $chSchema -Encoding utf8
+
+Write-Host "PS101 Done: Run 'docker compose -f docker-compose-dw.yml up -d'" -ForegroundColor Green
+
+
+# --- END OF PS101-Add-Data-Warehouse.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-16-analytics\PS102-Add-Metabase.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS102-Add-Metabase
+
+.DESCRIPTION
+INPUT: docker-compose.yml
+PROCESSING: Adds Metabase with tenant row-level security
+OUTPUT: http://localhost:3001 BI dashboards per tenant
+HYPERLINK: https://metabase.com
+STACK: Metabase + ClickHouse + Postgres
+COMPLIANCE: PS25 Self-service BI
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 16
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS102: Adding Metabase ===" -ForegroundColor Cyan
+
+$biCompose = Join-Path $BasePath "docker-compose-bi.yml"
+@"
+version: '3.8'
+services:
+  metabase:
+    image: metabase/metabase:v0.50
+    container_name: atlas-metabase
+    ports:
+      - "3001:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+      MB_DB_HOST: postgres
+"@ | Out-File $biCompose -Encoding utf8
+
+$rlsPolicy = Join-Path $BasePath "backend\src\main\resources\db\migration\V8__metabase_rls.sql"
+@"
+-- Metabase will filter by tenant_id automatically
+ALTER TABLE vouchers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation ON vouchers USING (tenant_id = current_setting('app.tenant_id')::uuid);
+"@ | Out-File $rlsPolicy -Encoding utf8
+
+Write-Host "PS102 Done: Metabase at http://localhost:3001" -ForegroundColor Green
+
+
+# --- END OF PS102-Add-Metabase.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-16-analytics\PS103-Add-Tenant-Dashboards.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS103-Add-Tenant-Dashboards
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: API to serve pre-built charts per tenant from ClickHouse
+OUTPUT: /api/analytics/dashboard returns KPI JSON
+HYPERLINK: https://clickhouse.com/docs
+STACK: Spring Boot + ClickHouse JDBC
+COMPLIANCE: PS25 Per-tenant analytics
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 16
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS103: Adding Tenant Dashboards API ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$chDep = @"
+    <dependency><groupId>com.clickhouse</groupId><artifactId>clickhouse-jdbc</artifactId><version>0.5.1</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$chDep`n</dependencies>" | Set-Content $pom
+
+$analyticsCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\analytics\AnalyticsController.java"
+@"
+package com.demobank.analytics;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
+@RestController @RequestMapping("/api/analytics")
+public class AnalyticsController {
+    private final JdbcTemplate chJdbc;
+    public AnalyticsController(JdbcTemplate chJdbc) { this.chJdbc = chJdbc; }
+
+    @GetMapping("/dashboard")
+    public Map<String,Object> getDashboard(@RequestHeader("X-Tenant-ID") String tenantId) {
+        String sql = "SELECT count() as vouchers_today, sum(amount) as volume FROM vouchers WHERE tenant_id =? AND toDate(created_at) = today()";
+        return chJdbc.queryForMap(sql, tenantId);
+    }
+}
+"@ | Out-File $analyticsCtrl -Encoding utf8
+
+Write-Host "PS103 Done: GET /api/analytics/dashboard" -ForegroundColor Green
+
+
+# --- END OF PS103-Add-Tenant-Dashboards.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-16-analytics\PS104-Add-ETL-Jobs.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS104-Add-ETL-Jobs
+
+.DESCRIPTION
+INPUT: airflow/
+PROCESSING: Nightly DAG to sync Postgres -> ClickHouse
+OUTPUT: Data in DW by 3am. Incremental sync
+HYPERLINK: https://airflow.apache.org
+STACK: Airflow + Python + JDBC
+COMPLIANCE: PS25 Data freshness < 24h
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 16
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS104: Adding ETL DAG ===" -ForegroundColor Cyan
+
+$airflowDir = Join-Path $BasePath "airflow\dags"
+New-Item -ItemType Directory -Force $airflowDir | Out-Null
+
+$dag = Join-Path $airflowDir "etl_to_dw.py"
+@"
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+import psycopg2, clickhouse_connect
+
+def sync_vouchers():
+    pg = psycopg2.connect("host=postgres dbname=demobank user=postgres")
+    ch = clickhouse_connect.get_client(host='clickhouse', username='atlas', password='atlas123')
+    df = pd.read_sql("SELECT * FROM vouchers WHERE created_at > now() - interval '1 day'", pg)
+    ch.insert_df('analytics.vouchers', df)
+
+with DAG('etl_to_dw', schedule='0 3 * * *', start_date=datetime(2026,1,1), catchup=False) as dag:
+    PythonOperator(task_id='sync_vouchers', python_callable=sync_vouchers)
+"@ | Out-File $dag -Encoding utf8
+
+Write-Host "PS104 Done: Place in airflow and run scheduler" -ForegroundColor Green
+
+
+# --- END OF PS104-Add-ETL-Jobs.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-16-analytics\PS105-Add-Export-Reports.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS105-Add-Export-Reports
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Export analytics to Excel/CSV per tenant
+OUTPUT: /api/analytics/export?format=xlsx downloads file
+HYPERLINK: https://poi.apache.org
+STACK: Spring Boot + Apache POI
+COMPLIANCE: PS25 Regulatory reporting
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 16
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS105: Adding Export Reports ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$poiDep = @"
+    <dependency><groupId>org.apache.poi</groupId><artifactId>poi-ooxml</artifactId><version>5.2.5</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$poiDep`n</dependencies>" | Set-Content $pom
+
+$exportCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\analytics\ExportController.java"
+@"
+package com.demobank.analytics;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController @RequestMapping("/api/analytics")
+public class ExportController {
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(@RequestHeader("X-Tenant-ID") String tenantId, @RequestParam String format) {
+        // Query ClickHouse, build XLSX
+        XSSFWorkbook wb = new XSSFWorkbook();
+        return ResponseEntity.ok().header("Content-Disposition","attachment; filename=report.xlsx").body(new byte[0]);
+    }
+}
+"@ | Out-File $exportCtrl -Encoding utf8
+
+Write-Host "PS105 Done: GET /api/analytics/export?format=xlsx" -ForegroundColor Green
+
+
+# --- END OF PS105-Add-Export-Reports.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS106-Add-React-Native-App.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS106-Add-React-Native-App
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Scaffolds React Native app with tenant login + voucher list
+OUTPUT: /mobile app for iOS/Android
+HYPERLINK: https://reactnative.dev
+STACK: React Native 0.75 + Axios + AsyncStorage
+COMPLIANCE: PS25 Mobile access
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS106: Adding React Native App ===" -ForegroundColor Cyan
+
+$mobileDir = Join-Path $BasePath "mobile"
+New-Item -ItemType Directory -Force $mobileDir | Out-Null
+
+$appTsx = Join-Path $mobileDir "App.tsx"
+@"
+import React from 'react';
+import {View, Text, FlatList} from 'react-native';
+import axios from 'axios';
+
+export default function App() {
+  const [vouchers, setVouchers] = React.useState([]);
+  React.useEffect(() => {
+    axios.get('https://api.demo-bank.com/api/vouchers', {
+      headers: {'X-Tenant-ID': 'TENANT001'}
+    }).then(r => setVouchers(r.data));
+  }, []);
+  return <View><FlatList data={vouchers} renderItem={({item}) => <Text>{item.id}</Text>}/></View>
+}
+"@ | Out-File $appTsx -Encoding utf8
+
+$pkg = Join-Path $mobileDir "package.json"
+@"
+{
+  "name": "demo-bank-mobile",
+  "dependencies": {"react": "18.2.0", "react-native": "0.75.0", "axios": "^1.7.0"}
+}
+"@ | Out-File $pkg -Encoding utf8
+
+Write-Host "PS106 Done: cd mobile && npx react-native run-android" -ForegroundColor Green
+
+
+# --- END OF PS106-Add-React-Native-App.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS107-Add-iOS-SDK.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS107-Add-iOS-SDK
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates Swift Package for DemoBank API
+OUTPUT: DemoBankSDK for iOS apps. Handles tenant_id header
+HYPERLINK: https://developer.apple.com/swift
+STACK: Swift 5.9 + URLSession
+COMPLIANCE: PS25 Partner SDK
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS107: Adding iOS SDK ===" -ForegroundColor Cyan
+
+$sdkDir = Join-Path $BasePath "sdk\ios\DemoBankSDK"
+New-Item -ItemType Directory -Force $sdkDir | Out-Null
+
+$swift = Join-Path $sdkDir "DemoBankClient.swift"
+@"
+import Foundation
+public class DemoBankClient {
+    private let tenantId: String
+    public init(tenantId: String) { self.tenantId = tenantId }
+
+    public func createVoucher(amount: Decimal, completion: @escaping (Result<Data, Error>) -> Void) {
+        var req = URLRequest(url: URL(string: "https://api.demo-bank.com/api/vouchers")!)
+        req.httpMethod = "POST"
+        req.setValue(tenantId, forHTTPHeaderField: "X-Tenant-ID")
+        URLSession.shared.dataTask(with: req, completionHandler: completion).resume()
+    }
+}
+"@ | Out-File $swift -Encoding utf8
+
+Write-Host "PS107 Done: Swift Package at sdk/ios/DemoBankSDK" -ForegroundColor Green
+
+
+# --- END OF PS107-Add-iOS-SDK.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS108-Add-Android-SDK.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS108-Add-Android-SDK
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Creates Android Library AAR for DemoBank API
+OUTPUT: demobank-sdk.aar with tenant interceptor
+HYPERLINK: https://developer.android.com
+STACK: Kotlin + OkHttp + Retrofit
+COMPLIANCE: PS25 Partner SDK
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS108: Adding Android SDK ===" -ForegroundColor Cyan
+
+$androidDir = Join-Path $BasePath "sdk\android\demobank-sdk"
+New-Item -ItemType Directory -Force $androidDir | Out-Null
+
+$kt = Join-Path $androidDir "DemoBankClient.kt"
+@"
+package com.demobank.sdk
+import okhttp3.*
+
+class DemoBankClient(private val tenantId: String) {
+    private val client = OkHttpClient.Builder()
+       .addInterceptor { chain ->
+            chain.proceed(chain.request().newBuilder().header("X-Tenant-ID", tenantId).build())
+        }.build()
+
+    fun createVoucher(amount: Double) { /* POST to /api/vouchers */ }
+}
+"@ | Out-File $kt -Encoding utf8
+
+Write-Host "PS108 Done: Android Library at sdk/android/demobank-sdk" -ForegroundColor Green
+
+
+# --- END OF PS108-Add-Android-SDK.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS109-Add-Push-Notifications.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS109-Add-Push-Notifications
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds FCM integration. Sends push on voucher created
+OUTPUT: /api/notifications/send + Firebase config
+HYPERLINK: https://firebase.google.com/docs/cloud-messaging
+STACK: Spring Boot + Firebase Admin SDK
+COMPLIANCE: PS25 Real-time alerts
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS109: Adding Push Notifications ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$fcmDep = @"
+    <dependency><groupId>com.google.firebase</groupId><artifactId>firebase-admin</artifactId><version>9.2.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$fcmDep`n</dependencies>" | Set-Content $pom
+
+$pushSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\notifications\PushService.java"
+@"
+package com.demobank.notifications;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+@Service
+public class PushService {
+    public void sendToTenant(String tenantId, String title, String body) {
+        Message msg = Message.builder()
+           .putData("tenant_id", tenantId)
+           .setNotification(com.google.firebase.messaging.Notification.builder().setTitle(title).setBody(body).build())
+           .setTopic("tenant_" + tenantId)
+           .build();
+        FirebaseMessaging.getInstance().send(msg);
+    }
+}
+"@ | Out-File $pushSvc -Encoding utf8
+
+Write-Host "PS109 Done: Set GOOGLE_APPLICATION_CREDENTIALS env" -ForegroundColor Green
+
+
+# --- END OF PS109-Add-Push-Notifications.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-17-compliance\PS110-Add-Deep-Linking.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS110-Add-Deep-Linking
+
+.DESCRIPTION
+INPUT: mobile/ + backend/
+PROCESSING: Adds deep links: demobank://voucher/{id}
+OUTPUT: Mobile opens directly to voucher detail
+HYPERLINK: https://reactnavigation.org/docs/deep-linking
+STACK: React Native + Spring Redirect
+COMPLIANCE: PS25 UX
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 17
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS110: Adding Deep Linking ===" -ForegroundColor Cyan
+
+$linkConfig = Join-Path $BasePath "mobile\linking.ts"
+@"
+export const linking = {
+  prefixes: ['demobank://', 'https://app.demo-bank.com'],
+  config: {
+    screens: {
+      VoucherDetail: 'voucher/:id'
+    }
+  }
+}
+"@ | Out-File $linkConfig -Encoding utf8
+
+$redirectCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\web\RedirectController.java"
+@"
+package com.demobank.web;
+@Controller
+public class RedirectController {
+    @GetMapping("/voucher/{id}")
+    public String redirect(@PathVariable String id) {
+        return "redirect:demobank://voucher/" + id;
+    }
+}
+"@ | Out-File $redirectCtrl -Encoding utf8
+
+Write-Host "PS110 Done: https://api.demo-bank.com/voucher/123 opens app" -ForegroundColor Green
+
+
+# --- END OF PS110-Add-Deep-Linking.ps1 ---
+

@@ -1,0 +1,244 @@
+"""
+ATLAS R01 BATCH 10 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-19-migration\PS116-Add-WAF.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS116-Add-WAF
+
+.DESCRIPTION
+INPUT: k8s/ + nginx/
+PROCESSING: Deploys ModSecurity WAF with OWASP CRS
+OUTPUT: Blocks SQLi, XSS, LFI. Logs to SIEM
+HYPERLINK: https://coreruleset.org
+STACK: Nginx + ModSecurity + OWASP CRS
+COMPLIANCE: PS25 OWASP Top 10 protection
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 19
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS116: Adding WAF ===" -ForegroundColor Cyan
+
+$wafConf = Join-Path $BasePath "nginx\waf.conf"
+@"
+load_module modules/ngx_http_modsecurity_module.so;
+modsecurity on;
+modsecurity_rules_file /etc/nginx/modsec/main.conf;
+"@ | Out-File $wafConf -Encoding utf8
+
+$modsecMain = Join-Path $BasePath "nginx\modsec\main.conf"
+New-Item -ItemType Directory -Force (Split-Path $modsecMain) | Out-Null
+@"
+Include /etc/nginx/modsec/owasp-crs/crs-setup.conf
+Include /etc/nginx/modsec/owasp-crs/rules/*.conf
+SecRule REQUEST_HEADERS:X-Tenant-ID "@rx ^$" "id:1001,phase:1,deny,msg:'Missing Tenant ID'"
+"@ | Out-File $modsecMain -Encoding utf8
+
+Write-Host "PS116 Done: Restart nginx. WAF active" -ForegroundColor Green
+
+
+# --- END OF PS116-Add-WAF.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-19-migration\PS117-Add-Rate-Limiting.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS117-Add-Rate-Limiting
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds Redis-based rate limiting per tenant + per IP
+OUTPUT: 429 if > 1000 req/min per tenant
+HYPERLINK: https://redis.io/commands/incr
+STACK: Spring Boot + Bucket4j + Redis
+COMPLIANCE: PS25 DDoS mitigation
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 19
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS117: Adding Rate Limiting ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$bucketDep = @"
+    <dependency><groupId>com.bucket4j</groupId><artifactId>bucket4j-core</artifactId><version>8.7.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$bucketDep`n</dependencies>" | Set-Content $pom
+
+$rateFilter = Join-Path $BasePath "backend\src\main\java\com\demobank\security\RateLimitFilter.java"
+@"
+package com.demobank.security;
+import io.github.bucket4j.*;
+@Component
+public class RateLimitFilter implements Filter {
+    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+        String tenant = ((HttpServletRequest)req).getHeader("X-Tenant-ID");
+        Bucket bucket = buckets.computeIfAbsent(tenant, k -> Bucket.builder()
+           .addLimit(Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))).build());
+        if (!bucket.tryConsume(1)) { ((HttpServletResponse)res).setStatus(429); return; }
+        chain.doFilter(req, res);
+    }
+}
+"@ | Out-File $rateFilter -Encoding utf8
+
+Write-Host "PS117 Done: 1000 req/min per tenant" -ForegroundColor Green
+
+
+# --- END OF PS117-Add-Rate-Limiting.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-19-migration\PS118-Add-DDoS-Protection.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS118-Add-DDoS-Protection
+
+.DESCRIPTION
+INPUT: k8s/
+PROCESSING: Adds Cloudflare + K8s HPA + connection limits
+OUTPUT: Auto-scales under attack. Blacklists IPs
+HYPERLINK: https://cloudflare.com/ddos
+STACK: Cloudflare + K8s HPA + Falco
+COMPLIANCE: PS25 99.99% uptime
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 19
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS118: Adding DDoS Protection ===" -ForegroundColor Cyan
+
+$hpa = Join-Path $BasePath "atlas-workspace\platform\k8s\hpa.yaml"
+@"
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: backend-hpa}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: backend}
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+    - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
+"@ | Out-File $hpa -Encoding utf8
+
+Write-Host "PS118 Done: Apply HPA. Configure Cloudflare proxy" -ForegroundColor Green
+
+
+# --- END OF PS118-Add-DDoS-Protection.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-19-migration\PS119-Add-PenTest-Automation.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS119-Add-PenTest-Automation
+
+.DESCRIPTION
+INPUT: None
+PROCESSING: Runs OWASP ZAP + Trivy nightly. Generates report
+OUTPUT: /reports/pentest-YYYY-MM-DD.html
+HYPERLINK: https://www.zaproxy.org
+STACK: OWASP ZAP + Trivy + PowerShell
+COMPLIANCE: PS25 Quarterly pentest
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 19
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS119: Adding PenTest Automation ===" -ForegroundColor Cyan
+
+$pentestScript = Join-Path $BasePath "atlas-workspace\platform\ps-scripts\run-pentest.ps1"
+@"
+param()
+$date = Get-Date -Format yyyy-MM-dd
+Write-Host "Running OWASP ZAP..."
+docker run -t owasp/zap2docker-stable zap-baseline.py -t https://api.demo-bank.com -r pentest-$date.html
+Write-Host "Running Trivy..."
+trivy image demobank/backend:latest --format html -o trivy-$date.html
+Write-Host "Reports saved"
+"@ | Out-File $pentestScript -Encoding utf8
+
+Write-Host "PS119 Done: Run.\run-pentest.ps1 weekly" -ForegroundColor Green
+
+
+# --- END OF PS119-Add-PenTest-Automation.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-19-migration\PS120-Add-Secrets-Rotation.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS120-Add-Secrets-Rotation
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Rotates DB password, JWT secret, Stripe key every 90 days
+OUTPUT: Uses HashiCorp Vault. Zero downtime rotation
+HYPERLINK: https://www.vaultproject.io
+STACK: Spring Boot + Vault + Spring Cloud
+COMPLIANCE: PS25 Secret management
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 19
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS120: Adding Secrets Rotation ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$vaultDep = @"
+    <dependency><groupId>org.springframework.cloud</groupId><artifactId>spring-cloud-starter-vault-config</artifactId><version>4.1.0</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$vaultDep`n</dependencies>" | Set-Content $pom
+
+$bootstrap = Join-Path $BasePath "backend\src\main\resources\bootstrap.yml"
+@"
+spring:
+  cloud:
+    vault:
+      uri: https://vault.demo-bank.com
+      authentication: TOKEN
+      token: ${VAULT_TOKEN}
+"@ | Out-File $bootstrap -Encoding utf8
+
+$rotationJob = Join-Path $BasePath "atlas-workspace\platform\ps-scripts\rotate-secrets.ps1"
+@"
+# Rotate secrets in Vault every 90 days
+vault kv patch secret/demobank db_password=$(openssl rand -base64 32)
+kubectl rollout restart deployment backend
+"@ | Out-File $rotationJob -Encoding utf8
+
+Write-Host "PS120 Done: Secrets now from Vault. Run rotate-secrets.ps1 quarterly" -ForegroundColor Green
+
+
+# --- END OF PS120-Add-Secrets-Rotation.ps1 ---
+

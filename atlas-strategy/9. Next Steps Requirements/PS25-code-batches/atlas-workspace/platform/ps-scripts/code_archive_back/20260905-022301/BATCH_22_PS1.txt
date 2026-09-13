@@ -1,0 +1,130 @@
+"""
+ATLAS R01 BATCH 22 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS299-ATLAS-Chatbot-AI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS299 - ATLAS AI/ML
+BATCH: 17 - batch-17-ai-ml
+STATUS: STUB
+PURPOSE: Generative AI chatbot for PS282 WhatsApp + PS263 Contact Center
+DEPENDS: PS282, PS263, PS261 CRM
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS299-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS299] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS299 for Tenant $TenantId"
+Write-Log "[STUB] TODO: LLM with tenant knowledge base"
+Write-Log "[STUB] TODO: Intent recognition + handoff to PS264 Case"
+Write-Log "[STUB] TODO: Tenant branding and language support"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS299. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS299"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS299-ATLAS-Chatbot-AI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-01-observability\PS30-HealthCheck.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS PS25 Script: PS30-HealthCheck
+.DESCRIPTION INPUT: None PROCESSING: Creates TenantHealthIndicator OUTPUT: /actuator/health shows tenantDb UP
+.NOTES Generated: 2026-08-06 | BATCH 1
+#>
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+Write-Host "=== PS30: Adding Tenant-Aware HealthCheck ===" -ForegroundColor Cyan
+... [rest of your PS30 code]...
+Write-Host "PS30 Done" -ForegroundColor Green
+
+
+# --- END OF PS30-HealthCheck.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS301-ATLAS-Document-AI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS301 - ATLAS AI/ML
+BATCH: 17 - batch-17-ai-ml
+STATUS: STUB
+PURPOSE: OCR, KYC doc extraction, statement parsing
+DEPENDS: PS257 KYC, PS267 Loan-Origination
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS301-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS301] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS301 for Tenant $TenantId"
+Write-Log "[STUB] TODO: OCR ID documents for PS257"
+Write-Log "[STUB] TODO: Extract fields from bank statements for PS267"
+Write-Log "[STUB] TODO: Fraud doc detection + liveness check"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS301. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS301"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS301-ATLAS-Document-AI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS303-ATLAS-IAM-Core.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS303 - ATLAS Security / Zero-Trust
+BATCH: 18 - batch-18-security-zerotrust
+STATUS: STUB
+PURPOSE: Identity and Access Management per tenant
+MAPS TO: Extends PS210 Auth
+DEPENDS: PS210 Auth-Token
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+#region INIT
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS303-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS303] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS303 for Tenant $TenantId"
+#endregion
+#region MAIN
+Write-Log "[STUB] TODO: Tenant user directory with RBAC roles"
+Write-Log "[STUB] TODO: MFA enforcement via PS210"
+Write-Log "[STUB] TODO: SSO integration: SAML/OIDC for $TenantId"
+Write-Log "[STUB] TODO: Sync to PS219 Customer-API for retail users"
+#endregion
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS303. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS303"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS303-ATLAS-IAM-Core.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: atlas-master\PS305-ATLAS-Secret-Management.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS305 - ATLAS Security / Zero-Trust
+BATCH: 18 - batch-18-security-zerotrust
+STATUS: STUB
+PURPOSE: Secrets, keys, certificates per tenant
+#>
+param([Parameter(Mandatory=$true)][string]$TenantId,[switch]$WhatIf,[switch]$Force)
+$ErrorActionPreference = "Stop"; $start = Get-Date; $logFile = "C:\Atlas\logs\PS305-$TenantId-$(Get-Date -Format yyyyMMddHHmmss).log"
+function Write-Log { param($msg) "$(Get-Date) [PS305] $msg" | Tee-Object $logFile -Append }
+Write-Log "START: PS305 for Tenant $TenantId"
+Write-Log "[STUB] TODO: Vault: DB creds, API keys, SWIFT keys for $TenantId"
+Write-Log "[STUB] TODO: Automatic rotation every 90 days"
+Write-Log "[STUB] TODO: Audit access via PS211"
+$duration = (Get-Date) - $start; Write-Log "COMPLETE: PS305. Duration: $($duration.TotalSeconds)s"
+return @{PSN="PS305"; Status="STUB"; Duration=$duration.TotalSeconds}
+
+
+# --- END OF PS305-ATLAS-Secret-Management.ps1 ---
+

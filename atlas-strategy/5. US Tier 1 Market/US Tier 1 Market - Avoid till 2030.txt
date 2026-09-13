@@ -1,0 +1,48 @@
+*US Tier 1 risks = why we said "AVOID until 2030" in v5.0*
+
+For Atlas, going after JPM, BofA, Citi, Wells, etc. right now is basically playing on nightmare difficulty. Here’s the breakdown:
+
+### *1. PROCUREMENT + SALES RISKS*
+Risk	What it looks like	Why it kills us
+**18-24 month RFP cycles**	6 months RFP, 6 months POC, 6 months legal, 6 months procurement	We run out of cash before 1st deal closes
+**Incumbent lock-in**	FISERV, FIS, Jack Henry have 40 year relationships + COBOL + boards	"No one ever got fired for buying FIS"
+**$10M-$50M PS requirement**	They expect Deloitte/Accenture to do the implementation	Our "Zero PS" bet dies day 1
+### *2. REGULATORY + COMPLIANCE RISKS*
+Risk	What it looks like	Why it kills us
+**FedRAMP + FFIEC + SOC2 Type II + DORA**	12-18 months to certify. Auditors in your codebase	We can't sell until this is done
+**CCAR, BSA/AML, Reg E, UDAAP**	US-specific logic baked into every product	R1 Depth from T24 doesn't cover this. Rebuild needed
+**Vendor Risk Management**	300-question security audit. On-site pen test. Source code escrow	1 fail = blacklisted across all Tier 1
+### *3. TECHNICAL + PRODUCT RISKS*
+Risk	What it looks like	Why it kills us
+**COBOL + Mainframe integration**	They won't turn off the core. We have to sidecar to IBM Z	R1.4 Sidecar becomes 90% of the work
+**Scale requirements**	50M customers, 1B txns/day, 99.999% uptime SLA	Our V1 Modular Monolith won't survive
+**Feature bloat**	They want 3000 features day 1. "T24 parity + more"	We spend 3 years just catching up
+### *4. BUSINESS MODEL RISKS*
+Risk	What it looks like	Why it kills us
+**Capex to Opex shift fails**	They prefer $20M license over $120k/mo usage	Our usage pricing looks "too risky" to CFO
+**1 client = 50% of revenue**	Win 1 Tier 1 and they own you. Lose them and you're dead	Kills diversification
+**M&A risk**	They buy you, or buy your competitor and kill you	Happened to nCino, Alkami
+### *5. BRAND + TRUST RISKS*
+1.  *No US Reference Client* = No one else will buy. Chicken and egg
+2.  *"Built in Africa/EM" bias* = Procurement teams assume you can't do US compliance
+3.  *Talent war* = Need US-based compliance, sales, PS leads. $400k/yr each
+
+---
+
+### *WHEN DOES IT MAKE SENSE? PHASE 3: 2029-2030*
+Only after we have:
+1.  *100+ EM clients* → Proof we can run at scale
+2.  *FedRAMP + SOC2 + FFIEC done* → Paid for by EM revenue  
+3.  *1 US Challenger Bank reference* → Chime, SoFi, Varo as beachhead
+4.  *$200M+ ARR* → Can afford 24mo sales cycles
+
+*Play then*: "We replaced T24 in 20 banks across 3 continents in 12 weeks. Here's the case study."
+
+---
+
+### *BOTTOM LINE FOR ATLAS NOW*
+Focus firepower on *KE, NG, ZA, GCC*. Win there in 12 weeks, build the war chest, certify compliance, then come for US Tier 1 with leverage.
+
+US Tier 1 is a graveyard for startups who go too early.
+
+Want me to also do the same risk list for *GCC + KE + NG* so we know what to watch for in Phase 1?

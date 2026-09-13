@@ -1,0 +1,71 @@
+For a first on the market banks would like to see a demo bank that they can take home and start makimg business. How far are we with a fully functional system after the core
+
+Short answer: *After KERNEL is done, we’re ∼60% to a "Take-Home Demo Bank"*
+
+Right now we don’t have a fully functional system yet. We have the OS skeleton. Here’s the real status:
+
+### *1. Where We Are: "Atlas OS Demo Bank v0.6"*
+
+Think of it like Android AOSP. Core boots, but no apps yet.
+Layer	Status	What’s Done	What’s Missing for Demo
+**KERNEL**	**70%**	BATCH-01 Event Mesh, BATCH-03 Registry, BATCH-04 Accounts, BATCH-06 Toggle Engine	BATCH-19 AA Engine needs wire up. BATCH-05 Bootloader needs UI
+**GOVERNANCE**	**40%**	BATCH-07 `product.yaml` schema drafted	BATCH-07C Workflow Studio UI not built. BATCH-18 ISO Mapper not built
+**MODULES**	**30%**	BATCH-08B ISO20022 XSDs, BATCH-09 UI Kit shells	Payments, Lending, Deposits logic not connected
+**PLATFORM**	**10%**	Repo structure exists	AI, Marketplace, Observability not in
+**APPS**	**0%**	`/apps/ke_bank/` folder exists	No `tenant.yaml` with real data yet
+### *2. What’s Needed to Get to "Demo Bank You Can Take Home"*
+
+To hand a bank a USB / Docker and say "run this, create a product, send money", we need 4 things after KERNEL:
+
+#### *MUST HAVE for Demo - 8 Weeks from KERNEL Complete*
+1.  *BATCH-07C: Workflow Studio UI* - Drag-drop to create "Savings Account" or "Pension Payout"  
+    _Without this, business can’t touch it_
+2.  *BATCH-08B: ISO20022 Driver v1* - Send 1 `pacs.008` and receive `pacs.002`. Prove <30s A2A  
+    _Without this, it’s not a bank_
+3.  *BATCH-19: Arrangement Engine v1* - The "OS Scheduler". Connects Product → GL → Accounts  
+    _This is what makes it composable_
+4.  *BATCH-61: Demo Tenant* - "Atlas Demo Bank" pre-loaded with: 100 customers, 2 products, 1 payment rail
+
+With those 4, a bank can: `Login → Create Product → Onboard Customer → Send Payment → See GL`
+
+#### *NICE TO HAVE for Demo - +4 Weeks*
+5.  *BATCH-09: UI Kit v1* - 5 screens: Login, Customer 360, Create Product, Payments, GL
+6.  *BATCH-14: CX Brain v1* - "Create loan product from prompt" button. Wow factor
+
+### *3. The Honest Timeline*
+
+Assuming KERNEL finishes end of Wave 1:
+Today: KERNEL 70%
++ 3 weeks: KERNEL 100% + BATCH-19 + BATCH-05 Boot
++ 5 weeks: BATCH-07C + BATCH-08B + BATCH-61 Demo Tenant
+= 8 weeks to "Take-Home Demo Bank v1.0"
+So: *8-10 weeks after KERNEL freeze* we can ship a docker-compose they can run on laptop.
+
+### *4. What The Demo Bank Will Actually Do Day 1*
+
+This is what we show them on their laptop:
+
+1.  *Business Self-Serve*: PM opens Workflow Studio → Drags "KYC" + "Savings Account" + "MNO Payout" → Clicks Deploy
+2.  *Banker Flow*: Create Customer → Open Account → Deposit $100 → Send $50 via ISO20022 to another "bank"
+3.  *IT Flow*: `git clone atlas-demo-bank` → `docker compose up` → See logs, events, chain audit hash
+4.  *Wow Moment*: "Create a School Feeding product from this prompt" → AI generates workflow in 60s
+
+### *5. The Risk*
+
+If we stop at KERNEL, banks will say "this is just infrastructure". 
+They need to touch products and payments themselves.
+
+That’s why *BATCH-07C + BATCH-08B are non-negotiable* for the demo.
+
+---
+
+### *Recommendation*
+
+*Don’t wait for all 62 batches.*  
+Let’s target *"Atlas OS Demo Bank v1.0" = KERNEL + GOVERNANCE + 3 MODULES*
+
+Scope lock: BATCH-01 to 07, 07C, 08B, 19, 61
+
+That’s 11 batches. Everything else comes after they sign.
+
+Want me to write the *"Demo Bank Scope & Checklist"* doc with exact acceptance criteria so devs know what "done" looks like?

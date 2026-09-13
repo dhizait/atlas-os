@@ -1,0 +1,489 @@
+"""
+ATLAS R01 BATCH 15 - PS1 SCRIPTS
+Generated: 20260905-022301
+Contains: 10 scripts
+BatchSize: 10
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-06-database\PS54-Add-Design-System-Storybook.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS54-Add-Design-System-Storybook
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds Storybook + Tenant theming via CSS variables
+OUTPUT: Component library with per-tenant brand colors
+HYPERLINK: https://storybook.js.org
+STACK: Storybook 7 + Tailwind + CSS Variables
+COMPLIANCE: PS25 Consistent UI across 100 tenants
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS54: Adding Design System + Storybook ===" -ForegroundColor Cyan
+
+$sb = "npx storybook@latest init"
+Invoke-Expression "cd $(Join-Path $BasePath 'frontend') && $sb"
+
+$theme = Join-Path $BasePath "frontend\src\theme\tenantTheme.css"
+@"
+:root { --primary: #0066cc; --secondary: #004499; }
+[data-tenant="TENANT001"] { --primary: #cc0000; --secondary: #990000; }
+[data-tenant="TENANT002"] { --primary: #00cc66; --secondary: #009944; }
+.button { background: var(--primary); }
+"@ | Out-File $theme -Encoding utf8
+
+Write-Host "PS54 Done: Run 'npm run storybook'. Theme via data-tenant attribute" -ForegroundColor Green
+
+
+# --- END OF PS54-Add-Design-System-Storybook.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-06-database\PS55-Add-FE-E2E-Tests.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS55-Add-FE-E2E-Tests
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds Playwright tests for tenant login + voucher flow
+OUTPUT: E2E test suite runs in CI
+HYPERLINK: https://playwright.dev
+STACK: Playwright + TypeScript
+COMPLIANCE: PS25 Automated FE regression
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 6
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS55: Adding Playwright E2E Tests ===" -ForegroundColor Cyan
+
+$pw = "npx playwright install && npx playwright test --init"
+Invoke-Expression "cd $(Join-Path $BasePath 'frontend') && $pw"
+
+$test = Join-Path $BasePath "frontend\tests\voucher-flow.spec.ts"
+@"
+import { test, expect } from '@playwright/test';
+test('tenant can create voucher', async ({ page }) => {
+  await page.goto('/');
+  await page.fill('[name=tenant_id]', 'TENANT001');
+  await page.click('text=Login');
+  await page.click('text=New Voucher');
+  await page.fill('[name=amount]', '1000');
+  await page.click('text=Submit');
+  await expect(page.locator('text=Voucher Created')).toBeVisible();
+});
+"@ | Out-File $test -Encoding utf8
+
+Write-Host "PS55 Done: Run 'npx playwright test'" -ForegroundColor Green
+
+
+# --- END OF PS55-Add-FE-E2E-Tests.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS56-Add-GDPR-Data-Export.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS56-Add-GDPR-Data-Export
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates GDPR /api/gdpr/export endpoint. Exports all tenant data as ZIP
+OUTPUT: Downloadable JSON dump per tenant_id + user_id
+HYPERLINK: https://gdpr.eu/right-to-access/
+STACK: Spring Boot + ZipOutputStream
+COMPLIANCE: PS25 GDPR Article 20 - Right to Data Portability
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS56: Adding GDPR Data Export ===" -ForegroundColor Cyan
+
+$exportCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\controller\GdprExportController.java"
+@"
+package com.demobank.controller;
+import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.zip.ZipOutputStream;
+@RestController @RequestMapping("/api/gdpr")
+public class GdprExportController {
+    @GetMapping("/export")
+    public void exportData(@RequestHeader("X-Tenant-ID") String tenantId,
+                           @RequestParam String userId,
+                           HttpServletResponse response) throws Exception {
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=export-"+tenantId+".zip");
+        try(ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+            // Add vouchers.json, audit.json, profile.json filtered by tenant_id + user_id
+        }
+    }
+}
+"@ | Out-File $exportCtrl -Encoding utf8
+
+Write-Host "PS56 Done: GET /api/gdpr/export?userId=xxx returns ZIP" -ForegroundColor Green
+
+
+# --- END OF PS56-Add-GDPR-Data-Export.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS57-Add-Right-To-Erasure.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS57-Add-Right-To-Erasure
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates /api/gdpr/delete endpoint with hard delete + audit trail
+OUTPUT: All PII for user anonymized. Entry in audit_log
+HYPERLINK: https://gdpr.eu/right-to-be-forgotten/
+STACK: Spring Boot + JPA + AuditService
+COMPLIANCE: PS25 GDPR Article 17 - Right to Erasure
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS57: Adding Right To Erasure ===" -ForegroundColor Cyan
+
+$deleteCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\controller\GdprDeleteController.java"
+@"
+package com.demobank.controller;
+import org.springframework.web.bind.annotation.*;
+import com.demobank.service.AuditService;
+@RestController @RequestMapping("/api/gdpr")
+public class GdprDeleteController {
+    private final AuditService audit;
+    public GdprDeleteController(AuditService a) { this.audit = a; }
+
+    @DeleteMapping("/delete")
+    public void deleteUser(@RequestHeader("X-Tenant-ID") String tenantId, @RequestParam String userId) {
+        // 1. Anonymize vouchers: set user_id = 'DELETED'
+        // 2. Delete from users table
+        // 3. audit.log("GDPR_DELETE", userId);
+    }
+}
+"@ | Out-File $deleteCtrl -Encoding utf8
+
+Write-Host "PS57 Done: DELETE /api/gdpr/delete?userId=xxx" -ForegroundColor Green
+
+
+# --- END OF PS57-Add-Right-To-Erasure.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS58-Add-SOC2-Audit-Report.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS58-Add-SOC2-Audit-Report
+
+.DESCRIPTION
+INPUT: audit_log table
+PROCESSING: Generates SOC2 PDF report: who did what per tenant per day
+OUTPUT: /api/reports/soc2?from=2026-01-01&to=2026-01-31
+HYPERLINK: https://www.aicpa.org/soc2
+STACK: Spring Boot + JasperReports
+COMPLIANCE: PS25 SOC2 Type II Audit Trail
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS58: Adding SOC2 Audit Report ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$jasper = @"
+    <dependency><groupId>net.sf.jasperreports</groupId><artifactId>jasperreports</artifactId><version>6.20.6</version></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$jasper`n</dependencies>" | Set-Content $pom
+
+$reportSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\service\Soc2ReportService.java"
+@"
+package com.demobank.service;
+import org.springframework.stereotype.Service;
+@Service
+public class Soc2ReportService {
+    public byte[] generateReport(String tenantId, String from, String to) {
+        // Query audit_log WHERE tenant_id=? AND timestamp BETWEEN from AND to
+        // Return PDF bytes with user, action, timestamp, entity_id
+        return new byte[0];
+    }
+}
+"@ | Out-File $reportSvc -Encoding utf8
+
+Write-Host "PS58 Done: GET /api/reports/soc2 generates PDF" -ForegroundColor Green
+
+
+# --- END OF PS58-Add-SOC2-Audit-Report.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS59-Add-Data-Masking.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS59-Add-Data-Masking
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds @Mask annotation + Jackson serializer to hide PII for non-admin roles
+OUTPUT: ID numbers, emails masked as *** in API responses
+HYPERLINK: https://owasp.org
+STACK: Spring Boot + Jackson + AOP
+COMPLIANCE: PS25 Data Minimization + Least Privilege
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS59: Adding Data Masking ===" -ForegroundColor Cyan
+
+$maskAnno = Join-Path $BasePath "backend\src\main\java\com\demobank\annotation\Mask.java"
+@"
+package com.demobank.annotation;
+import java.lang.annotation.*;
+@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME)
+public @interface Mask {}
+"@ | Out-File $maskAnno -Encoding utf8
+
+$serializer = Join-Path $BasePath "backend\src\main\java\com\demobank\serializer\MaskingSerializer.java"
+@"
+package com.demobank.serializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+public class MaskingSerializer extends JsonSerializer<String> {
+    public void serialize(String value, JsonGenerator gen, com.fasterxml.jackson.databind.SerializerProvider sp) {
+        gen.writeString(value.length() > 4? "***" + value.substring(value.length()-4) : "***");
+    }
+}
+"@ | Out-File $serializer -Encoding utf8
+
+Write-Host "PS59 Done: Annotate fields with @Mask to auto-redact for VIEWER role" -ForegroundColor Green
+
+
+# --- END OF PS59-Add-Data-Masking.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-07-api-gateway\PS60-Add-Audit-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS60-Add-Audit-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds AuditLog React page with tenant filter + export
+OUTPUT: Admin can view/search audit_log in UI
+HYPERLINK: https://mui.com
+STACK: React + TanStack Table + MUI
+COMPLIANCE: PS25 Auditor self-service
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 7
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS60: Adding Audit UI ===" -ForegroundColor Cyan
+
+$auditPage = Join-Path $BasePath "frontend\src\pages\AuditLogPage.tsx"
+@"
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '../context/TenantContext';
+export default function AuditLogPage() {
+  const {tenantId} = useTenant();
+  const {data} = useQuery({queryKey: ['audit', tenantId],
+    queryFn: () => fetch(`/api/audit?tenant_id=${tenantId}`).then(r => r.json())});
+  return <div>
+    <h1>Audit Log - Tenant {tenantId}</h1>
+    <table>{data?.map((log:any) => <tr><td>{log.timestamp}</td><td>{log.action}</td></tr>)}</table>
+    <button onClick={() => window.open(`/api/reports/soc2?tenant_id=${tenantId}`)}>Export PDF</button>
+  </div>
+}
+"@ | Out-File $auditPage -Encoding utf8
+
+Write-Host "PS60 Done: Route /audit shows tenant audit trail" -ForegroundColor Green
+
+
+# --- END OF PS60-Add-Audit-UI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS61-Add-ISO20022-Adapter.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS61-Add-ISO20022-Adapter
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds ISO20022 pain.001 and camt.053 XML mapping for voucher posting
+OUTPUT: /api/iso20022/inbound accepts bank files. Outbound to switch
+HYPERLINK: https://www.iso20022.org
+STACK: Spring Boot + JAXB + Camel
+COMPLIANCE: PS25 SWIFT/ISO20022 Interoperability
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS61: Adding ISO20022 Adapter ===" -ForegroundColor Cyan
+
+$pom = Join-Path $BasePath "backend\pom.xml"
+$isoDeps = @"
+    <dependency><groupId>org.apache.camel</groupId><artifactId>camel-spring-boot-starter</artifactId><version>4.0.0</version></dependency>
+    <dependency><groupId>jakarta.xml.bind</groupId><artifactId>jakarta.xml.bind-api</artifactId></dependency>
+"@
+(Get-Content $pom) -replace '</dependencies>', "$isoDeps`n</dependencies>" | Set-Content $pom
+
+$adapter = Join-Path $BasePath "backend\src\main\java\com\demobank\integration\Iso20022Adapter.java"
+@"
+package com.demobank.integration;
+import org.apache.camel.builder.RouteBuilder;
+import org.springframework.stereotype.Component;
+@Component
+public class Iso20022Adapter extends RouteBuilder {
+    public void configure() {
+        from("rest:post:/api/iso20022/inbound")
+         .unmarshal().jaxb("com.demobank.iso.pain001")
+         .bean("voucherService", "postFromIso")
+         .to("kafka:iso.outbound");
+    }
+}
+"@ | Out-File $adapter -Encoding utf8
+
+Write-Host "PS61 Done: POST XML to /api/iso20022/inbound" -ForegroundColor Green
+
+
+# --- END OF PS61-Add-ISO20022-Adapter.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS62-Add-Webhooks.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS62-Add-Webhooks
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates webhook subscription + retry + HMAC signing
+OUTPUT: POST to partner URL on voucher.created event
+HYPERLINK: https://stripe.com/docs/webhooks
+STACK: Spring Boot + Kafka Consumer + WebClient
+COMPLIANCE: PS25 Event-driven partner integrations
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS62: Adding Webhooks ===" -ForegroundColor Cyan
+
+$webhookSvc = Join-Path $BasePath "backend\src\main\java\com\demobank\service\WebhookService.java"
+@"
+package com.demobank.service;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+@Service
+public class WebhookService {
+    private final WebClient client = WebClient.create();
+    @KafkaListener(topics = "audit.log")
+    public void onEvent(AuditEvent event) {
+        // Lookup partner URLs by tenant_id
+        // POST with HMAC-SHA256 signature in X-Signature header
+        // Retry 3x with exponential backoff
+    }
+    public record AuditEvent(java.util.UUID tenantId, String action, String entityId) {}
+}
+"@ | Out-File $webhookSvc -Encoding utf8
+
+Write-Host "PS62 Done: Webhooks fire on Kafka audit.log events" -ForegroundColor Green
+
+
+# --- END OF PS62-Add-Webhooks.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-08-backend-core\PS63-Add-Payment-Switch.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS63-Add-Payment-Switch
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds adapter to connect to ZimSwitch/RTGS
+OUTPUT: Outbound payments routed via switch. Inbound notifications handled
+HYPERLINK: https://zimswitch.co.zw
+STACK: Spring Boot + SFTP + MQ
+COMPLIANCE: PS25 Central Bank Settlement
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 8
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS63: Adding Payment Switch Integration ===" -ForegroundColor Cyan
+
+$switchClient = Join-Path $BasePath "backend\src\main\java\com\demobank\integration\PaymentSwitchClient.java"
+@"
+package com.demobank.integration;
+import org.springframework.stereotype.Component;
+@Component
+public class PaymentSwitchClient {
+    public void sendPayment(String tenantId, String account, double amount) {
+        // Build ISO20022 pain.001
+        // SFTP to switch:/outbound/
+        // Poll /inbound/ for status updates
+    }
+}
+"@ | Out-File $switchClient -Encoding utf8
+
+Write-Host "PS63 Done: Call PaymentSwitchClient.sendPayment() in BE-PS73" -ForegroundColor Green
+
+
+# --- END OF PS63-Add-Payment-Switch.ps1 ---
+

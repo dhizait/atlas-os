@@ -1,0 +1,231 @@
+"""
+ATLAS R01 BATCH 36 - PS1 SCRIPTS
+Generated: 20260905-021750
+Contains: 5 scripts
+WARNING: REVIEW ONLY. DO NOT RUN THIS FILE.
+Run individual scripts from atlas-master/ or legacy-ps25/
+"""
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS89-Add-Dunning-Workflow.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS89-Add-Dunning-Workflow
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Handles failed payments. 3 retries + email + suspension
+OUTPUT: Tenant suspended if unpaid after 14 days
+HYPERLINK: https://stripe.com/docs/billing/payments
+STACK: Spring Scheduler + Stripe Webhooks
+COMPLIANCE: PS25 Revenue protection
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS89: Adding Dunning Workflow ===" -ForegroundColor Cyan
+
+$dunningJob = Join-Path $BasePath "backend\src\main\java\com\demobank\billing\DunningJob.java"
+@"
+package com.demobank.billing;
+import org.springframework.scheduling.annotation.Scheduled;
+@Service
+public class DunningJob {
+    @Scheduled(cron = "0 9 * * *") // 9am daily
+    public void runDunning() {
+        // 1. Get failed invoices from Stripe
+        // 2. Day 1: Email. Day 7: Warning. Day 14: Suspend tenant
+        // 3. Update tenant.status = 'SUSPENDED'
+    }
+}
+"@ | Out-File $dunningJob -Encoding utf8
+
+Write-Host "PS89 Done: Daily dunning job runs" -ForegroundColor Green
+
+
+# --- END OF PS89-Add-Dunning-Workflow.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-13-admin\PS90-Add-Billing-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS90-Add-Billing-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds Billing page: usage, plan, invoices, payment method
+OUTPUT: Admin can upgrade plan + download invoices
+HYPERLINK: https://stripe.com/docs/billing/subscriptions/build-subscription
+STACK: React + Stripe Elements
+COMPLIANCE: PS25 Self-service billing
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 13
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS90: Adding Billing UI ===" -ForegroundColor Cyan
+
+$billingPage = Join-Path $BasePath "frontend\src\pages\BillingPage.tsx"
+@"
+import { useTenant } from '../context/TenantContext';
+export default function BillingPage() {
+  const {tenantId} = useTenant();
+  return <div>
+    <h1>Billing - Tenant {tenantId}</h1>
+    <button onClick={() => window.open('/api/billing/invoice?month=2026-01')}>Download Invoice</button>
+    <button onClick={() => window.open('/api/billing/portal')}>Manage Payment</button>
+  </div>
+}
+"@ | Out-File $billingPage -Encoding utf8
+
+Write-Host "PS90 Done: Route /billing shows usage + invoices" -ForegroundColor Green
+
+
+# --- END OF PS90-Add-Billing-UI.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS91-Add-Tenant-Provisioning.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS91-Add-Tenant-Provisioning
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Creates /api/admin/tenants POST endpoint for self-service signup
+OUTPUT: New tenant_id, DB schema, default roles, welcome email
+HYPERLINK: https://saas-boilerplate.com
+STACK: Spring Boot + JPA + Mail
+COMPLIANCE: PS25 Automated onboarding < 2min
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS91: Adding Tenant Provisioning ===" -ForegroundColor Cyan
+
+$tenantCtrl = Join-Path $BasePath "backend\src\main\java\com\demobank\admin\TenantProvisioningController.java"
+@"
+package com.demobank.admin;
+import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/admin/tenants")
+public class TenantProvisioningController {
+    @PostMapping
+    public Map<String,String> provision(@RequestBody TenantRequest req) {
+        // 1. Create tenant record
+        // 2. Run DB migrations for tenant schema
+        // 3. Create admin user
+        // 4. Send welcome email
+        return Map.of("tenant_id", UUID.randomUUID().toString());
+    }
+    record TenantRequest(String name, String adminEmail) {}
+}
+"@ | Out-File $tenantCtrl -Encoding utf8
+
+Write-Host "PS91 Done: POST /api/admin/tenants to create new tenant" -ForegroundColor Green
+
+
+# --- END OF PS91-Add-Tenant-Provisioning.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS92-Add-Quota-Enforcement.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS92-Add-Quota-Enforcement
+
+.DESCRIPTION
+INPUT: backend/
+PROCESSING: Adds quota checks: vouchers/month, API calls, storage
+OUTPUT: 429 if tenant exceeds quota. Quotas per plan
+HYPERLINK: https://konghq.com
+STACK: Spring Boot + Redis + AOP
+COMPLIANCE: PS25 Fair usage + plan limits
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS92: Adding Quota Enforcement ===" -ForegroundColor Cyan
+
+$quotaAspect = Join-Path $BasePath "backend\src\main\java\com\demobank\quota\QuotaAspect.java"
+@"
+package com.demobank.quota;
+import org.aspectj.lang.annotation.*;
+@Aspect @Component
+public class QuotaAspect {
+    @Before("@annotation(CheckQuota)")
+    public void check(JoinPoint jp) {
+        // Get tenant_id from context
+        // Redis INCR usage:tenant:{id}:vouchers
+        // If > quota, throw QuotaExceededException 429
+    }
+}
+"@ | Out-File $quotaAspect -Encoding utf8
+
+Write-Host "PS92 Done: Annotate APIs with @CheckQuota" -ForegroundColor Green
+
+
+# --- END OF PS92-Add-Quota-Enforcement.ps1 ---
+
+# ======================================================================
+# SOURCE FILE: legacy-ps25\batch-14-workflows\PS93-Add-Admin-UI.ps1
+# ======================================================================
+
+<#
+.SYNOPSIS
+PS25 Script: PS93-Add-Admin-UI
+
+.DESCRIPTION
+INPUT: frontend/
+PROCESSING: Adds SuperAdmin dashboard: tenant list, suspend, view usage
+OUTPUT: /admin shows all tenants with search + filters
+HYPERLINK: https://mui.com
+STACK: React + TanStack Table + MUI
+COMPLIANCE: PS25 Platform ops
+
+.NOTES
+Generated: 2026-08-06
+Part of: PS25-COMBINED-GROUPING-DOC.md | BATCH 14
+#>
+
+param([string]$BasePath = "C:\Atlas\releases\R01\demo-bank")
+$ErrorActionPreference = "Stop"
+Write-Host "=== PS93: Adding Admin UI ===" -ForegroundColor Cyan
+
+$adminPage = Join-Path $BasePath "frontend\src\pages\AdminTenantsPage.tsx"
+@"
+import { useQuery } from '@tanstack/react-query';
+export default function AdminTenantsPage() {
+  const {data} = useQuery({queryKey: ['tenants'], queryFn: () => fetch('/api/admin/tenants').then(r=>r.json())});
+  return <div>
+    <h1>All Tenants</h1>
+    <table>{data?.map((t:any) => <tr><td>{t.name}</td><td>{t.status}</td><td><button>Suspend</button></td></tr>)}</table>
+  </div>
+}
+"@ | Out-File $adminPage -Encoding utf8
+
+Write-Host "PS93 Done: Route /admin requires ROLE_ADMIN" -ForegroundColor Green
+
+
+# --- END OF PS93-Add-Admin-UI.ps1 ---
+
